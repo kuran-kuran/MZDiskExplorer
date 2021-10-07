@@ -93,6 +93,7 @@ void cGetBoot::OnSelchangeFiletype()
 	cPath path;
 	char temp[ 260 ];
 	int select;
+	ZeroMemory( temp, sizeof( temp ) );
 	m_Path.GetLine( 0, temp, 260 );
 	path.SetPath( temp );
 	select = m_FileType.GetCurSel();
@@ -107,6 +108,7 @@ void cGetBoot::OnSelchangeFiletype()
 	m_Path.SetSel( 0, -1, FALSE );
 	m_Path.Clear();
 	m_Path.ReplaceSel( path.GetPath(), FALSE );
+	ZeroMemory( FileName, sizeof( FileName ) );
 	m_Path.GetLine( 0, FileName, 260 );
 	SaveType = select;
 }
@@ -118,6 +120,7 @@ void cGetBoot::OnRef()
 	char savepath[ 260 ];
 	int select;
 	char temp[ 260 ];
+	ZeroMemory( temp, sizeof( temp ) );
 	m_Path.GetLine( 0, temp, 260 );
 	select = m_FileType.GetCurSel();
 	if ( 0 == select )
@@ -146,5 +149,6 @@ void cGetBoot::OnRef()
 	m_Path.SetSel( 0, -1, FALSE );
 	m_Path.Clear();
 	m_Path.ReplaceSel( datapath, FALSE );
+	ZeroMemory( FileName, sizeof( FileName ) );
 	m_Path.GetLine( 0, FileName, 260 );
 }
