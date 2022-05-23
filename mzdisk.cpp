@@ -197,10 +197,14 @@ int cMzDisk::Load( char *image, U32 type )
 		cylcount = track_max / 2;
 		for( track = 0; track < 164; track ++ )
 		{
-			source = image + d88header.TrackTable[ track ];
-			sectorinfo = ( D88SECTOR* )source;
-			sector_max = ( int )sectorinfo->SectorCount;
-			source += 16;
+			sector_max = 0;
+			if (d88header.TrackTable[track] > 0)
+			{
+				source = image + d88header.TrackTable[track];
+				sectorinfo = (D88SECTOR*)source;
+				sector_max = (int)sectorinfo->SectorCount;
+				source += 16;
+			}
 			for( sector = 0; sector < sector_max; sector ++ )
 			{
 				// ƒZƒNƒ^î•ñŽæ“¾
