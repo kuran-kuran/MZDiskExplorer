@@ -16,18 +16,18 @@
 //============================================================================
 cPath::cPath()
 {
-#if FILEMANAGER_PATH_MAX == 0
+#if PATH_STRING_MAX == 0
 	Drive = 0;
 	Dir = 0;
 	Name = 0;
 	ExtName = 0;
 	Path = 0;
 #else
-	memset( Drive, 0, FILEMANAGER_PATH_MAX );
-	memset( Dir, 0, FILEMANAGER_PATH_MAX );
-	memset( Name, 0, FILEMANAGER_PATH_MAX );
-	memset( ExtName, 0, FILEMANAGER_PATH_MAX );
-	memset( Path, 0, FILEMANAGER_PATH_MAX );
+	memset( Drive, 0, PATH_STRING_MAX );
+	memset( Dir, 0, PATH_STRING_MAX );
+	memset( Name, 0, PATH_STRING_MAX );
+	memset( ExtName, 0, PATH_STRING_MAX );
+	memset( Path, 0, PATH_STRING_MAX );
 #endif
 	Dummy = 0;
 }
@@ -74,11 +74,11 @@ void cPath::Release( void )
 		Path = 0;
 	}
 #else
-	memset( Drive, 0, FILEMANAGER_PATH_MAX );
-	memset( Dir, 0, FILEMANAGER_PATH_MAX );
-	memset( Name, 0, FILEMANAGER_PATH_MAX );
-	memset( ExtName, 0, FILEMANAGER_PATH_MAX );
-	memset( Path, 0, FILEMANAGER_PATH_MAX );
+	memset( Drive, 0, PATH_STRING_MAX );
+	memset( Dir, 0, PATH_STRING_MAX );
+	memset( Name, 0, PATH_STRING_MAX );
+	memset( ExtName, 0, PATH_STRING_MAX );
+	memset( Path, 0, PATH_STRING_MAX );
 #endif
 }
 
@@ -89,7 +89,7 @@ void cPath::Release( void )
 //============================================================================
 void cPath::SetDrive( char *drive )
 {
-	Drive = StrCopy( Drive, drive );
+	StrCopy( Drive, drive );
 	MakePath();
 }
 
@@ -100,7 +100,7 @@ void cPath::SetDrive( char *drive )
 //============================================================================
 void cPath::SetDir( char *dir )
 {
-	Dir = StrCopy( Dir, dir );
+	StrCopy( Dir, dir );
 	MakePath();
 }
 
@@ -111,7 +111,7 @@ void cPath::SetDir( char *dir )
 //============================================================================
 void cPath::SetName( char *name )
 {
-	Name = StrCopy( Name, name );
+	StrCopy( Name, name );
 	MakePath();
 }
 
@@ -122,7 +122,7 @@ void cPath::SetName( char *name )
 //============================================================================
 void cPath::SetExtName( char *extname )
 {
-	ExtName = StrCopy( ExtName, extname );
+	StrCopy( ExtName, extname );
 	MakePath();
 }
 
@@ -134,7 +134,7 @@ void cPath::SetExtName( char *extname )
 void cPath::SetPath( char *path )
 {
 	Release();
-	Path = StrCopy( Path, path );
+	StrCopy( Path, path );
 	DividePath();
 }
 
@@ -218,72 +218,11 @@ int cPath::DividePath( void )
 	{
 		return 1;
 	}
-	int start = 0;
-	int i = 0;
-	int driveflag = 0;
-	int nameflag = 0;
-	bool kanji = false;
-	while( 1 )
+	_splitpath_s(Path, Drive, PATH_STRING_MAX, Dir, PATH_STRING_MAX, Name, PATH_STRING_MAX, ExtName, PATH_STRING_MAX);
+	if(ExtName[0] == '.')
 	{
-		if ( IsKanji( Path[ i ] ) )
-		{
-			// 漢字の 1 バイト目
-			i ++;
-			kanji = true;
-			continue;
-		}
-		if( ':' == Path[ i ] )
-		{
-			// ドライブ名
-			if ( ( 0 == i ) || ( 1 == driveflag ) )
-			{
-				// 0 文字目、パスの途中に「:」は無効
-				return 1;
-			}
-			Drive = StrCopyPart( Drive, Path, start, i );
-			start = i + 1;
-			driveflag = 1;
-		}
-		if( ( '\\' == Path[ i ] ) || ( '/' == Path[ i ] ) )
-		{
-			if( kanji )
-			{
-				i ++;
-				kanji = false;
-				continue;
-			}
-			// ディレクトリ名
-			Dir = StrAddPart( Dir, Path, start, i );
-			start = i + 1;
-		}
-		if( '.' == Path[ i ] )
-		{
-			// ファイル名
-			if ( 1 == nameflag )
-			{
-				Name = StrAdd( Name, "." );
-			}
-			Name = StrAddPart( Name, Path, start, i - 1 );
-			start = i + 1;
-			nameflag = 1;
-		}
-		if( '\0' == Path[ i ] )
-		{
-			// ファイル名または拡張子
-			if ( 1 == nameflag )
-			{
-				// 拡張子
-				ExtName = StrAddPart( ExtName, Path, start, i - 1 );
-			}
-			else
-			{
-				// ファイル名
-				Name = StrAddPart( Name, Path, start, i - 1 );
-			}
-			break;
-		}
-		kanji = false;
-		i ++;
+		// .を消す
+		StrCopy(ExtName, &ExtName[1]);
 	}
 	return 0;
 }
@@ -295,13 +234,13 @@ void cPath::MakePath( unsigned int mode )
 {
 	if ( ( mode & PATH_MODE_DRIVE ) && ( Drive != 0 ) )
 	{
-		Path = StrCopy( Path, Drive );
+		StrCopy( Path, Drive );
 	} else {
-		Path = StrCopy( Path, "" );
+		StrCopy( Path, "" );
 	}
 	if ( ( mode & PATH_MODE_DIR ) && ( Dir != 0 ) )
 	{
-		Path = StrAdd( Path, Dir );
+		StrAdd( Path, Dir );
 		if ( strlen( Path ) > 0 )
 		{
 			char dividechar[ 2 ];
@@ -309,20 +248,20 @@ void cPath::MakePath( unsigned int mode )
 			dividechar[ 1 ] = '\0';
 			if ( Path[ strlen( Path ) -1 ] != PATH_DIVIDE_CHAR )
 			{
-				Path = StrAdd( Path, dividechar );
+				StrAdd( Path, dividechar );
 			}
 		}
 	}
 	if ( ( mode & PATH_MODE_NAME ) && ( Name != 0 ) )
 	{
-		Path = StrAdd( Path, Name );
+		StrAdd( Path, Name );
 	}
 	if ( ( mode & PATH_MODE_EXTNAME ) && ( ExtName != 0 ) )
 	{
 		if ( *ExtName != '\0' )
 		{
-			Path = StrAdd( Path, "." );
-			Path = StrAdd( Path, ExtName );
+			StrAdd( Path, "." );
+			StrAdd( Path, ExtName );
 		}
 	}
 }

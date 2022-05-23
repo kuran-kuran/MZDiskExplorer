@@ -28,7 +28,7 @@ static const unsigned int PATH_MODE_EXTNAME = 0x00000008;
 static const unsigned int PATH_MODE_ALL     = 0x0000000F;
 
 // -------------------- 動作指定
-#define PATH_STRING_MAX    0    // 0=可変, 0以外=スタティックメモリサイズ (260推奨)
+#define PATH_STRING_MAX    260    // 0=可変, 0以外=スタティックメモリサイズ (260推奨)
 
 // -------------------- クラス定義
 class cPath {

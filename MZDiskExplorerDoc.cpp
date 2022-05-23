@@ -170,11 +170,8 @@ void CMZDiskExplorerDoc::Serialize(CArchive& ar)
 		ar.Flush();
 		filepath = file->GetFilePath();
 		path.SetPath( filepath.GetBuffer( 260 ) );
-		path.SetDrive( "" );
-		path.SetDir( "" );
-		path.SetName( "" );
-		if ( ( 0 == stricmp( path.GetPath(), ".d88" ) ) ||
-			 ( 0 == stricmp( path.GetPath(), ".d20" ) ) )
+		if ( ( 0 == stricmp( path.GetExtName(), "d88" ) ) ||
+			 ( 0 == stricmp( path.GetExtName(), "d20" ) ) )
 		{
 			length = file->GetLength();
 			temp = new char[ length ];

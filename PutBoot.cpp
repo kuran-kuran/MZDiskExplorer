@@ -65,16 +65,18 @@ BOOL cPutBoot::OnInitDialog()
 void cPutBoot::OnOK() 
 {
 	// TODO: この位置にその他の検証用のコードを追加してください
-	char temp[ 260 ];
+	char temp[ 261 ];
 	char *temp2;
 	int i;
 	m_BootName.SetSel( 0, -1, FALSE );
 	ZeroMemory( temp, sizeof( temp ) );
-	m_BootName.GetLine( 0, temp, 10 );
+	int size = m_BootName.GetLine( 0, temp, 10 );
+	temp[size] = '\0';
 	BootName = temp;
 	Machine = m_Machine.GetCurSel();
 	m_RunAdr.SetSel( 0, -1, FALSE );
-	m_RunAdr.GetLine( 0, temp, 260 );
+	size = m_RunAdr.GetLine( 0, temp, 260 );
+	temp[size] = '\0';
 	RunAdr = (unsigned short)strtol( temp, &temp2, 16 );
 	IPL ipl;
 	ZeroMemory( &ipl, sizeof( ipl ) );

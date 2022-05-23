@@ -86,11 +86,12 @@ void cGetFile::OnRef()
 {
 	// TODO: この位置にコントロール通知ハンドラ用のコードを追加してください
 	CString datapath;
-	char savepath[ 260 ];
+	char savepath[ 261 ];
 	int select;
-	char temp[ 260 ];
+	char temp[ 261 ];
 	ZeroMemory( temp, sizeof( temp ) );
-	m_Path.GetLine( 0, temp, 260 );
+	int size = m_Path.GetLine( 0, temp, 260 );
+	temp[size] = '\0';
 	select = m_FileType.GetCurSel();
 	if ( 0 == select )
 	{
@@ -118,7 +119,8 @@ void cGetFile::OnRef()
 	m_Path.SetSel( 0, -1, FALSE );
 	m_Path.Clear();
 	m_Path.ReplaceSel( datapath, FALSE );
-	m_Path.GetLine( 0, FileName, 260 );
+	size = m_Path.GetLine( 0, FileName, 260 );
+	FileName[size] = '\0';
 }
 
 void cGetFile::SetFile(char *filename)
@@ -133,7 +135,8 @@ void cGetFile::OnSelchangeFiletype()
 	char temp[ 260 ];
 	int select;
 	ZeroMemory( temp, sizeof( temp ) );
-	m_Path.GetLine( 0, temp, 260 );
+	int size = m_Path.GetLine( 0, temp, 260 );
+	temp[size] = '\0';
 	path.SetPath( temp );
 	select = m_FileType.GetCurSel();
 	if ( 0 == select )
@@ -148,7 +151,8 @@ void cGetFile::OnSelchangeFiletype()
 	m_Path.Clear();
 	m_Path.ReplaceSel( path.GetPath(), FALSE );
 	ZeroMemory( FileName, sizeof( FileName ) );
-	m_Path.GetLine( 0, FileName, 260 );
+	size = m_Path.GetLine( 0, FileName, 260 );
+	FileName[size] = '\0';
 	SaveType = select;
 }
 
@@ -157,7 +161,8 @@ void cGetFile::OnOK()
 	// TODO: この位置にその他の検証用のコードを追加してください
 	ZeroMemory( FileName, sizeof( FileName ) );
 	m_Path.SetSel( 0, -1, FALSE );
-	m_Path.GetLine( 0, FileName, 260 );
+	int size = m_Path.GetLine( 0, FileName, 260 );
+	FileName[size] = '\0';
 	int select;
 	select = m_FileType.GetCurSel();
 	if ( 0 == select )
