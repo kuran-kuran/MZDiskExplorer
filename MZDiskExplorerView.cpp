@@ -51,6 +51,7 @@ BOOL CMZDiskExplorerView::PreCreateWindow(CREATESTRUCT& cs)
 	//  修正してください。
 
 	cs.style |= LVS_REPORT;
+	cs.dwExStyle |= WS_EX_ACCEPTFILES;
 	return CListView::PreCreateWindow(cs);
 }
 
@@ -231,4 +232,33 @@ void CMZDiskExplorerView::OnEditGetboot()
 	CMZDiskExplorerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 	pDoc->GetBootExec();
+}
+
+void CMZDiskExplorerView::OnDropFiles(HDROP hDropInfo) 
+{
+	// TODO: この位置にメッセージ ハンドラ用のコードを追加するかまたはデフォルトの処理を呼び出してください
+	UINT uiCount = DragQueryFile(hDropInfo, ~0lu, NULL, 0);
+	for(UINT i = 0; i < uiCount; ++ i)
+	{
+		UINT uiLen = DragQueryFile(hDropInfo, i, NULL, 0);
+		CString cpathname;
+		DragQueryFile(hDropInfo, i, cpathname.GetBuffer(uiLen + 1), uiLen + 1);
+		cpathname.ReleaseBuffer();
+		char pathname[260];
+		strcpy(pathname, cpathname.GetBuffer(260));
+		cPath path;
+		path.SetPath(pathname);
+		if((stricmp(path.GetExtName(), "D88") == 0) && (stricmp(path.GetExtName(), "D88") == 0))
+		{
+			CView::OnDropFiles(hDropInfo);
+			return;
+		}
+		else
+		{
+			CMZDiskExplorerDoc* pDoc = GetDocument();
+			ASSERT_VALID(pDoc);
+			// ファイルをドロップした
+			pDoc->OnEditPutfile(cpathname);
+		}
+	}
 }

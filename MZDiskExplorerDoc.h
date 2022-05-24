@@ -47,6 +47,7 @@ public:
 	virtual ~CMZDiskExplorerDoc();
 	int MakeFileList( int dirsector );
 	int MakeTree( int dirsector, HTREEITEM parenthandle );
+	void OnEditPutfile(CString datapath);
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;

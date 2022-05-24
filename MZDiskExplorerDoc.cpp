@@ -496,7 +496,7 @@ void CMZDiskExplorerDoc::OnUpdateEditPutfile(CCmdUI* pCmdUI)
 	}
 }
 
-void CMZDiskExplorerDoc::OnEditPutfile() 
+void CMZDiskExplorerDoc::OnEditPutfile()
 {
 	// TODO: この位置にコマンド ハンドラ用のコードを追加してください
 	CString datapath;
@@ -507,6 +507,15 @@ void CMZDiskExplorerDoc::OnEditPutfile()
 		return;
 	}
 	datapath = SelFile.GetPathName();
+	OnEditPutfile(datapath);
+}
+
+void CMZDiskExplorerDoc::OnEditPutfile(CString datapath)
+{
+	if ( 0 == ImageInit )
+	{
+		return;
+	}
 	cPath path;
 	path.SetPath( datapath.GetBuffer( 260 ) );
 	cPutFile putfiledialog;
