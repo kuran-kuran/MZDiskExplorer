@@ -626,7 +626,7 @@ int cMzDisk::PutFile( char *path, DIRECTORY *dirinfo, U32 mode, U32 type )
 		else
 		{
 			memcpy( &dir[ select ], dirinfo, 32 );
-			rest = dirinfo->Size;
+			rest = static_cast<int>(dirinfo->Size) * 32;
 		}
 		temp = Bitmap[ 2 ] + Bitmap[ 3 ] * 256;
 		datacluster = ( datasize / ClusterSize );
@@ -701,8 +701,7 @@ int cMzDisk::PutFile( char *path, DIRECTORY *dirinfo, U32 mode, U32 type )
 		else
 		{
 			memcpy( &dir[ select ], dirinfo, 32 );
-			dir[ select ].Size = ( ( dir[ select ].Size + 4095 ) / 4096 * 4096 ) / 32;
-			rest = dirinfo->Size;
+			rest = dirinfo->Size * 32;
 		}
 		temp = Bitmap[ 2 ] + Bitmap[ 3 ] * 256;
 		datacluster = ( datasize / ClusterSize );
@@ -766,11 +765,6 @@ int cMzDisk::PutFile( char *path, DIRECTORY *dirinfo, U32 mode, U32 type )
 				sector += ( 4096 / 256 );
 			}
 		}
-
-
-
-
-
 	}
 	else
 	{

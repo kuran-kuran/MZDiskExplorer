@@ -138,7 +138,14 @@ void cPutFile::OnOK()
 		}
 	}
 	dir.Attr = Attr;
-	dir.Size = FileSize;
+	if(dir.Mode == 4)
+	{
+		dir.Size = FileSize / 32;
+	}
+	else
+	{
+		dir.Size = FileSize;
+	}
 	dir.LoadAdr = LoadAdr;
 	dir.RunAdr = RunAdr;
 	dir.Date = ( ( ( Year % 100 ) / 10 ) << 28 ) +
