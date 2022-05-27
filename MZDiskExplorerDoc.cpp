@@ -268,8 +268,11 @@ void CMZDiskExplorerDoc::Serialize(CArchive& ar)
 	if(MzDiskClass != NULL)
 	{
 		CMainFrame *pMainFrame;
-		char str[ 100 ];
-		sprintf_s( str, sizeof(str), "%d/%d", MzDiskClass->GetUseBlockSize() * MzDiskClass->GetClusterSize(), MzDiskClass->GetAllBlockSize() * MzDiskClass->GetClusterSize() );
+		char str[ 200 ];
+		int use = MzDiskClass->GetUseBlockSize() * MzDiskClass->GetClusterSize();
+		int total = MzDiskClass->GetAllBlockSize() * MzDiskClass->GetClusterSize();
+		int free = total - use;
+		sprintf_s( str, sizeof(str), "Type: %s    Size: %d/%d    Free: %d", MzDiskClass->DiskTypeText().c_str(), use, total, free );
 		pMainFrame = ( CMainFrame* )AfxGetMainWnd();
 		pMainFrame->PutStatusBarSize( str );
 	}
@@ -437,6 +440,7 @@ int CMZDiskExplorerDoc::MakeFileList( int dirsector )
 				0x81, "SWAP "
 			};
 			char work[ 17 ];
+			ZeroMemory(work, sizeof(work));
 			MzDiskClass->GetDir( &dir, i );
 			if ( ( 0 == dir.mode ) || ( 0x80 == dir.mode ) || ( 0x82 == dir.mode ) || ( 0xF == dir.mode ) )
 			{
@@ -546,6 +550,7 @@ int CMZDiskExplorerDoc::MakeFileList( int dirsector )
 				0x81, "SWAP "
 			};
 			char work[ 17 ];
+			ZeroMemory(work, sizeof(work));
 			MzDiskClass->GetDir( &dir, i );
 			if ( ( 0 == dir.mode ) || ( 0x80 == dir.mode ) || ( 0x82 == dir.mode ) || ( 0xF == dir.mode ) )
 			{
@@ -772,7 +777,8 @@ void CMZDiskExplorerDoc::OnEditPutfile(CString datapath)
 	if ( 0 == _stricmp( path.GetExtName(), "MZT" ) )
 	{
 		MzDisk::MZTHEAD mzthead;
-		char filename[ 17 ];
+		char filename[ 18 ];
+		ZeroMemory(filename, sizeof(filename));
 		int i;
 		file.Read( &mzthead, 128 );
 		strncpy_s( filename, sizeof(filename), mzthead.filename, 17 );
@@ -789,11 +795,22 @@ void CMZDiskExplorerDoc::OnEditPutfile(CString datapath)
 		putfiledialog.FileSize = mzthead.size;
 		putfiledialog.LoadAdr = mzthead.loadAdr;
 		putfiledialog.RunAdr = mzthead.runAdr;
-		putfiledialog.Year = systemtime.wYear % 100;
-		putfiledialog.Month = systemtime.wMonth;
-		putfiledialog.Day = systemtime.wDay;
-		putfiledialog.Hour = systemtime.wHour;
-		putfiledialog.Minute = systemtime.wMinute;
+		if(MzDiskClass->DiskType() == Disk::MZ2000)
+		{
+			putfiledialog.Year = systemtime.wYear % 100;
+			putfiledialog.Month = systemtime.wMonth;
+			putfiledialog.Day = systemtime.wDay;
+			putfiledialog.Hour = systemtime.wHour;
+			putfiledialog.Minute = systemtime.wMinute;
+		}
+		else
+		{
+			putfiledialog.Year = 0;
+			putfiledialog.Month = 0;
+			putfiledialog.Day = 0;
+			putfiledialog.Hour = 0;
+			putfiledialog.Minute = 0;
+		}
 		putfiledialog.FileType = 1;	// MZT
 	}
 	else
@@ -831,8 +848,11 @@ void CMZDiskExplorerDoc::OnEditPutfile(CString datapath)
 	MakeFileList( MzDiskClass->GetDirSector() );
 	// ステータスバー描画
 	CMainFrame *pMainFrame;
-	char str[ 100 ];
-	sprintf_s( str, sizeof(str), "%d/%d", MzDiskClass->GetUseBlockSize() * MzDiskClass->GetClusterSize(), MzDiskClass->GetAllBlockSize() * MzDiskClass->GetClusterSize() );
+	char str[ 200 ];
+	int use = MzDiskClass->GetUseBlockSize() * MzDiskClass->GetClusterSize();
+	int total = MzDiskClass->GetAllBlockSize() * MzDiskClass->GetClusterSize();
+	int free = total - use;
+	sprintf_s( str, sizeof(str), "Type: %s    Size: %d/%d    Free: %d", MzDiskClass->DiskTypeText().c_str(), use, total, free );
 	pMainFrame = ( CMainFrame* )AfxGetMainWnd();
 	pMainFrame->PutStatusBarSize( str );
 }
@@ -909,8 +929,11 @@ void CMZDiskExplorerDoc::OnEditPutboot()
 		Machine = putBootdialog.Machine;
 		// ステータスバー描画
 		CMainFrame *pMainFrame;
-		char str[ 100 ];
-		sprintf_s( str, sizeof(str), "%d/%d", MzDiskClass->GetUseBlockSize() * MzDiskClass->GetClusterSize(), MzDiskClass->GetAllBlockSize() * MzDiskClass->GetClusterSize() );
+		char str[ 200 ];
+		int use = MzDiskClass->GetUseBlockSize() * MzDiskClass->GetClusterSize();
+		int total = MzDiskClass->GetAllBlockSize() * MzDiskClass->GetClusterSize();
+		int free = total - use;
+		sprintf_s( str, sizeof(str), "Type: %s    Size: %d/%d    Free: %d", MzDiskClass->DiskTypeText().c_str(), use, total, free );
 		pMainFrame = ( CMainFrame* )AfxGetMainWnd();
 		pMainFrame->PutStatusBarSize( str );
 	}
@@ -975,13 +998,53 @@ void CMZDiskExplorerDoc::OnEditDel()
 		MakeFileList( MzDiskClass->GetDirSector() );
 		// ステータスバー描画
 		CMainFrame *pMainFrame;
-		char str[ 100 ];
-		sprintf_s( str, sizeof(str), "%d/%d", MzDiskClass->GetUseBlockSize() * MzDiskClass->GetClusterSize(), MzDiskClass->GetAllBlockSize() * MzDiskClass->GetClusterSize() );
+		char str[ 200 ];
+		int use = MzDiskClass->GetUseBlockSize() * MzDiskClass->GetClusterSize();
+		int total = MzDiskClass->GetAllBlockSize() * MzDiskClass->GetClusterSize();
+		int free = total - use;
+		sprintf_s( str, sizeof(str), "Type: %s    Size: %d/%d    Free: %d Bytes", MzDiskClass->DiskTypeText().c_str(), use, total, free );
 		pMainFrame = ( CMainFrame* )AfxGetMainWnd();
 		pMainFrame->PutStatusBarSize( str );
 	}
 	else if(MzDiskClass->DiskType() == Disk::MZ80K_SP6010)
 	{
+		Mz80Disk::DIRECTORY dir;
+		int select = -1;
+		select = list->GetNextItem( select, LVNI_ALL | LVNI_SELECTED );
+		if ( -1 == select )
+		{
+			return;
+		}
+		if ( FileView->MessageBox( "選択したファイルを削除してよろしいですか？\nOK またはキャンセルを選んでください。\n", "ファイル削除", MB_OKCANCEL ) != IDOK )
+		{
+			return;
+		}
+		select = -1;
+		while ( 1 )
+		{
+			select = list->GetNextItem( select, LVNI_ALL | LVNI_SELECTED );
+			if ( -1 == select )
+			{
+				break;
+			}
+			MzDiskClass->GetDir( &dir, ItemToDirIndex[ select ] );
+			if ( 0 == dir.mode )
+			{
+				continue;
+			}
+			MzDiskClass->DelFile( ItemToDirIndex[ select ] );
+		}
+		// ファイル画面作成
+		MakeFileList( MzDiskClass->GetDirSector() );
+		// ステータスバー描画
+		CMainFrame *pMainFrame;
+		char str[ 200 ];
+		int use = MzDiskClass->GetUseBlockSize() * MzDiskClass->GetClusterSize();
+		int total = MzDiskClass->GetAllBlockSize() * MzDiskClass->GetClusterSize();
+		int free = total - use;
+		sprintf_s( str, sizeof(str), "Type: %s    Size: %d/%d    Free: %d Bytes", MzDiskClass->DiskTypeText().c_str(), use, total, free );
+		pMainFrame = ( CMainFrame* )AfxGetMainWnd();
+		pMainFrame->PutStatusBarSize( str );
 	}
 }
 

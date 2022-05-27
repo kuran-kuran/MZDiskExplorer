@@ -2,6 +2,7 @@
 #define MZ80DISK_HPP
 
 #include <vector>
+#include <string>
 #include "D88Image.hpp"
 #include "Disk.hpp"
 
@@ -52,6 +53,7 @@ public:
 	Mz80Disk();
 	~Mz80Disk();
 	int DiskType(void);
+	std::string DiskTypeText(void);
 	void Format(int type);
 	int Load(std::string path);
 	int Load(const std::vector<unsigned char>& buffer);

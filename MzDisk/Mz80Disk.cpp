@@ -32,6 +32,11 @@ int Mz80Disk::DiskType(void)
 	return Disk::MZ80K_SP6010;
 }
 
+std::string Mz80Disk::DiskTypeText(void)
+{
+	return "MZ-80K SP-6010タイプディスク";
+}
+
 //============================================================================
 //  ディスクイメージをフォーマットする
 //----------------------------------------------------------------------------
@@ -447,6 +452,8 @@ int Mz80Disk::DelFile(int dirindex)
 	int temp = this->bitmap[2] + this->bitmap[3] * 256;
 	this->bitmap[2] = (temp - size) & 255;
 	this->bitmap[3] = ((temp - size) / 256) & 255;
+	// 管理情報をD88イメージに書き込み
+	FlushWrite();
 	return 0;
 }
 
@@ -911,7 +918,7 @@ int Mz80Disk::GetAllBlockSize(void)
 	{
 		return 0;
 	}
-	return this->bitmap[4] + this->bitmap[5] * 256;
+	return 35 * 2 * 16 - 64;
 }
 
 int Mz80Disk::GetClusterSize(void)

@@ -33,6 +33,11 @@ int MzDisk::DiskType(void)
 	return Disk::MZ2000;
 }
 
+std::string MzDisk::DiskTypeText(void)
+{
+	return "MZ-80B/700/1500/2000/2200/2500ディスク";
+}
+
 //============================================================================
 //  ディスクイメージをフォーマットする
 //----------------------------------------------------------------------------
@@ -733,6 +738,8 @@ int MzDisk::DelFile(int dirindex)
 	int temp = this->bitmap[2] + this->bitmap[3] * 256;
 	this->bitmap[2] = (temp - size) & 255;
 	this->bitmap[3] = ((temp - size) / 256) & 255;
+	// 管理情報をD88イメージに書き込み
+	FlushWrite();
 	return 0;
 }
 

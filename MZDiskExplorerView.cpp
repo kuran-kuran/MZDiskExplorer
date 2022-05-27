@@ -214,6 +214,21 @@ void CMZDiskExplorerView::OnEditGetfile()
 					}
 				}
 			}
+			// ダイアログ表示
+			cGetFile getfiledialog;
+			cPath path;
+			path.SetPath( pathname );
+			path.SetName( filename );
+			path.SetExtName( extname );
+			strcpy_s( getfiledialog.FileName, sizeof(getfiledialog.FileName), path.GetPath() );
+			getfiledialog.MzDiskClass = pDoc->MzDiskClass;
+			getfiledialog.DirIndex = pDoc->ItemToDirIndex[ select ];
+			getfiledialog.SaveType = pDoc->SaveType;
+			getfiledialog.AllOk = AllOk;
+			getfiledialog.DoModal();
+			pDoc->SaveType = getfiledialog.SaveType;
+			AllOk = getfiledialog.AllOk;
+			strcpy_s( pathname, sizeof(pathname), getfiledialog.FileName );
 		}
 	}
 	else if(pDoc->MzDiskClass->DiskType() == Disk::MZ80K_SP6010)
@@ -265,22 +280,22 @@ void CMZDiskExplorerView::OnEditGetfile()
 					}
 				}
 			}
+			// ダイアログ表示
+			cGetFile getfiledialog;
+			cPath path;
+			path.SetPath( pathname );
+			path.SetName( filename );
+			path.SetExtName( extname );
+			strcpy_s( getfiledialog.FileName, sizeof(getfiledialog.FileName), path.GetPath() );
+			getfiledialog.MzDiskClass = pDoc->MzDiskClass;
+			getfiledialog.DirIndex = pDoc->ItemToDirIndex[ select ];
+			getfiledialog.SaveType = pDoc->SaveType;
+			getfiledialog.AllOk = AllOk;
+			getfiledialog.DoModal();
+			pDoc->SaveType = getfiledialog.SaveType;
+			AllOk = getfiledialog.AllOk;
+			strcpy_s( pathname, sizeof(pathname), getfiledialog.FileName );
 		}
-		// ダイアログ表示
-		cGetFile getfiledialog;
-		cPath path;
-		path.SetPath( pathname );
-		path.SetName( filename );
-		path.SetExtName( extname );
-		strcpy_s( getfiledialog.FileName, sizeof(getfiledialog.FileName), path.GetPath() );
-		getfiledialog.MzDiskClass = pDoc->MzDiskClass;
-		getfiledialog.DirIndex = pDoc->ItemToDirIndex[ select ];
-		getfiledialog.SaveType = pDoc->SaveType;
-		getfiledialog.AllOk = AllOk;
-		getfiledialog.DoModal();
-		pDoc->SaveType = getfiledialog.SaveType;
-		AllOk = getfiledialog.AllOk;
-		strcpy_s( pathname, sizeof(pathname), getfiledialog.FileName );
 	}
 }
 

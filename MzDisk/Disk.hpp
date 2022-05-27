@@ -1,6 +1,8 @@
 #ifndef DISK_HPP
 #define DISK_HPP
 
+#include <string>
+#include <vector>
 #include "D88Image.hpp"
 
 class Disk
@@ -22,6 +24,7 @@ public:
 	static int DiskType(std::string path);
 	static int DiskType(const std::vector<unsigned char>& buffer);
 	virtual int DiskType(void) = 0;
+	virtual std::string DiskTypeText(void) = 0;
 	virtual void Format(int type) = 0;
 	virtual int Load(std::string path) = 0;
 	virtual int Load(const std::vector<unsigned char>& buffer) = 0;
