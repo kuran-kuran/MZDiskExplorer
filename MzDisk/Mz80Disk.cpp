@@ -444,13 +444,16 @@ int Mz80Disk::DelFile(int dirindex)
 	{
 		return 1;
 	}
-	int start = this->directory[dirindex].startTrack * 16 + this->directory[dirindex].startSector - 1 - 64;
-	int size = (this->directory[dirindex].size + this->sectorSize - 1) / this->sectorSize;
-	DelBitmap(start, size);
+	int sector = this->directory[dirindex].startTrack * 16 + this->directory[dirindex].startSector - 1;
+	while(sector > 0)
+	{
+		int start = sector - 64;
+		DelBitmap(start, 1);
+		std::vector<unsigned char> buffer;
+		ReadSector(buffer, sector, 1);
+		sector = static_cast<int>(buffer[254]) * 16 + static_cast<int>(buffer[255]) - 1;
+	}
 	this->directory[dirindex].mode = 0;
-	int temp = this->bitmap[2] + this->bitmap[3] * 256;
-	this->bitmap[2] = (temp - size) & 255;
-	this->bitmap[3] = ((temp - size) / 256) & 255;
 	// ŠÇ—î•ñ‚ðD88ƒCƒ[ƒW‚É‘‚«ž‚Ý
 	FlushWrite();
 	return 0;
@@ -655,9 +658,8 @@ int Mz80Disk::GetBitmapSerial(int length)
 void Mz80Disk::SetBitmap(int start, int length)
 {
 	unsigned char* data;
-	int loop = (length + this->sectorSize - 1) / this->sectorSize;
 	start += 32;
-	for(int i = start; i < (start + loop); ++ i)
+	for(int i = start; i < (start + length); ++ i)
 	{
 		data = &this->bitmap[i / 8];
 		*data |= (1 << (i % 8));
@@ -674,12 +676,11 @@ void Mz80Disk::SetBitmap(int start, int length)
 //============================================================================
 void Mz80Disk::DelBitmap(int start, int length)
 {
-	unsigned char* data;
-	int loop = (length + this->sectorSize - 1) / this->sectorSize;
 	start += 32;
-	for(int i = start; i < (start + loop); ++ i)
+	for(int i = start; i < (start + length); ++ i)
 	{
-		data = &this->bitmap[i / 8];
+		unsigned char* data = &this->bitmap[i / 8];
+		unsigned char tmp = (~(1 << (i % 8)));
 		*data &= (~(1 << (i % 8)));
 	}
 	WriteUseSize();

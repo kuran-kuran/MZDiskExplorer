@@ -95,20 +95,23 @@ void CMZDiskExplorerView::OnInitialUpdate()
 	column.cx = 60;
 	list.InsertColumn( 2, &column );
 	column.pszText = "ファイルサイズ";
-	column.cx = 80;
+	column.cx = 120;
 	list.InsertColumn( 3, &column );
 	column.pszText = "ロードアドレス";
-	column.cx = 80;
+	column.cx = 120;
 	list.InsertColumn( 4, &column );
 	column.pszText = "実行アドレス";
-	column.cx = 80;
+	column.cx = 120;
 	list.InsertColumn( 5, &column );
 	column.pszText = "日付";
-	column.cx = 80;
+	column.cx = 120;
 	list.InsertColumn( 6, &column );
 	column.pszText = "開始セクタ";
-	column.cx = 80;
+	column.cx = 120;
 	list.InsertColumn( 7, &column );
+	column.pszText = "開始トラック";
+	column.cx = 120;
+	list.InsertColumn( 8, &column );
 	ColumnFlag = 1;
 }
 

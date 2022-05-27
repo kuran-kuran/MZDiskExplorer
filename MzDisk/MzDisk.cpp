@@ -468,7 +468,7 @@ int MzDisk::PutFile(std::string path, void* dirInfo, unsigned int mode, unsigned
 		}
 		else
 		{
-			if(PutBtxFile(dirinfo, mode, mzthead, select, dataSize, bufferTemp, type) == false)
+			if(PutObjFile(dirinfo, mode, mzthead, select, dataSize, bufferTemp, type) == false)
 			{
 				throw std::runtime_error(dms::Format("Faild write BTX or OBJ file"));
 			}
@@ -572,8 +572,8 @@ bool MzDisk::PutBsdFile(DIRECTORY *dirinfo, unsigned int mode, MZTHEAD& mzthead,
 			{
 				std::vector<unsigned char> beforeBuffer;
 				ReadSector(beforeBuffer, before, 1);
-				beforeBuffer[static_cast<size_t>(this->sectorSize) - 2] = sector % this->sectorSize;
-				beforeBuffer[static_cast<size_t>(this->sectorSize) - 1] = sector / this->sectorSize;
+				beforeBuffer[static_cast<size_t>(this->sectorSize) - 2] = sector % 256;
+				beforeBuffer[static_cast<size_t>(this->sectorSize) - 1] = sector / 256;
 				WriteSector(beforeBuffer, before, 1);
 			}
 			rest -= write_size;
@@ -621,7 +621,7 @@ bool MzDisk::PutBrdFile(DIRECTORY *dirinfo, unsigned int mode, MZTHEAD& mzthead,
 	// ファイルをディスクイメージに転送
 	int cluster = GetBitmapSerial(256);
 	this->directory[select].startSector = (this->bitmap[1] + cluster) * this->clusterSize / 256;
-	SetBitmap(cluster, 256);
+	SetBitmap(cluster, 1);
 	std::vector<unsigned short> sectorList;
 	std::vector<unsigned char> writeBuffer;
 	unsigned char* source = &bufferTemp[0];
@@ -633,12 +633,12 @@ bool MzDisk::PutBrdFile(DIRECTORY *dirinfo, unsigned int mode, MZTHEAD& mzthead,
 		cluster = GetBitmapSerial(4096);
 		if(this->clusterSize <= 4096)
 		{
-			SetBitmap(cluster, 4096);
+			SetBitmap(cluster, 4096 / this->clusterSize);
 			loop = 1;
 		}
 		else
 		{
-			SetBitmap(cluster, 256);
+			SetBitmap(cluster, 1);
 			loop = this->clusterSize / 4096;
 		}
 		sector = ((this->bitmap[1] + cluster) * this->clusterSize) / this->sectorSize;
@@ -673,7 +673,7 @@ bool MzDisk::PutBrdFile(DIRECTORY *dirinfo, unsigned int mode, MZTHEAD& mzthead,
 	return true;
 }
 
-bool MzDisk::PutBtxFile(DIRECTORY *dirinfo, unsigned int mode, MZTHEAD& mzthead, int select, size_t dataSize, std::vector<unsigned char>& bufferTemp, unsigned int type)
+bool MzDisk::PutObjFile(DIRECTORY *dirinfo, unsigned int mode, MZTHEAD& mzthead, int select, size_t dataSize, std::vector<unsigned char>& bufferTemp, unsigned int type)
 {
 	// ビットマップ検索
 	int freespace = GetBitmapSerial(static_cast<int>(dataSize));
@@ -707,7 +707,7 @@ bool MzDisk::PutBtxFile(DIRECTORY *dirinfo, unsigned int mode, MZTHEAD& mzthead,
 	this->bitmap[3] = ((temp + datacluster) / 256) & 255;
 	this->directory[select].startSector = (this->bitmap[1] + freespace) * (this->bitmap[255] + 1);
 	// ビットマップ更新
-	SetBitmap(freespace, static_cast<int>(dataSize));
+	SetBitmap(freespace, datacluster);
 	// ファイルをディスクイメージに転送
 	std::vector<unsigned char> writeBuffer;
 	int writeSector = (this->bitmap[1] + freespace) * this->clusterSize / this->sectorSize;
@@ -730,16 +730,63 @@ int MzDisk::DelFile(int dirindex)
 	{
 		return 1;
 	}
-	int start = this->directory[dirindex].startSector / (this->bitmap[255] + 1) - this->bitmap[1];
-	int size = (this->directory[dirindex].size + this->clusterSize - 1) / this->clusterSize;
-	DelBitmap(start, size);
+	if(this->directory[dirindex].mode == FILETYPE_BSD)
+	{
+		DelBsdFile(dirindex);
+	}
+	else if(this->directory[dirindex].mode == FILETYPE_BRD)
+	{
+		DelBrdFile(dirindex);
+	}
+	else
+	{
+		DelObjFile(dirindex);
+	}
 	this->directory[dirindex].mode = 0;
-	int temp = this->bitmap[2] + this->bitmap[3] * 256;
-	this->bitmap[2] = (temp - size) & 255;
-	this->bitmap[3] = ((temp - size) / 256) & 255;
 	// 管理情報をD88イメージに書き込み
 	FlushWrite();
 	return 0;
+}
+
+// BSDファイル削除
+void MzDisk::DelBsdFile(int dirindex)
+{
+	int sector = this->directory[dirindex].startSector;
+	while(sector > 0)
+	{
+		int start = sector / (this->bitmap[255] + 1) - this->bitmap[1];
+		DelBitmap(start, 1);
+		std::vector<unsigned char> buffer;
+		ReadSector(buffer, sector, 1);
+		sector = static_cast<int>(buffer[254]) + static_cast<int>(buffer[255]) * 256;
+	}
+}
+
+// BRDファイル削除
+void MzDisk::DelBrdFile(int dirindex)
+{
+	int sector = this->directory[dirindex].startSector;
+	std::vector<unsigned char> sectorListBuffer;
+	ReadSector(sectorListBuffer, sector, 1);
+	int start = sector / (this->bitmap[255] + 1) - this->bitmap[1];
+	DelBitmap(start, 1);
+	unsigned short* sectorList = reinterpret_cast<unsigned short*>(&sectorListBuffer[0]);
+	int sectorIndex = 0;
+	int size = 4096 / this->clusterSize;
+	while(sectorList[sectorIndex] > 0)
+	{
+		int start = sectorList[sectorIndex] / (this->bitmap[255] + 1) - this->bitmap[1];
+		DelBitmap(start, size);
+		++ sectorIndex;
+	}
+}
+
+// BTX or OBJファイル削除
+void MzDisk::DelObjFile(int dirindex)
+{
+	int start = this->directory[dirindex].startSector / (this->bitmap[255] + 1) - this->bitmap[1];
+	int size = (this->directory[dirindex].size + this->clusterSize - 1) / this->clusterSize;
+	DelBitmap(start, size);
 }
 
 //============================================================================
@@ -886,17 +933,13 @@ int MzDisk::PutBoot(std::string path, void* iplInfo, unsigned int mode, unsigned
 	ipl->signature[4] = 'R';
 	ipl->signature[5] = 'O';
 	int usedCluster = this->bitmap[2] + this->bitmap[3] * 256;
-	int dataCluster = (datasize / this->clusterSize);
-	if((datasize % this->clusterSize) != 0)
-	{
-		++ dataCluster;
-	}
+	int dataCluster = (datasize + this->clusterSize - 1) / this->clusterSize;
 	this->bitmap[2] = (usedCluster + dataCluster) & 255;
 	this->bitmap[3] = ((usedCluster + dataCluster) / 256) & 255;
 	ipl->startSector = (this->bitmap[1] + freeSpace) * (this->bitmap[255] + 1);
 	ipl->master = 0xFF; // マスターディスク
 	// ビットマップ更新
-	SetBitmap(freeSpace, datasize);
+	SetBitmap(freeSpace, dataCluster);
 	// IPLをディスクイメージに転送
 	WriteSector(iplBuffer, 0, 1);
 	// ファイルをディスクイメージに転送
@@ -998,13 +1041,8 @@ int MzDisk::GetBitmapSerial(int length)
 void MzDisk::SetBitmap(int start, int length)
 {
 	unsigned char* data;
-	int loop = length / this->clusterSize;
-	if((length % this->clusterSize) != 0)
-	{
-		loop += 1;
-	}
 	start += 48;
-	for(int i = start; i < (start + loop); ++ i)
+	for(int i = start; i < (start + length); ++ i)
 	{
 		data = &this->bitmap[i / 8];
 		*data |= (1 << (i % 8));
@@ -1022,13 +1060,8 @@ void MzDisk::SetBitmap(int start, int length)
 void MzDisk::DelBitmap(int start, int length)
 {
 	unsigned char* data;
-	int loop = length / this->clusterSize;
-	if((length % this->clusterSize) != 0)
-	{
-		loop += 1;
-	}
 	start += 48;
-	for(int i = start; i < (start + loop); ++ i)
+	for(int i = start; i < (start + length); ++ i)
 	{
 		data = &this->bitmap[i / 8];
 		*data &= (~(1 << (i % 8)));
@@ -1237,6 +1270,7 @@ void MzDisk::WriteUseSize(void)
 			++ size;
 		}
 	}
+	size += this->bitmap[1];
 	this->bitmap[2] = size % 256;
 	this->bitmap[3] = size / 256;
 }

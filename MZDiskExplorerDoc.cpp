@@ -620,7 +620,12 @@ int CMZDiskExplorerDoc::MakeFileList( int dirsector )
 			list->SetItem( &item );
 			// 開始セクタ
 			item.iSubItem = 7;
-			sprintf_s( work, sizeof(work), "%04X", dir.startSector );
+			sprintf_s( work, sizeof(work), "%d", dir.startSector );
+			item.pszText = work;
+			list->SetItem( &item );
+			// 開始トラック
+			item.iSubItem = 8;
+			sprintf_s( work, sizeof(work), "%d", dir.startTrack );
 			item.pszText = work;
 			list->SetItem( &item );
 			ItemToDirIndex[ itemindex ] = i;
