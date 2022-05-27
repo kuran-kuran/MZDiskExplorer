@@ -130,7 +130,7 @@ void CLeftView::OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult)
 	if ( select != -1 )
 	{
 		pDoc->MakeFileList( pDoc->DirSector[ select ] );
-		pDoc->MzDiskClass.SetDirSector( pDoc->DirSector[ select ] );
+		pDoc->MzDiskClass->SetDirSector( pDoc->DirSector[ select ] );
 	}
 	*pResult = 0;
 }

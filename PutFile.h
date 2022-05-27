@@ -6,7 +6,7 @@
 #endif // _MSC_VER > 1000
 // PutFile.h : ヘッダー ファイル
 //
-#include "mzdisk.h"
+#include "MzDisk/Disk.hpp"
 
 /////////////////////////////////////////////////////////////////////////////
 // cPutFile ダイアログ
@@ -29,7 +29,7 @@ public:
 	int Hour;
 	int Minute;
 	int FileType;
-	cMzDisk *MzDiskClass;
+	Disk *MzDiskClass;
 	cPutFile(CWnd* pParent = NULL);   // 標準のコンストラクタ
 
 // ダイアログ データ

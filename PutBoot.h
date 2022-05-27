@@ -6,7 +6,7 @@
 #endif // _MSC_VER > 1000
 // PutBoot.h : ヘッダー ファイル
 //
-#include "mzdisk.h"
+#include "MzDisk/Disk.hpp"
 
 /////////////////////////////////////////////////////////////////////////////
 // cPutBoot ダイアログ
@@ -20,7 +20,7 @@ public:
 	int FileType;
 	CString BootName;
 	CString DataPath;
-	cMzDisk *MzDiskClass;
+	Disk *MzDiskClass;
 	cPutBoot(CWnd* pParent = NULL);   // 標準のコンストラクタ
 
 // ダイアログ データ

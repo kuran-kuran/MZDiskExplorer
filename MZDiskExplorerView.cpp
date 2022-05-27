@@ -7,6 +7,9 @@
 #include "MZDiskExplorerDoc.h"
 #include "MZDiskExplorerView.h"
 #include "GetFile.h"
+#include "MzDisk/Disk.hpp"
+#include "MzDisk/MzDisk.hpp"
+#include "MzDisk/Mz80Disk.hpp"
 #include "path.h"
 
 #ifdef _DEBUG
@@ -159,51 +162,106 @@ void CMZDiskExplorerView::OnStyleChanged(int nStyleType, LPSTYLESTRUCT lpStyleSt
 void CMZDiskExplorerView::OnEditGetfile() 
 {
 	// TODO: この位置にコマンド ハンドラ用のコードを追加してください
-	DIRECTORY dir;
-	char savepath[ MAX_PATH ];
-	char filename[ 18 ];
-	char extname[ 18 ];
-	CString DataPath;
-	int i;
-	ZeroMemory( savepath, MAX_PATH );
-	// ファイル取り出し
-	CListCtrl &list = GetListCtrl();
 	CMZDiskExplorerDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
-	int select = -1;
-	int AllOk = 0;
-	char pathname[ 260 ];
-	CString cpathname;
-	cpathname = pDoc->GetPathName();
-	strcpy( pathname, cpathname.GetBuffer( 260 ) );
-	while ( 1 )
+	if(pDoc->MzDiskClass->DiskType() == Disk::MZ2000)
 	{
-		select = list.GetNextItem( select, LVNI_ALL | LVNI_SELECTED );
-		if ( -1 == select )
+		MzDisk::DIRECTORY dir;
+		char savepath[ MAX_PATH ];
+		char filename[ 18 ];
+		char extname[ 18 ];
+		CString DataPath;
+		int i;
+		ZeroMemory( savepath, MAX_PATH );
+		// ファイル取り出し
+		CListCtrl &list = GetListCtrl();
+		ASSERT_VALID(pDoc);
+		int select = -1;
+		int AllOk = 0;
+		char pathname[ 260 ];
+		CString cpathname;
+		cpathname = pDoc->GetPathName();
+		strcpy_s( pathname, sizeof(pathname), cpathname.GetBuffer( 260 ) );
+		while ( 1 )
 		{
-			break;
-		}
-		pDoc->MzDiskClass.GetDir( &dir, pDoc->ItemToDirIndex[ select ] );
-		ZeroMemory( filename, sizeof( filename ) );
-		ZeroMemory( extname, sizeof( extname ) );
-		strncpy( filename, dir.Filename, 17 );
-		for ( i=0; i<17; i++ ) {
-			if ( 0x0D == filename[ i ] ) {
-				filename[ i ] = 0;
+			select = list.GetNextItem( select, LVNI_ALL | LVNI_SELECTED );
+			if ( -1 == select )
+			{
+				break;
 			}
-			if ( '.' == filename[ i ] ) {
-				int j;
-				filename[ i ] = 0;
-				if ( i < 17 )
-				{
-					int k = 0;
-					for ( j = i + 1; j < 17; j ++ )
+			pDoc->MzDiskClass->GetDir( &dir, pDoc->ItemToDirIndex[ select ] );
+			ZeroMemory( filename, sizeof( filename ) );
+			ZeroMemory( extname, sizeof( extname ) );
+			strncpy_s( filename, sizeof(filename), dir.filename, 17 );
+			for ( i=0; i<17; i++ ) {
+				if ( 0x0D == filename[ i ] ) {
+					filename[ i ] = 0;
+				}
+				if ( '.' == filename[ i ] ) {
+					int j;
+					filename[ i ] = 0;
+					if ( i < 17 )
 					{
-						if ( 0x0D == filename[ j ] ) {
-							filename[ j ] = 0;
+						int k = 0;
+						for ( j = i + 1; j < 17; j ++ )
+						{
+							if ( 0x0D == filename[ j ] ) {
+								filename[ j ] = 0;
+							}
+							extname[ k ] = filename[ j ];
+							k ++;
 						}
-						extname[ k ] = filename[ j ];
-						k ++;
+					}
+				}
+			}
+		}
+	}
+	else if(pDoc->MzDiskClass->DiskType() == Disk::MZ80K_SP6010)
+	{
+		Mz80Disk::DIRECTORY dir;
+		char savepath[ MAX_PATH ];
+		char filename[ 18 ];
+		char extname[ 18 ];
+		CString DataPath;
+		int i;
+		ZeroMemory( savepath, MAX_PATH );
+		// ファイル取り出し
+		CListCtrl &list = GetListCtrl();
+		int select = -1;
+		int AllOk = 0;
+		char pathname[ 260 ];
+		CString cpathname;
+		cpathname = pDoc->GetPathName();
+		strcpy_s( pathname, sizeof(pathname), cpathname.GetBuffer( 260 ) );
+		while ( 1 )
+		{
+			select = list.GetNextItem( select, LVNI_ALL | LVNI_SELECTED );
+			if ( -1 == select )
+			{
+				break;
+			}
+			pDoc->MzDiskClass->GetDir( &dir, pDoc->ItemToDirIndex[ select ] );
+			ZeroMemory( filename, sizeof( filename ) );
+			ZeroMemory( extname, sizeof( extname ) );
+			strncpy_s( filename, sizeof(filename), dir.filename, 16 );
+			for ( i=0; i<17; i++ ) {
+				if ( 0x0D == filename[ i ] ) {
+					filename[ i ] = 0;
+				}
+				if ( '.' == filename[ i ] ) {
+					int j;
+					filename[ i ] = 0;
+					if ( i < 17 )
+					{
+						int k = 0;
+						for ( j = i + 1; j < 17; j ++ )
+						{
+							if ( 0x0D == filename[ j ] ) {
+								filename[ j ] = 0;
+							}
+							extname[ k ] = filename[ j ];
+							k ++;
+						}
 					}
 				}
 			}
@@ -214,15 +272,15 @@ void CMZDiskExplorerView::OnEditGetfile()
 		path.SetPath( pathname );
 		path.SetName( filename );
 		path.SetExtName( extname );
-		strcpy( getfiledialog.FileName, path.GetPath() );
-		getfiledialog.MzDiskClass = &pDoc->MzDiskClass;
+		strcpy_s( getfiledialog.FileName, sizeof(getfiledialog.FileName), path.GetPath() );
+		getfiledialog.MzDiskClass = pDoc->MzDiskClass;
 		getfiledialog.DirIndex = pDoc->ItemToDirIndex[ select ];
 		getfiledialog.SaveType = pDoc->SaveType;
 		getfiledialog.AllOk = AllOk;
 		getfiledialog.DoModal();
 		pDoc->SaveType = getfiledialog.SaveType;
 		AllOk = getfiledialog.AllOk;
-		strcpy( pathname, getfiledialog.FileName );
+		strcpy_s( pathname, sizeof(pathname), getfiledialog.FileName );
 	}
 }
 
@@ -245,10 +303,10 @@ void CMZDiskExplorerView::OnDropFiles(HDROP hDropInfo)
 		DragQueryFile(hDropInfo, i, cpathname.GetBuffer(uiLen + 1), uiLen + 1);
 		cpathname.ReleaseBuffer();
 		char pathname[260];
-		strcpy(pathname, cpathname.GetBuffer(260));
+		strcpy_s(pathname, sizeof(pathname), cpathname.GetBuffer(260));
 		cPath path;
 		path.SetPath(pathname);
-		if((stricmp(path.GetExtName(), "D88") == 0) && (stricmp(path.GetExtName(), "D88") == 0))
+		if((_stricmp(path.GetExtName(), "D88") == 0) && (_stricmp(path.GetExtName(), "D88") == 0))
 		{
 			CView::OnDropFiles(hDropInfo);
 			return;

@@ -1,4 +1,4 @@
-//Microsoft Developer Studio generated resource script.
+// Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
 
@@ -13,13 +13,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// 日本語 resources
+// 日本語 (日本) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_JPN)
-#ifdef _WIN32
 LANGUAGE LANG_JAPANESE, SUBLANG_DEFAULT
 #pragma code_page(932)
-#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -27,18 +25,18 @@ LANGUAGE LANG_JAPANESE, SUBLANG_DEFAULT
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE DISCARDABLE 
+1 TEXTINCLUDE 
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE DISCARDABLE 
+2 TEXTINCLUDE 
 BEGIN
     "#include ""afxres.h""\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE DISCARDABLE 
+3 TEXTINCLUDE 
 BEGIN
     "#define _AFX_NO_OLE_RESOURCES\r\n"
     "#define _AFX_NO_TRACKER_RESOURCES\r\n"
@@ -66,22 +64,25 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_MAINFRAME           ICON    DISCARDABLE     "res\\MZDiskExplorer.ico"
-IDR_MZDISKTYPE          ICON    DISCARDABLE     "res\\MZDiskExplorerDoc.ico"
+IDR_MAINFRAME           ICON                    "res\\MZDiskExplorer.ico"
+
+IDR_MZDISKTYPE          ICON                    "res\\MZDiskExplorerDoc.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Bitmap
 //
 
-IDR_MAINFRAME           BITMAP  MOVEABLE PURE   "res\\Toolbar.bmp"
+IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Toolbar
 //
 
-IDR_MAINFRAME TOOLBAR DISCARDABLE  16, 15
+IDR_MAINFRAME TOOLBAR 16, 15
 BEGIN
     BUTTON      ID_FILE_NEW
     BUTTON      ID_FILE_OPEN
@@ -110,37 +111,37 @@ END
 // Menu
 //
 
-IDR_MAINFRAME MENU PRELOAD DISCARDABLE 
+IDR_MAINFRAME MENU
 BEGIN
     POPUP "ﾌｧｲﾙ(&F)"
     BEGIN
-        MENUITEM "新規作成(&N)\tCtrl+N",        ID_FILE_NEW
-        MENUITEM "開く(&O)...\tCtrl+O",         ID_FILE_OPEN
-        MENUITEM "上書き保存(&S)\tCtrl+S",      ID_FILE_SAVE
-        MENUITEM "名前を付けて保存(&A)...",     ID_FILE_SAVE_AS
-        MENUITEM "ﾍﾞﾀﾃﾞｨｽｸｲﾒｰｼﾞ作成",           ID_FILE_EXPORT_BETA
+        MENUITEM "新規作成(&N)\tCtrl+N",            ID_FILE_NEW
+        MENUITEM "開く(&O)...\tCtrl+O",           ID_FILE_OPEN
+        MENUITEM "上書き保存(&S)\tCtrl+S",           ID_FILE_SAVE
+        MENUITEM "名前を付けて保存(&A)...",             ID_FILE_SAVE_AS
+        MENUITEM "ﾍﾞﾀﾃﾞｨｽｸｲﾒｰｼﾞ作成",             ID_FILE_EXPORT_BETA
         MENUITEM SEPARATOR
-        MENUITEM "印刷(&P)...\tCtrl+P",         ID_FILE_PRINT
-        MENUITEM "印刷ﾌﾟﾚﾋﾞｭｰ(&V)",             ID_FILE_PRINT_PREVIEW
-        MENUITEM "ﾌﾟﾘﾝﾀの設定(&R)...",          ID_FILE_PRINT_SETUP
+        MENUITEM "印刷(&P)...\tCtrl+P",           ID_FILE_PRINT
+        MENUITEM "印刷ﾌﾟﾚﾋﾞｭｰ(&V)",               ID_FILE_PRINT_PREVIEW
+        MENUITEM "ﾌﾟﾘﾝﾀの設定(&R)...",             ID_FILE_PRINT_SETUP
         MENUITEM SEPARATOR
-        MENUITEM "最近使ったﾌｧｲﾙ",              ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM "最近使ったﾌｧｲﾙ",                   ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
-        MENUITEM "ｱﾌﾟﾘｹｰｼｮﾝの終了(&X)",         ID_APP_EXIT
+        MENUITEM "ｱﾌﾟﾘｹｰｼｮﾝの終了(&X)",            ID_APP_EXIT
     END
     POPUP "編集(&E)"
     BEGIN
-        MENUITEM "元に戻す(&U)\tCtrl+Z",        ID_EDIT_UNDO
+        MENUITEM "元に戻す(&U)\tCtrl+Z",            ID_EDIT_UNDO
         MENUITEM SEPARATOR
-        MENUITEM "切り取り(&T)\tCtrl+X",        ID_EDIT_CUT
+        MENUITEM "切り取り(&T)\tCtrl+X",            ID_EDIT_CUT
         MENUITEM "ｺﾋﾟｰ(&C)\tCtrl+C",            ID_EDIT_COPY
-        MENUITEM "貼り付け(&P)\tCtrl+V",        ID_EDIT_PASTE
-        MENUITEM "ファイル取り出し",            ID_EDIT_GETFILE
-        MENUITEM "ファイル追加",                ID_EDIT_PUTFILE
-        MENUITEM "ﾌｧｲﾙ情報編集",                ID_EDIT_EDIT
-        MENUITEM "ﾌｧｲﾙ削除",                    ID_EDIT_DEL
-        MENUITEM "ﾌﾞｰﾄﾌﾟﾛｸﾞﾗﾑ取り出し",         ID_EDIT_GETBOOT
-        MENUITEM "ﾌﾞｰﾄﾌﾟﾛｸﾞﾗﾑ登録",             ID_EDIT_PUTBOOT
+        MENUITEM "貼り付け(&P)\tCtrl+V",            ID_EDIT_PASTE
+        MENUITEM "ファイル取り出し",                    ID_EDIT_GETFILE
+        MENUITEM "ファイル追加",                      ID_EDIT_PUTFILE
+        MENUITEM "ﾌｧｲﾙ情報編集",                    ID_EDIT_EDIT
+        MENUITEM "ﾌｧｲﾙ削除",                      ID_EDIT_DEL
+        MENUITEM "ﾌﾞｰﾄﾌﾟﾛｸﾞﾗﾑ取り出し",             ID_EDIT_GETBOOT
+        MENUITEM "ﾌﾞｰﾄﾌﾟﾛｸﾞﾗﾑ登録",               ID_EDIT_PUTBOOT
     END
     POPUP "表示(&V)"
     BEGIN
@@ -159,7 +160,7 @@ END
 // Accelerator
 //
 
-IDR_MAINFRAME ACCELERATORS PRELOAD MOVEABLE PURE 
+IDR_MAINFRAME ACCELERATORS
 BEGIN
     "N",            ID_FILE_NEW,            VIRTKEY, CONTROL
     "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL
@@ -183,20 +184,19 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 186, 56
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_ABOUTBOX DIALOG 0, 0, 186, 56
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "MZDiskExplorerのﾊﾞｰｼﾞｮﾝ情報"
 FONT 9, "ＭＳ Ｐゴシック"
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
-    LTEXT           "MZDiskExplorer Version 0.09",IDC_STATIC,40,10,86,8,
-                    SS_NOPREFIX
+    LTEXT           "MZDiskExplorer Version 0.09",IDC_STATIC,40,10,86,8,SS_NOPREFIX
     LTEXT           "Copyright (C) 2003-2009 by たご",IDC_STATIC,40,25,119,8
     DEFPUSHBUTTON   "OK",IDOK,129,35,50,14,WS_GROUP
 END
 
-IDD_GETFILE DIALOG DISCARDABLE  0, 0, 259, 79
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_GETFILE DIALOG 0, 0, 259, 79
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "ファイル取り出し"
 FONT 9, "ＭＳ Ｐゴシック"
 BEGIN
@@ -205,14 +205,13 @@ BEGIN
     EDITTEXT        IDC_PATH,10,21,220,13,ES_AUTOHSCROLL
     PUSHBUTTON      "参照",IDC_REF,235,20,19,13
     LTEXT           "ファイル形式",IDC_STATIC2,11,38,38,8
-    COMBOBOX        IDC_FILETYPE,10,47,56,45,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
+    COMBOBOX        IDC_FILETYPE,10,47,56,45,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "ｷｬﾝｾﾙ",IDCANCEL,202,58,50,14
     PUSHBUTTON      "すべて OK",IDALLOK,148,58,50,14
 END
 
-IDD_GETBOOT DIALOG DISCARDABLE  0, 0, 259, 79
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_GETBOOT DIALOG 0, 0, 259, 79
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "ブートファイル取り出し"
 FONT 9, "ＭＳ Ｐゴシック"
 BEGIN
@@ -222,12 +221,11 @@ BEGIN
     EDITTEXT        IDC_PATH,10,21,220,13,ES_AUTOHSCROLL
     PUSHBUTTON      "参照",IDC_REF,235,20,19,13
     LTEXT           "ファイル形式",IDC_STATIC2,11,38,38,8
-    COMBOBOX        IDC_FILETYPE,10,47,56,45,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
+    COMBOBOX        IDC_FILETYPE,10,47,56,45,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_PUTFILE DIALOG DISCARDABLE  0, 0, 187, 153
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_PUTFILE DIALOG 0, 0, 187, 153
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "ファイル追加"
 FONT 9, "ＭＳ Ｐゴシック"
 BEGIN
@@ -236,14 +234,11 @@ BEGIN
     LTEXT           "ファイル名",IDC_STATIC,11,11,31,8
     EDITTEXT        IDC_FILENAME,57,9,117,13,ES_AUTOHSCROLL
     LTEXT           "モード",IDC_STATIC,11,29,19,8
-    COMBOBOX        IDC_MODE,57,26,73,68,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
+    COMBOBOX        IDC_MODE,57,26,73,68,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "プロテクト",IDC_STATIC,11,46,30,8
-    COMBOBOX        IDC_ATTR,57,43,32,59,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
+    COMBOBOX        IDC_ATTR,57,43,32,59,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "ファイルサイズ",IDC_STATIC,11,64,44,8
-    EDITTEXT        IDC_FILESIZE,57,61,42,13,ES_AUTOHSCROLL | ES_READONLY | 
-                    ES_NUMBER
+    EDITTEXT        IDC_FILESIZE,57,61,42,13,ES_AUTOHSCROLL | ES_READONLY | ES_NUMBER
     LTEXT           "ロードアドレス",IDC_STATIC,11,81,41,8
     EDITTEXT        IDC_LOADADR,57,79,42,13,ES_AUTOHSCROLL
     LTEXT           "実行アドレス",IDC_STATIC,11,98,38,8
@@ -259,36 +254,34 @@ BEGIN
     LTEXT           "/",IDC_STATIC,99,115,8,8
 END
 
-IDD_PUTBOOT DIALOG DISCARDABLE  0, 0, 187, 87
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_PUTBOOT DIALOGEX 0, 0, 187, 87
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "ブートプログラム登録"
-FONT 9, "ＭＳ Ｐゴシック"
+FONT 9, "ＭＳ Ｐゴシック", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,76,66,50,14
     PUSHBUTTON      "ｷｬﾝｾﾙ",IDCANCEL,130,66,50,14
     LTEXT           "起動時の表示",IDC_STATIC,11,11,42,8
     EDITTEXT        IDC_BOOTNAME,57,9,117,13,ES_AUTOHSCROLL
     LTEXT           "機種",IDC_STATIC,11,28,15,8
-    COMBOBOX        IDC_MACHINE,57,26,118,53,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
+    COMBOBOX        IDC_MACHINE,57,26,118,53,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "実行アドレス",IDC_STATIC,11,45,38,8
     EDITTEXT        IDC_RUNADR,57,43,42,13,ES_AUTOHSCROLL
 END
 
-IDD_NEWDISK DIALOG DISCARDABLE  0, 0, 155, 60
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_NEWDISK DIALOGEX 0, 0, 155, 60
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "新規ディスク作成"
-FONT 9, "ＭＳ Ｐゴシック"
+FONT 9, "ＭＳ Ｐゴシック", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,42,39,50,14
     PUSHBUTTON      "ｷｬﾝｾﾙ",IDCANCEL,98,39,50,14
-    COMBOBOX        IDC_DISKTYPE,7,18,142,51,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
+    COMBOBOX        IDC_DISKTYPE,7,18,142,51,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "ディスクの種類",IDC_STATIC,7,7,45,8
 END
 
-IDD_FILEINFO DIALOG DISCARDABLE  0, 0, 187, 153
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_FILEINFO DIALOG 0, 0, 187, 153
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "ファイル情報"
 FONT 9, "ＭＳ Ｐゴシック"
 BEGIN
@@ -297,14 +290,11 @@ BEGIN
     LTEXT           "ファイル名",IDC_STATIC,11,11,31,8
     EDITTEXT        IDC_FILENAME,57,9,117,13,ES_AUTOHSCROLL
     LTEXT           "モード",IDC_STATIC,11,29,19,8
-    COMBOBOX        IDC_MODE,57,26,73,68,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
+    COMBOBOX        IDC_MODE,57,26,73,68,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "プロテクト",IDC_STATIC,11,46,30,8
-    COMBOBOX        IDC_ATTR,57,43,32,59,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
+    COMBOBOX        IDC_ATTR,57,43,32,59,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "ファイルサイズ",IDC_STATIC,11,64,44,8
-    EDITTEXT        IDC_FILESIZE,57,61,42,13,ES_AUTOHSCROLL | ES_READONLY | 
-                    ES_NUMBER
+    EDITTEXT        IDC_FILESIZE,57,61,42,13,ES_AUTOHSCROLL | ES_READONLY | ES_NUMBER
     LTEXT           "ロードアドレス",IDC_STATIC,11,81,41,8
     EDITTEXT        IDC_LOADADR,57,79,42,13,ES_AUTOHSCROLL
     LTEXT           "実行アドレス",IDC_STATIC,11,98,38,8
@@ -321,7 +311,6 @@ BEGIN
 END
 
 
-#ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
@@ -344,13 +333,13 @@ BEGIN
     BEGIN
         BLOCK "041104b0"
         BEGIN
-            VALUE "FileDescription", "MZDiskExplorer\0"
-            VALUE "FileVersion", "0.09\0"
-            VALUE "InternalName", "MZDiskExplorer\0"
-            VALUE "LegalCopyright", "Copyright (C) 2003-2021 by kuran_kuran\0"
-            VALUE "OriginalFilename", "MZDiskExplorer.exe\0"
-            VALUE "ProductName", "MZDiskExplorer\0"
-            VALUE "ProductVersion", "0.09\0"
+            VALUE "FileDescription", "MZDiskExplorer"
+            VALUE "FileVersion", "0.09"
+            VALUE "InternalName", "MZDiskExplorer"
+            VALUE "LegalCopyright", "Copyright (C) 2003-2021 by kuran_kuran"
+            VALUE "OriginalFilename", "MZDiskExplorer.exe"
+            VALUE "ProductName", "MZDiskExplorer"
+            VALUE "ProductVersion", "0.09"
         END
     END
     BLOCK "VarFileInfo"
@@ -359,8 +348,6 @@ BEGIN
     END
 END
 
-#endif    // !_MAC
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -368,7 +355,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO DISCARDABLE 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
@@ -460,12 +447,13 @@ BEGIN
     IDC_MACHINE, 0x403, 26, 0
 0x3130, 0x2068, 0x5a4d, 0x382d, 0x4230, 0x322f, 0x3030, 0x2f30, 0x3232, 
 0x3030, 0x322f, 0x3035, 0x0030, 
-    IDC_MACHINE, 0x403, 4, 0
-0x3230, 0x0068, 
+    IDC_MACHINE, 0x403, 11, 0
+0x3230, 0x2068, 0x5a4d, 0x382d, 0x4130, "\000" 
     IDC_MACHINE, 0x403, 16, 0
 0x3330, 0x2068, 0x5a4d, 0x372d, 0x3030, 0x312f, 0x3035, 0x0030, 
-    IDC_MACHINE, 0x403, 4, 0
-0x3430, 0x0068, 
+    IDC_MACHINE, 0x403, 26, 0
+0x3430, 0x2068, 0x5a4d, 0x322d, 0x3035, 0x8330, 0x8166, 0x835b, 0x835e, 
+0x8366, 0x8342, 0x8358, 0x004e, 
     IDC_MACHINE, 0x403, 4, 0
 0x3530, 0x0068, 
     IDC_MACHINE, 0x403, 4, 0
@@ -480,15 +468,21 @@ BEGIN
     IDC_DISKTYPE, 0x403, 34, 0
 0x5a4d, 0x322d, 0x3035, 0x2030, 0x4432, 0x2044, 0x3128, 0x3036, 0x6783, 
 0x8983, 0x6283, 0x4e83, 0x3631, 0x5a83, 0x4e83, 0x5e83, 0x0029, 
-    IDC_DISKTYPE, 0x403, 32, 0
-0x5a4d, 0x322d, 0x3035, 0x2030, 0x4432, 0x2820, 0x3038, 0x6783, 0x8983, 
-0x6283, 0x4e83, 0x3631, 0x5a83, 0x4e83, 0x5e83, 0x0029, 
-    IDC_DISKTYPE, 0x403, 32, 0
-0x5a4d, 0x322d, 0x3035, 0x2030, 0x4432, 0x2820, 0x3037, 0x6783, 0x8983, 
-0x6283, 0x4e83, 0x3631, 0x5a83, 0x4e83, 0x5e83, 0x0029, 
+    IDC_DISKTYPE, 0x403, 33, 0
+0x5a4d, 0x322d, 0x3035, 0x2030, 0x4432, 0x2044, 0x3828, 0x8330, 0x8367, 
+0x8389, 0x8362, 0x314e, 0x8336, 0x835a, 0x834e, 0x295e, "\000" 
+    IDC_DISKTYPE, 0x403, 33, 0
+0x5a4d, 0x322d, 0x3035, 0x2030, 0x4432, 0x2044, 0x3728, 0x8330, 0x8367, 
+0x8389, 0x8362, 0x314e, 0x8336, 0x835a, 0x834e, 0x295e, "\000" 
+    IDC_DISKTYPE, 0x403, 31, 0
+0x5a4d, 0x382d, 0x4230, 0x3220, 0x2044, 0x3728, 0x8330, 0x8367, 0x8389, 
+0x8362, 0x314e, 0x8336, 0x835a, 0x834e, 0x295e, "\000" 
     IDC_DISKTYPE, 0x403, 32, 0
 0x5a4d, 0x322d, 0x3030, 0x2030, 0x4432, 0x2820, 0x3037, 0x6783, 0x8983, 
 0x6283, 0x4e83, 0x3631, 0x5a83, 0x4e83, 0x5e83, 0x0029, 
+    IDC_DISKTYPE, 0x403, 31, 0
+0x5a4d, 0x382d, 0x4b30, 0x3220, 0x2053, 0x3728, 0x8330, 0x8367, 0x8389, 
+0x8362, 0x314e, 0x8336, 0x835a, 0x834e, 0x295e, "\000" 
     0
 END
 
@@ -514,21 +508,37 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_NEWDISK AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_PUTBOOT AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // String Table
 //
 
-STRINGTABLE PRELOAD DISCARDABLE 
+STRINGTABLE
 BEGIN
     IDR_MAINFRAME           "MZDiskExplorer\n\nMZDisk\nMZDisk ﾌｧｲﾙ (*.d88)\n.d88\nMZDiskExplorer.Document\nMZDisk Document"
 END
 
-STRINGTABLE PRELOAD DISCARDABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_APP_TITLE       "MZDiskExplorer"
     ID_STATUSBAR            " "
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_INDICATOR_EXT        "EXT"
     ID_INDICATOR_CAPS       "CAP"
@@ -540,7 +550,7 @@ BEGIN
     ID_INDICATOR_SIZE       "                                 "
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_FILE_NEW             "新規にﾌｧｲﾙを作成\n新規ﾌｧｲﾙ"
     ID_FILE_OPEN            "既存のﾌｧｲﾙを開く\n開く"
@@ -553,13 +563,13 @@ BEGIN
     ID_FILE_PRINT_PREVIEW   "印刷ｲﾒｰｼﾞを表示\n印刷ﾌﾟﾚﾋﾞｭｰ"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_APP_ABOUT            "ﾌﾟﾛｸﾞﾗﾑの情報、ﾊﾞｰｼﾞｮﾝそして著作権を表示\nﾊﾞｰｼﾞｮﾝ情報"
     ID_APP_EXIT             "ｱﾌﾟﾘｹｰｼｮﾝを終了し、ﾌｧｲﾙの保存を指示\n終了"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_FILE_MRU_FILE1       "指定のﾌｧｲﾙを開く"
     ID_FILE_MRU_FILE2       "指定のﾌｧｲﾙを開く"
@@ -579,18 +589,18 @@ BEGIN
     ID_FILE_MRU_FILE16      "指定のﾌｧｲﾙを開く"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_NEXT_PANE            "次のｳｨﾝﾄﾞｳに切り替える\n次のﾍﾟｲﾝ"
     ID_PREV_PANE            "前のｳｨﾝﾄﾞｳに切り替える\n前のﾍﾟｲﾝ"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_WINDOW_SPLIT         "作業中のｳｨﾝﾄﾞｳを分割\n分割"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_EDIT_CLEAR           "選択範囲を消去\n消去"
     ID_EDIT_CLEAR_ALL       "すべて消去\nすべて消去"
@@ -605,14 +615,14 @@ BEGIN
     ID_EDIT_REDO            "直前に行った動作を繰り返す\n繰り返す"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_VIEW_TOOLBAR         "ﾂｰﾙ ﾊﾞｰの 表示/非表示\nﾂｰﾙ ﾊﾞｰの表示切り替え"
     ID_VIEW_STATUS_BAR      "ｽﾃｰﾀｽ ﾊﾞｰの 表示/非表示\nｽﾃｰﾀｽ ﾊﾞｰの表示切り替え"
     ID_VIEW_AUTOARRANGE     "ｱｲｺﾝを自動的に整列します。"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_SCSIZE          "ｳｨﾝﾄﾞｳのｻｲｽﾞを変更"
     AFX_IDS_SCMOVE          "ｳｨﾝﾄﾞｳの位置を変更"
@@ -623,18 +633,18 @@ BEGIN
     AFX_IDS_SCCLOSE         "作業中のｳｨﾝﾄﾞｳを閉じ、変更したﾌｧｲﾙの保存を指示"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_SCRESTORE       "ｳｨﾝﾄﾞｳを通常のｻｲｽﾞに戻す"
     AFX_IDS_SCTASKLIST      "ｱﾌﾟﾘｹｰｼｮﾝの切り替え"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     AFX_IDS_PREVIEW_CLOSE   "印刷ﾌﾟﾚﾋﾞｭｰ ﾓｰﾄﾞの終わり\nﾌﾟﾚﾋﾞｭｰのｷｬﾝｾﾙ"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_VIEW_SMALLICON       "ｵﾌﾞｼﾞｪｸﾄを小さいｱｲｺﾝで表示します。\n小さいｱｲｺﾝ"
     ID_VIEW_LARGEICON       "ｵﾌﾞｼﾞｪｸﾄを大きいｱｲｺﾝで表示します。\n大きいｱｲｺﾝ"
@@ -644,7 +654,7 @@ BEGIN
     ID_VIEW_BYNAME          "ｱｲｺﾝを名前順に並べ替えます。"
 END
 
-STRINGTABLE DISCARDABLE 
+STRINGTABLE
 BEGIN
     ID_EDIT_GETFILE         "選択したファイルを取り出す"
     ID_EDIT_EXPORT          "ディスクイメージからファイルを取り出す"
@@ -657,7 +667,7 @@ BEGIN
     ID_EXPORT_BETA          "ベタディスクイメージを作成する"
 END
 
-#endif    // 日本語 resources
+#endif    // 日本語 (日本) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

@@ -5,7 +5,7 @@
 #include "MZDiskExplorer.h"
 #include "GetFile.h"
 #include "path.h"
-#include "mzdisk.h"
+#include "MzDisk/Disk.hpp"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -60,7 +60,7 @@ BOOL cGetFile::OnInitDialog()
 	ZeroMemory( ExtName, sizeof( ExtName ) );
 	if ( path.GetExtName() != 0 )
 	{
-		strcpy( ExtName, path.GetExtName() );
+		strcpy_s( ExtName, sizeof(ExtName), path.GetExtName() );
 	}
 	if ( 0 == SaveType )
 	{
@@ -73,7 +73,7 @@ BOOL cGetFile::OnInitDialog()
 	m_Path.SetSel( 0, -1, FALSE );
 	m_Path.Clear();
 	m_Path.ReplaceSel( path.GetPath(), FALSE );
-	strcpy( FileName, path.GetPath() );
+	strcpy_s( FileName, sizeof(FileName), path.GetPath() );
 	if ( 1 == AllOk )
 	{
 		OnOK();
@@ -115,7 +115,7 @@ void cGetFile::OnRef()
 		datapath = SelFile.GetPathName();
 	}
 	memset( savepath, 0, MAX_PATH );
-	strcpy( savepath, datapath.GetBuffer( MAX_PATH ) );
+	strcpy_s( savepath, sizeof(savepath), datapath.GetBuffer( MAX_PATH ) );
 	m_Path.SetSel( 0, -1, FALSE );
 	m_Path.Clear();
 	m_Path.ReplaceSel( datapath, FALSE );
@@ -125,7 +125,7 @@ void cGetFile::OnRef()
 
 void cGetFile::SetFile(char *filename)
 {
-	strcpy( FileName, filename );
+	strcpy_s( FileName, sizeof(FileName), filename );
 }
 
 void cGetFile::OnSelchangeFiletype() 
@@ -167,11 +167,11 @@ void cGetFile::OnOK()
 	select = m_FileType.GetCurSel();
 	if ( 0 == select )
 	{
-		MzDiskClass->GetFile( DirIndex, FileName, MZDISK_FILEMODE_BIN );
+		MzDiskClass->GetFile( DirIndex, FileName, Disk::FILEMODE_BIN );
 	}
 	else
 	{
-		MzDiskClass->GetFile( DirIndex, FileName, MZDISK_FILEMODE_MZT );
+		MzDiskClass->GetFile( DirIndex, FileName, Disk::FILEMODE_MZT );
 	}
 	CDialog::OnOK();
 }
