@@ -77,7 +77,6 @@ public:
 	int GetClusterSize(void);
 	void DisplayDir(void);
 private:
-	D88Image image;
 	unsigned char diskType;
 	std::vector<unsigned char> bitmap;
 	std::vector<DIRECTORY> directory;

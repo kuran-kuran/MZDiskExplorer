@@ -207,13 +207,12 @@ void CMZDiskExplorerDoc::Serialize(CArchive& ar)
 	{
 		// TODO: この位置に読み込み用のコードを追加してください。
 		CFile *file;
-		CString filepath;
 		cPath path;
 		// イメージファイル読み込み
 		file = ar.GetFile();
 		ar.Flush();
-		filepath = file->GetFilePath();
-		path.SetPath( filepath.GetBuffer( 260 ) );
+		FilePath = file->GetFilePath();
+		path.SetPath( FilePath.GetBuffer( 260 ) );
 		if ( ( 0 == _stricmp( path.GetExtName(), "d88" ) ) ||
 			 ( 0 == _stricmp( path.GetExtName(), "d20" ) ) )
 		{
@@ -1053,8 +1052,7 @@ void CMZDiskExplorerDoc::OnUpdateFileExportBeta(CCmdUI* pCmdUI)
 	// TODO: この位置に command update UI ハンドラ用のコードを追加してください
 	if ( 1 == ImageInit )
 	{
-//		pCmdUI->Enable( TRUE );
-		pCmdUI->Enable( FALSE );
+		pCmdUI->Enable( TRUE );
 	}
 	else
 	{
@@ -1065,5 +1063,15 @@ void CMZDiskExplorerDoc::OnUpdateFileExportBeta(CCmdUI* pCmdUI)
 void CMZDiskExplorerDoc::OnFileExportBeta() 
 {
 	// TODO: この位置にコマンド ハンドラ用のコードを追加してください
-	
+	cPath path;
+	path.SetPath(FilePath.GetBuffer(260));
+	path.SetExtName("beta");
+	CFileDialog SelFile( TRUE, "beta", path.GetPath(), OFN_HIDEREADONLY, "BETA file|*.beta|全てのファイル|*.*||" );
+	if ( IDCANCEL == SelFile.DoModal() )
+	{
+		return;
+	}
+	CString datapath = SelFile.GetPathName();
+	MzDiskClass->ExportBeta(datapath.GetBuffer(260));
+	MessageBox(NULL, "betaイメージの作成が完了しました", "betaイメージ", MB_OK);
 }

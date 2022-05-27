@@ -23,6 +23,7 @@ public:
 	~Disk();
 	static int DiskType(std::string path);
 	static int DiskType(const std::vector<unsigned char>& buffer);
+	void ExportBeta(std::string path);
 	virtual int DiskType(void) = 0;
 	virtual std::string DiskTypeText(void) = 0;
 	virtual void Format(int type) = 0;
@@ -50,6 +51,7 @@ public:
 	virtual void DelBitmap(int start, int length) = 0;
 protected:
 	void ReverseBuffer(std::vector<unsigned char>& buffer);
+	D88Image image;
 private:
 	static int DiskType(D88Image& image);
 };

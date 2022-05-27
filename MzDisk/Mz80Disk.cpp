@@ -11,8 +11,7 @@
 // コンストラクタ
 //============================================================================
 Mz80Disk::Mz80Disk()
-:image()
-,diskType(0)
+:diskType(0)
 ,bitmap(NULL)
 ,fileType(0)
 ,sectorSize(128)
@@ -898,7 +897,7 @@ void Mz80Disk::FlushWrite(void)
 	std::vector<unsigned char> writeBuffer;
 	// ビットマップ書き込み
 	std::copy(this->bitmap.begin(), this->bitmap.end(), std::back_inserter(writeBuffer));
-	WriteSector(writeBuffer, 15, 1);
+	WriteSector(writeBuffer, 14, 2);
 	// ディレクトリ書き込み
 	WriteDirectory();
 }

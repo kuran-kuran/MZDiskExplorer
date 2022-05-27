@@ -121,9 +121,6 @@ BEGIN
         MENUITEM "–¼‘O‚ð•t‚¯‚Ä•Û‘¶(&A)...",             ID_FILE_SAVE_AS
         MENUITEM "ÍÞÀÃÞ¨½¸²Ò°¼Þì¬",             ID_FILE_EXPORT_BETA
         MENUITEM SEPARATOR
-        MENUITEM "ˆóü(&P)...\tCtrl+P",           ID_FILE_PRINT
-        MENUITEM "ˆóüÌßÚËÞ­°(&V)",               ID_FILE_PRINT_PREVIEW
-        MENUITEM "ÌßØÝÀ‚ÌÝ’è(&R)...",             ID_FILE_PRINT_SETUP
         MENUITEM SEPARATOR
         MENUITEM "Å‹ßŽg‚Á‚½Ì§²Ù",                   ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR

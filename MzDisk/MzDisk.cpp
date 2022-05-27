@@ -11,8 +11,7 @@
 // コンストラクタ
 //============================================================================
 MzDisk::MzDisk()
-:image()
-,diskType(0)
+:diskType(0)
 ,bitmap(NULL)
 ,fileType(0)
 ,clusterSize(0)

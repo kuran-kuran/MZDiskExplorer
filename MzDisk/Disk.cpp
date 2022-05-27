@@ -6,6 +6,7 @@
 #include "Disk.hpp"
 
 Disk::Disk()
+:image()
 {
 }
 
@@ -54,6 +55,51 @@ int Disk::DiskType(D88Image& image)
 		diskType = MZ2000;
 	}
 	return diskType;
+}
+
+void Disk::ExportBeta(std::string path)
+{
+	int diskType = DiskType();
+	D88Image::Header header;
+	this->image.GetHeader(header);
+	int trackMax = -1;
+	for(int i = 0; i < D88Image::TRACK_MAX; ++ i)
+	{
+		if(header.trackTable[i] == 0)
+		{
+			trackMax = i;
+			break;
+		}
+	}
+	if(trackMax <= 0)
+	{
+		return;
+	}
+	int cylinderMax = trackMax / 2;
+	D88Image::SectorInfo sectorInfo;
+	std::vector<unsigned char> sectorBuffer;
+	_unlink(path.c_str());
+	for(int c = 0; c < cylinderMax; ++ c)
+	{
+		for(int h = 0; h < 2; ++ h)
+		{
+			for(int r = 1; r <= 16; ++ r)
+			{
+				if(diskType == Disk::MZ2000)
+				{
+					this->image.ReadSector(sectorInfo, sectorBuffer, c, 1 - h, r);
+					ReverseBuffer(sectorBuffer);
+				}
+				else
+				{
+					this->image.ReadSector(sectorInfo, sectorBuffer, c, h, r);
+				}
+				dms::FileData file;
+				file.SetBuffer(&sectorBuffer[0], sectorBuffer.size());
+				file.SaveAdd(path.c_str());
+			}
+		}
+	}
 }
 
 void Disk::ReverseBuffer(std::vector<unsigned char>& buffer)

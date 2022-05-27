@@ -103,7 +103,6 @@ public:
 	void DelBitmap(int start, int length);
 //	void DisplayDir(void);
 private:
-	D88Image image;
 	unsigned char diskType;
 	std::vector<unsigned char> bitmap;
 	std::vector<DIRECTORY> directory;

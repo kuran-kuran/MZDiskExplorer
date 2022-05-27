@@ -44,6 +44,7 @@ public:
 	Disk* MzDiskClass;
 	int SaveType;
 	int Machine;
+	CString FilePath;
 	virtual ~CMZDiskExplorerDoc();
 	int MakeFileList( int dirsector );
 	int MakeTree( int dirsector, HTREEITEM parenthandle );
