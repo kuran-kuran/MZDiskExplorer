@@ -899,7 +899,8 @@ void CMZDiskExplorerDoc::OnEditPutboot()
 	if ( 0 == _stricmp( path.GetExtName(), "MZT" ) )
 	{
 		MzDisk::MZTHEAD mzthead;
-		char filename[ 17 ];
+		char filename[ 18 ];
+		ZeroMemory(filename, sizeof(filename));
 		int i;
 		file.Read( &mzthead, 128 );
 		strncpy_s( filename, sizeof(filename), mzthead.filename, 17 );
