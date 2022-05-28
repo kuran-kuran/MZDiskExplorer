@@ -80,6 +80,7 @@ void cPutBoot::OnOK()
 		BootName = temp;
 		Machine = m_Machine.GetCurSel();
 		m_RunAdr.SetSel( 0, -1, FALSE );
+		ZeroMemory( temp, sizeof( temp ) );
 		size = m_RunAdr.GetLine( 0, temp, 260 );
 		temp[size] = '\0';
 		RunAdr = (unsigned short)strtol( temp, &temp2, 16 );

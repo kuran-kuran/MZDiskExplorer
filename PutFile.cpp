@@ -114,14 +114,17 @@ void cPutFile::OnOK()
 			Attr |= 0x80;
 		}
 		m_FileSize.SetSel( 0, -1, FALSE );
+		ZeroMemory( temp, sizeof( temp ) );
 		size = m_FileSize.GetLine( 0, temp, 260 );
 		temp[size] = '\0';
 		FileSize = atoi( temp );
 		m_LoadAdr.SetSel( 0, -1, FALSE );
 		temp[size] = '\0';
+		ZeroMemory( temp, sizeof( temp ) );
 		size = m_LoadAdr.GetLine( 0, temp, 260 );
 		LoadAdr = (unsigned short)strtol( temp, &temp2, 16 );
 		m_RunAdr.SetSel( 0, -1, FALSE );
+		ZeroMemory( temp, sizeof( temp ) );
 		size = m_RunAdr.GetLine( 0, temp, 260 );
 		temp[size] = '\0';
 		size = RunAdr = (unsigned short)strtol( temp, &temp2, 16 );
@@ -211,14 +214,17 @@ void cPutFile::OnOK()
 			Attr |= 0x80;
 		}
 		m_FileSize.SetSel( 0, -1, FALSE );
+		ZeroMemory( temp, sizeof( temp ) );
 		size = m_FileSize.GetLine( 0, temp, 260 );
 		temp[size] = '\0';
 		FileSize = atoi( temp );
 		m_LoadAdr.SetSel( 0, -1, FALSE );
 		temp[size] = '\0';
+		ZeroMemory( temp, sizeof( temp ) );
 		size = m_LoadAdr.GetLine( 0, temp, 260 );
 		LoadAdr = (unsigned short)strtol( temp, &temp2, 16 );
 		m_RunAdr.SetSel( 0, -1, FALSE );
+		ZeroMemory( temp, sizeof( temp ) );
 		size = m_RunAdr.GetLine( 0, temp, 260 );
 		temp[size] = '\0';
 		size = RunAdr = (unsigned short)strtol( temp, &temp2, 16 );

@@ -427,7 +427,6 @@ bool Mz80Disk::PutFileData(DIRECTORY *dirinfo, unsigned int mode, MZTHEAD& mzthe
 		}
 		source += (static_cast<size_t>(this->sectorSize) - 2);
 		before = sector;
-		++ sector;
 	}
 	return true;
 }
@@ -451,7 +450,7 @@ int Mz80Disk::DelFile(int dirindex)
 		DelBitmap(start, 1);
 		std::vector<unsigned char> buffer;
 		ReadSector(buffer, sector, 1);
-		sector = static_cast<int>(buffer[254]) * 16 + static_cast<int>(buffer[255]) - 1;
+		sector = static_cast<int>(buffer[this->sectorSize - 2]) * 16 + static_cast<int>(buffer[this->sectorSize - 1]) - 1;
 	}
 	this->directory[dirindex].mode = 0;
 	// 管理情報をD88イメージに書き込み
@@ -564,7 +563,7 @@ int Mz80Disk::PutBoot(std::string path, void* iplInfo, unsigned int mode, unsign
 	bufferFile.resize(fileBufferSize, 0);
 	fread(&bufferFile[0], 1, datasize, fp);
 	fclose(fp);
-	WriteSector(bufferFile, 0, sectorSize);
+	WriteSector(bufferFile, 0, fileSectorCount);
 	FlushWrite();
 	return 0;
 }
@@ -880,7 +879,7 @@ void Mz80Disk::WriteUseSize(void)
 {
 	int size = 0;
 	int end = 35 * 2 * 16 - 64; // 35シリンダ2ヘッド16セクタ(1120) - データ開始セクタ(64) = 1056
-	for(int i = 40; i < end; ++ i)
+	for(int i = 32; i < end; ++ i)
 	{
 		unsigned char bit = (this->bitmap[i / 8] >> (i % 8)) & 1;
 		if(bit == 1)

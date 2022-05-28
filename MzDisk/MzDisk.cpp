@@ -620,7 +620,7 @@ bool MzDisk::PutBrdFile(DIRECTORY *dirinfo, unsigned int mode, MZTHEAD& mzthead,
 	this->bitmap[ 3 ] = ((temp + datacluster) / 256) & 255;
 	// ファイルをディスクイメージに転送
 	int cluster = GetBitmapSerial(256);
-	this->directory[select].startSector = (this->bitmap[1] + cluster) * this->clusterSize / 256;
+	this->directory[select].startSector = (this->bitmap[1] + cluster) * this->clusterSize / this->sectorSize;
 	SetBitmap(cluster, 1);
 	std::vector<unsigned short> sectorList;
 	std::vector<unsigned char> writeBuffer;

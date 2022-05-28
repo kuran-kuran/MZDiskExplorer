@@ -119,6 +119,7 @@ void cGetFile::OnRef()
 	m_Path.SetSel( 0, -1, FALSE );
 	m_Path.Clear();
 	m_Path.ReplaceSel( datapath, FALSE );
+	ZeroMemory(FileName, sizeof(FileName));
 	size = m_Path.GetLine( 0, FileName, 260 );
 	FileName[size] = '\0';
 }
@@ -159,8 +160,8 @@ void cGetFile::OnSelchangeFiletype()
 void cGetFile::OnOK() 
 {
 	// TODO: この位置にその他の検証用のコードを追加してください
-	ZeroMemory( FileName, sizeof( FileName ) );
 	m_Path.SetSel( 0, -1, FALSE );
+	ZeroMemory( FileName, sizeof( FileName ) );
 	int size = m_Path.GetLine( 0, FileName, 260 );
 	FileName[size] = '\0';
 	int select;
