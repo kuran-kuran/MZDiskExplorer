@@ -4,6 +4,8 @@
 #include "stdafx.h"
 #include "MZDiskExplorer.h"
 #include "PutFile.h"
+#include "MzDisk/MzDisk.hpp"
+#include "MzDisk/Mz80Disk.hpp"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -62,30 +64,30 @@ BOOL cPutFile::OnInitDialog()
 	m_Attr.SetCurSel( Attr & 1 );
 	m_FileSize.SetSel( 0, -1, FALSE );
 	m_FileSize.Clear();
-	sprintf( temp, "%d", FileSize );
+	sprintf_s( temp, sizeof(temp), "%d", FileSize );
 	m_FileSize.ReplaceSel( temp );
 	m_LoadAdr.SetSel( 0, -1, FALSE );
 	m_LoadAdr.Clear();
-	sprintf( temp, "%04X", LoadAdr );
+	sprintf_s( temp, sizeof(temp), "%04X", LoadAdr );
 	m_LoadAdr.ReplaceSel( temp );
 	m_RunAdr.SetSel( 0, -1, FALSE );
 	m_RunAdr.Clear();
-	sprintf( temp, "%04X", RunAdr );
+	sprintf_s( temp, sizeof(temp), "%04X", RunAdr );
 	m_RunAdr.ReplaceSel( temp );
 	m_Year.Clear();
-	sprintf( temp, "%02d", Year );
+	sprintf_s( temp, sizeof(temp), "%02d", Year );
 	m_Year.ReplaceSel( temp );
 	m_Month.Clear();
-	sprintf( temp, "%02d", Month );
+	sprintf_s( temp, sizeof(temp), "%02d", Month );
 	m_Month.ReplaceSel( temp );
 	m_Day.Clear();
-	sprintf( temp, "%02d", Day );
+	sprintf_s( temp, sizeof(temp), "%02d", Day );
 	m_Day.ReplaceSel( temp );
 	m_Hour.Clear();
-	sprintf( temp, "%02d", Hour );
+	sprintf_s( temp, sizeof(temp), "%02d", Hour );
 	m_Hour.ReplaceSel( temp );
 	m_Minute.Clear();
-	sprintf( temp, "%02d", Minute );
+	sprintf_s( temp, sizeof(temp), "%02d", Minute );
 	m_Minute.ReplaceSel( temp );
 	return TRUE;  // コントロールにフォーカスを設定しないとき、戻り値は TRUE となります
 	              // 例外: OCX プロパティ ページの戻り値は FALSE となります
@@ -94,88 +96,194 @@ BOOL cPutFile::OnInitDialog()
 void cPutFile::OnOK() 
 {
 	// TODO: この位置にその他の検証用のコードを追加してください
-	DIRECTORY dir;
-	int i;
-	char temp[ 260 ];
-	char *temp2;
-	int mode = 0;
-	m_FileName.SetSel( 0, -1, FALSE );
-	ZeroMemory( temp, sizeof( temp ) );
-	m_FileName.GetLine( 0, temp, 16 );
-	FileName = temp;
-	Mode = m_Mode.GetCurSel() + 1;
-	if( 1 == m_Attr.GetCurSel() )
+	if(MzDiskClass->DiskType() == Disk::MZ2000)
 	{
-		Attr |= 0x80;
-	}
-	m_FileSize.SetSel( 0, -1, FALSE );
-	m_FileSize.GetLine( 0, temp, 260 );
-	FileSize = atoi( temp );
-	m_LoadAdr.SetSel( 0, -1, FALSE );
-	m_LoadAdr.GetLine( 0, temp, 260 );
-	LoadAdr = (unsigned short)strtol( temp, &temp2, 16 );
-	m_RunAdr.SetSel( 0, -1, FALSE );
-	m_RunAdr.GetLine( 0, temp, 260 );
-	RunAdr = (unsigned short)strtol( temp, &temp2, 16 );
-
-	ZeroMemory( &dir, sizeof( dir ) );
-	dir.Mode = Mode;
-	if( 5 == dir.Mode )
-	{
-		dir.Mode = 3;
-	}
-	strncpy( dir.Filename, FileName.GetBuffer( 16 ), 16 );
-	for ( i = 0; i < 17; i ++ )
-	{
-		if ( '\0' == dir.Filename[ i ] )
+		MzDisk::DIRECTORY dir;
+		int i;
+		char temp[ 261 ];
+		char *temp2;
+		int mode = 0;
+		m_FileName.SetSel( 0, -1, FALSE );
+		ZeroMemory( temp, sizeof( temp ) );
+		int size = m_FileName.GetLine( 0, temp, 16 );
+		temp[size] = '\0';
+		FileName = temp;
+		Mode = m_Mode.GetCurSel() + 1;
+		if( 1 == m_Attr.GetCurSel() )
 		{
-			dir.Filename[ i ] = '\xD';
-			break;
+			Attr |= 0x80;
+		}
+		m_FileSize.SetSel( 0, -1, FALSE );
+		ZeroMemory( temp, sizeof( temp ) );
+		size = m_FileSize.GetLine( 0, temp, 260 );
+		temp[size] = '\0';
+		FileSize = atoi( temp );
+		m_LoadAdr.SetSel( 0, -1, FALSE );
+		temp[size] = '\0';
+		ZeroMemory( temp, sizeof( temp ) );
+		size = m_LoadAdr.GetLine( 0, temp, 260 );
+		LoadAdr = (unsigned short)strtol( temp, &temp2, 16 );
+		m_RunAdr.SetSel( 0, -1, FALSE );
+		ZeroMemory( temp, sizeof( temp ) );
+		size = m_RunAdr.GetLine( 0, temp, 260 );
+		temp[size] = '\0';
+		size = RunAdr = (unsigned short)strtol( temp, &temp2, 16 );
+
+		ZeroMemory( &dir, sizeof( dir ) );
+		dir.mode = Mode;
+		if( 5 == dir.mode )
+		{
+			dir.mode = 3;
+		}
+		strncpy_s( dir.filename, sizeof(dir.filename), FileName.GetBuffer( 16 ), 16 );
+		for ( i = 0; i < 17; i ++ )
+		{
+			if ( '\0' == dir.filename[ i ] )
+			{
+				dir.filename[ i ] = '\xD';
+				break;
+			}
+		}
+		dir.attr = Attr;
+		if(dir.mode == 4)
+		{
+			dir.size = FileSize / 32;
+		}
+		else
+		{
+			dir.size = FileSize;
+		}
+		dir.loadAdr = LoadAdr;
+		dir.runAdr = RunAdr;
+		dir.date = ( ( ( Year % 100 ) / 10 ) << 28 ) +
+					( ( ( Year % 100 ) % 10 ) << 24 ) +
+					( ( Month / 10 ) << 23 ) +
+					( ( Month % 10 ) << 19 ) +
+					( ( Day / 10 ) << 17 ) +
+					( ( Day % 10 ) << 13 ) +
+					( ( Hour / 10 ) << 11 ) +
+					( ( Hour % 10 ) << 7 ) +
+					( ( Minute / 10 ) << 4 ) +
+					( ( Minute % 10 ) );
+		dir.date = ( dir.date >> 24 ) + ( ( dir.date >> 8 ) & 0xFF00 ) + ( ( dir.date << 8 ) & 0xFF0000 ) + ( ( dir.date << 24 ) & 0xFF000000 );
+		int result;
+		if ( 0 == FileType )
+		{
+			result = MzDiskClass->PutFile( DataPath.GetBuffer( 260 ), &dir, Disk::FILEMODE_BIN, Mode );
+		}
+		else
+		{
+			result = MzDiskClass->PutFile( DataPath.GetBuffer( 260 ), &dir, Disk::FILEMODE_MZT, Mode );
+		}
+		if( 1 == result )
+		{
+			MessageBox( "ディスクイメージへのファイル書き込みに失敗しました. \nディレクトリに空きがありません.", "エラー", MB_OK );
+		}
+		else if( ( 2 == result ) || ( 3 == result ) )
+		{
+			MessageBox( "ディスクイメージへのファイル書き込みに失敗しました. \nファイルを読み込むことができません.", "エラー", MB_OK );
+		}
+		else if( 4 == result )
+		{
+			MessageBox( "ディスクイメージへのファイル書き込みに失敗しました. \nビットマップの空きがありません.", "エラー", MB_OK );
+		}
+		else if( 5 == result )
+		{
+			MessageBox( "ディスクイメージへのファイル書き込みに失敗しました. \n同じファイル名がすでに存在します.", "エラー", MB_OK );
+		}
+		else if( 0 != result )
+		{
+			MessageBox( "ディスクイメージへのファイル書き込みに失敗しました. \n原因は不明です.", "エラー", MB_OK );
 		}
 	}
-	dir.Attr = Attr;
-	dir.Size = FileSize;
-	dir.LoadAdr = LoadAdr;
-	dir.RunAdr = RunAdr;
-	dir.Date = ( ( ( Year % 100 ) / 10 ) << 28 ) +
-				( ( ( Year % 100 ) % 10 ) << 24 ) +
-				( ( Month / 10 ) << 23 ) +
-				( ( Month % 10 ) << 19 ) +
-				( ( Day / 10 ) << 17 ) +
-				( ( Day % 10 ) << 13 ) +
-				( ( Hour / 10 ) << 11 ) +
-				( ( Hour % 10 ) << 7 ) +
-				( ( Minute / 10 ) << 4 ) +
-				( ( Minute % 10 ) );
-	dir.Date = ( dir.Date >> 24 ) + ( ( dir.Date >> 8 ) & 0xFF00 ) + ( ( dir.Date << 8 ) & 0xFF0000 ) + ( ( dir.Date << 24 ) & 0xFF000000 );
-	int result;
-	if ( 0 == FileType )
+	else if(MzDiskClass->DiskType() == Disk::MZ80K_SP6010)
 	{
-		result = MzDiskClass->PutFile( DataPath.GetBuffer( 260 ), &dir, MZDISK_FILEMODE_BIN, Mode );
-	}
-	else
-	{
-		result = MzDiskClass->PutFile( DataPath.GetBuffer( 260 ), &dir, MZDISK_FILEMODE_MZT, Mode );
-	}
-	if( 1 == result )
-	{
-		MessageBox( "ディスクイメージへのファイル書き込みに失敗しました. \nディレクトリに空きがありません.", "エラー", MB_OK );
-	}
-	else if( ( 2 == result ) || ( 3 == result ) )
-	{
-		MessageBox( "ディスクイメージへのファイル書き込みに失敗しました. \nファイルを読み込むことができません.", "エラー", MB_OK );
-	}
-	else if( 4 == result )
-	{
-		MessageBox( "ディスクイメージへのファイル書き込みに失敗しました. \nビットマップの空きがありません.", "エラー", MB_OK );
-	}
-	else if( 5 == result )
-	{
-		MessageBox( "ディスクイメージへのファイル書き込みに失敗しました. \n同じファイル名がすでに存在します.", "エラー", MB_OK );
-	}
-	else if( 0 != result )
-	{
-		MessageBox( "ディスクイメージへのファイル書き込みに失敗しました. \n原因は不明です.", "エラー", MB_OK );
+		Mz80Disk::DIRECTORY dir;
+		int i;
+		char temp[ 261 ];
+		char *temp2;
+		int mode = 0;
+		m_FileName.SetSel( 0, -1, FALSE );
+		ZeroMemory( temp, sizeof( temp ) );
+		int size = m_FileName.GetLine( 0, temp, 16 );
+		temp[size] = '\0';
+		FileName = temp;
+		Mode = m_Mode.GetCurSel() + 1;
+		if( 1 == m_Attr.GetCurSel() )
+		{
+			Attr |= 0x80;
+		}
+		m_FileSize.SetSel( 0, -1, FALSE );
+		ZeroMemory( temp, sizeof( temp ) );
+		size = m_FileSize.GetLine( 0, temp, 260 );
+		temp[size] = '\0';
+		FileSize = atoi( temp );
+		m_LoadAdr.SetSel( 0, -1, FALSE );
+		temp[size] = '\0';
+		ZeroMemory( temp, sizeof( temp ) );
+		size = m_LoadAdr.GetLine( 0, temp, 260 );
+		LoadAdr = (unsigned short)strtol( temp, &temp2, 16 );
+		m_RunAdr.SetSel( 0, -1, FALSE );
+		ZeroMemory( temp, sizeof( temp ) );
+		size = m_RunAdr.GetLine( 0, temp, 260 );
+		temp[size] = '\0';
+		size = RunAdr = (unsigned short)strtol( temp, &temp2, 16 );
+
+		ZeroMemory( &dir, sizeof( dir ) );
+		dir.mode = Mode;
+		if( 5 == dir.mode )
+		{
+			dir.mode = 3;
+		}
+		strncpy_s( dir.filename, sizeof(dir.filename), FileName.GetBuffer( 16 ), 16 );
+		for ( i = 0; i < 17; i ++ )
+		{
+			if ( '\0' == dir.filename[ i ] )
+			{
+				dir.filename[ i ] = '\xD';
+				break;
+			}
+		}
+		dir.attr = Attr;
+		if(dir.mode == 4)
+		{
+			dir.size = FileSize / 32;
+		}
+		else
+		{
+			dir.size = FileSize;
+		}
+		dir.loadAdr = LoadAdr;
+		dir.runAdr = RunAdr;
+		int result;
+		if ( 0 == FileType )
+		{
+			result = MzDiskClass->PutFile( DataPath.GetBuffer( 260 ), &dir, Disk::FILEMODE_BIN, Mode );
+		}
+		else
+		{
+			result = MzDiskClass->PutFile( DataPath.GetBuffer( 260 ), &dir, Disk::FILEMODE_MZT, Mode );
+		}
+		if( 1 == result )
+		{
+			MessageBox( "ディスクイメージへのファイル書き込みに失敗しました. \nディレクトリに空きがありません.", "エラー", MB_OK );
+		}
+		else if( ( 2 == result ) || ( 3 == result ) )
+		{
+			MessageBox( "ディスクイメージへのファイル書き込みに失敗しました. \nファイルを読み込むことができません.", "エラー", MB_OK );
+		}
+		else if( 4 == result )
+		{
+			MessageBox( "ディスクイメージへのファイル書き込みに失敗しました. \nビットマップの空きがありません.", "エラー", MB_OK );
+		}
+		else if( 5 == result )
+		{
+			MessageBox( "ディスクイメージへのファイル書き込みに失敗しました. \n同じファイル名がすでに存在します.", "エラー", MB_OK );
+		}
+		else if( 0 != result )
+		{
+			MessageBox( "ディスクイメージへのファイル書き込みに失敗しました. \n原因は不明です.", "エラー", MB_OK );
+		}
 	}
 	CDialog::OnOK();
 }

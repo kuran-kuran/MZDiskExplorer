@@ -51,6 +51,7 @@ protected:
 	//{{AFX_MSG(CMZDiskExplorerView)
 	afx_msg void OnEditGetfile();
 	afx_msg void OnEditGetboot();
+	afx_msg void OnDropFiles(HDROP hDropInfo);
 	//}}AFX_MSG
 	afx_msg void OnStyleChanged(int nStyleType, LPSTYLESTRUCT lpStyleStruct);
 	DECLARE_MESSAGE_MAP()

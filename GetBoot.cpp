@@ -63,7 +63,7 @@ BOOL cGetBoot::OnInitDialog()
 
 void cGetBoot::SetFile(char *filename)
 {
-	strcpy( FileName, filename );
+	strcpy_s( FileName, sizeof(FileName), filename );
 }
 
 void cGetBoot::OnOK() 
@@ -74,11 +74,11 @@ void cGetBoot::OnOK()
 	select = m_FileType.GetCurSel();
 	if ( 0 == select )
 	{
-		result = MzDiskClass->GetBoot( FileName, MZDISK_FILEMODE_BIN );
+		result = MzDiskClass->GetBoot( FileName, Disk::FILEMODE_BIN );
 	}
 	else
 	{
-		result = MzDiskClass->GetBoot( FileName, MZDISK_FILEMODE_MZT );
+		result = MzDiskClass->GetBoot( FileName, Disk::FILEMODE_MZT );
 	}
 	if( 0 != result )
 	{
@@ -91,10 +91,11 @@ void cGetBoot::OnSelchangeFiletype()
 {
 	// TODO: この位置にコントロール通知ハンドラ用のコードを追加してください
 	cPath path;
-	char temp[ 260 ];
+	char temp[ 261 ];
 	int select;
 	ZeroMemory( temp, sizeof( temp ) );
-	m_Path.GetLine( 0, temp, 260 );
+	int size = m_Path.GetLine( 0, temp, 260 );
+	temp[size] = '\0';
 	path.SetPath( temp );
 	select = m_FileType.GetCurSel();
 	if ( 0 == select )
@@ -109,7 +110,8 @@ void cGetBoot::OnSelchangeFiletype()
 	m_Path.Clear();
 	m_Path.ReplaceSel( path.GetPath(), FALSE );
 	ZeroMemory( FileName, sizeof( FileName ) );
-	m_Path.GetLine( 0, FileName, 260 );
+	size = m_Path.GetLine( 0, FileName, 260 );
+	FileName[size] = '\0';
 	SaveType = select;
 }
 
@@ -121,7 +123,8 @@ void cGetBoot::OnRef()
 	int select;
 	char temp[ 260 ];
 	ZeroMemory( temp, sizeof( temp ) );
-	m_Path.GetLine( 0, temp, 260 );
+	int size = m_Path.GetLine( 0, temp, 260 );
+	temp[size] = '\0';
 	select = m_FileType.GetCurSel();
 	if ( 0 == select )
 	{
@@ -145,10 +148,11 @@ void cGetBoot::OnRef()
 		datapath = SelFile.GetPathName();
 	}
 	memset( savepath, 0, MAX_PATH );
-	strcpy( savepath, datapath.GetBuffer( MAX_PATH ) );
+	strcpy_s( savepath, sizeof(savepath), datapath.GetBuffer( MAX_PATH ) );
 	m_Path.SetSel( 0, -1, FALSE );
 	m_Path.Clear();
 	m_Path.ReplaceSel( datapath, FALSE );
 	ZeroMemory( FileName, sizeof( FileName ) );
-	m_Path.GetLine( 0, FileName, 260 );
+	size = m_Path.GetLine( 0, FileName, 260 );
+	FileName[size] = '\0';
 }

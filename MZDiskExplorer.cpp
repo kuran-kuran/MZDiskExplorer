@@ -9,7 +9,7 @@
 #include "LeftView.h"
 #include "GetBoot.h"
 #include "path.h"
-#include "mzdisk.h"
+#include "MzDisk/Disk.hpp"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

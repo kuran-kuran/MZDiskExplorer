@@ -28,7 +28,7 @@ static const unsigned int PATH_MODE_EXTNAME = 0x00000008;
 static const unsigned int PATH_MODE_ALL     = 0x0000000F;
 
 // -------------------- 動作指定
-#define PATH_STRING_MAX    0    // 0=可変, 0以外=スタティックメモリサイズ (260推奨)
+#define PATH_STRING_MAX    260    // 0=可変, 0以外=スタティックメモリサイズ (260推奨)
 
 // -------------------- クラス定義
 class cPath {
@@ -51,23 +51,15 @@ class cPath {
 		cPath& operator = ( cPath &path );
 		int DividePath( void );
 		void MakePath( unsigned int mode = PATH_MODE_ALL );
-		char* StrCopy( char *dest, char *source );
+		char* StrCopy( char *dest, size_t dest_size, char *source );
 		char* StrCopyPart( char *dest, char *source, int sourcestart, int sourceend );
-		char* StrAdd( char *dest, char *source );
+		char* StrAdd( char *dest, size_t dest_size, char *source );
 		char* StrAddPart( char *dest, char *source, int sourcestart, int sourceend );
-#if PATH_STRING_MAX == 0
-		char *Drive;
-		char *Dir;
-		char *Name;
-		char *ExtName;
-		char *Path;
-#else
 		char Drive[ PATH_STRING_MAX ];
 		char Dir[ PATH_STRING_MAX ];
 		char Name[ PATH_STRING_MAX ];
 		char ExtName[ PATH_STRING_MAX ];
 		char Path[ PATH_STRING_MAX ];
-#endif
 		char Dummy;
 };
 

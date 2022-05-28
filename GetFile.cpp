@@ -5,7 +5,7 @@
 #include "MZDiskExplorer.h"
 #include "GetFile.h"
 #include "path.h"
-#include "mzdisk.h"
+#include "MzDisk/Disk.hpp"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -60,7 +60,7 @@ BOOL cGetFile::OnInitDialog()
 	ZeroMemory( ExtName, sizeof( ExtName ) );
 	if ( path.GetExtName() != 0 )
 	{
-		strcpy( ExtName, path.GetExtName() );
+		strcpy_s( ExtName, sizeof(ExtName), path.GetExtName() );
 	}
 	if ( 0 == SaveType )
 	{
@@ -73,7 +73,7 @@ BOOL cGetFile::OnInitDialog()
 	m_Path.SetSel( 0, -1, FALSE );
 	m_Path.Clear();
 	m_Path.ReplaceSel( path.GetPath(), FALSE );
-	strcpy( FileName, path.GetPath() );
+	strcpy_s( FileName, sizeof(FileName), path.GetPath() );
 	if ( 1 == AllOk )
 	{
 		OnOK();
@@ -86,11 +86,12 @@ void cGetFile::OnRef()
 {
 	// TODO: この位置にコントロール通知ハンドラ用のコードを追加してください
 	CString datapath;
-	char savepath[ 260 ];
+	char savepath[ 261 ];
 	int select;
-	char temp[ 260 ];
+	char temp[ 261 ];
 	ZeroMemory( temp, sizeof( temp ) );
-	m_Path.GetLine( 0, temp, 260 );
+	int size = m_Path.GetLine( 0, temp, 260 );
+	temp[size] = '\0';
 	select = m_FileType.GetCurSel();
 	if ( 0 == select )
 	{
@@ -114,16 +115,18 @@ void cGetFile::OnRef()
 		datapath = SelFile.GetPathName();
 	}
 	memset( savepath, 0, MAX_PATH );
-	strcpy( savepath, datapath.GetBuffer( MAX_PATH ) );
+	strcpy_s( savepath, sizeof(savepath), datapath.GetBuffer( MAX_PATH ) );
 	m_Path.SetSel( 0, -1, FALSE );
 	m_Path.Clear();
 	m_Path.ReplaceSel( datapath, FALSE );
-	m_Path.GetLine( 0, FileName, 260 );
+	ZeroMemory(FileName, sizeof(FileName));
+	size = m_Path.GetLine( 0, FileName, 260 );
+	FileName[size] = '\0';
 }
 
 void cGetFile::SetFile(char *filename)
 {
-	strcpy( FileName, filename );
+	strcpy_s( FileName, sizeof(FileName), filename );
 }
 
 void cGetFile::OnSelchangeFiletype() 
@@ -133,7 +136,8 @@ void cGetFile::OnSelchangeFiletype()
 	char temp[ 260 ];
 	int select;
 	ZeroMemory( temp, sizeof( temp ) );
-	m_Path.GetLine( 0, temp, 260 );
+	int size = m_Path.GetLine( 0, temp, 260 );
+	temp[size] = '\0';
 	path.SetPath( temp );
 	select = m_FileType.GetCurSel();
 	if ( 0 == select )
@@ -148,25 +152,27 @@ void cGetFile::OnSelchangeFiletype()
 	m_Path.Clear();
 	m_Path.ReplaceSel( path.GetPath(), FALSE );
 	ZeroMemory( FileName, sizeof( FileName ) );
-	m_Path.GetLine( 0, FileName, 260 );
+	size = m_Path.GetLine( 0, FileName, 260 );
+	FileName[size] = '\0';
 	SaveType = select;
 }
 
 void cGetFile::OnOK() 
 {
 	// TODO: この位置にその他の検証用のコードを追加してください
-	ZeroMemory( FileName, sizeof( FileName ) );
 	m_Path.SetSel( 0, -1, FALSE );
-	m_Path.GetLine( 0, FileName, 260 );
+	ZeroMemory( FileName, sizeof( FileName ) );
+	int size = m_Path.GetLine( 0, FileName, 260 );
+	FileName[size] = '\0';
 	int select;
 	select = m_FileType.GetCurSel();
 	if ( 0 == select )
 	{
-		MzDiskClass->GetFile( DirIndex, FileName, MZDISK_FILEMODE_BIN );
+		MzDiskClass->GetFile( DirIndex, FileName, Disk::FILEMODE_BIN );
 	}
 	else
 	{
-		MzDiskClass->GetFile( DirIndex, FileName, MZDISK_FILEMODE_MZT );
+		MzDiskClass->GetFile( DirIndex, FileName, Disk::FILEMODE_MZT );
 	}
 	CDialog::OnOK();
 }

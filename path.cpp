@@ -16,19 +16,11 @@
 //============================================================================
 cPath::cPath()
 {
-#if FILEMANAGER_PATH_MAX == 0
-	Drive = 0;
-	Dir = 0;
-	Name = 0;
-	ExtName = 0;
-	Path = 0;
-#else
-	memset( Drive, 0, FILEMANAGER_PATH_MAX );
-	memset( Dir, 0, FILEMANAGER_PATH_MAX );
-	memset( Name, 0, FILEMANAGER_PATH_MAX );
-	memset( ExtName, 0, FILEMANAGER_PATH_MAX );
-	memset( Path, 0, FILEMANAGER_PATH_MAX );
-#endif
+	memset( Drive, 0, PATH_STRING_MAX );
+	memset( Dir, 0, PATH_STRING_MAX );
+	memset( Name, 0, PATH_STRING_MAX );
+	memset( ExtName, 0, PATH_STRING_MAX );
+	memset( Path, 0, PATH_STRING_MAX );
 	Dummy = 0;
 }
 
@@ -47,39 +39,11 @@ cPath::~cPath()
 //============================================================================
 void cPath::Release( void )
 {
-#if PATH_STRING_MAX == 0
-	if ( Drive != 0 )
-	{
-		free( Drive );
-		Drive = 0;
-	}
-	if ( Dir != 0 )
-	{
-		free( Dir );
-		Dir = 0;
-	}
-	if ( Name != 0 )
-	{
-		free( Name );
-		Name = 0;
-	}
-	if ( ExtName != 0 )
-	{
-		free( ExtName );
-		ExtName = 0;
-	}
-	if ( Path != 0 )
-	{
-		free( Path );
-		Path = 0;
-	}
-#else
-	memset( Drive, 0, FILEMANAGER_PATH_MAX );
-	memset( Dir, 0, FILEMANAGER_PATH_MAX );
-	memset( Name, 0, FILEMANAGER_PATH_MAX );
-	memset( ExtName, 0, FILEMANAGER_PATH_MAX );
-	memset( Path, 0, FILEMANAGER_PATH_MAX );
-#endif
+	memset( Drive, 0, PATH_STRING_MAX );
+	memset( Dir, 0, PATH_STRING_MAX );
+	memset( Name, 0, PATH_STRING_MAX );
+	memset( ExtName, 0, PATH_STRING_MAX );
+	memset( Path, 0, PATH_STRING_MAX );
 }
 
 //============================================================================
@@ -89,7 +53,7 @@ void cPath::Release( void )
 //============================================================================
 void cPath::SetDrive( char *drive )
 {
-	Drive = StrCopy( Drive, drive );
+	StrCopy( Drive, sizeof(Drive), drive );
 	MakePath();
 }
 
@@ -100,7 +64,7 @@ void cPath::SetDrive( char *drive )
 //============================================================================
 void cPath::SetDir( char *dir )
 {
-	Dir = StrCopy( Dir, dir );
+	StrCopy( Dir, sizeof(Dir), dir );
 	MakePath();
 }
 
@@ -111,7 +75,7 @@ void cPath::SetDir( char *dir )
 //============================================================================
 void cPath::SetName( char *name )
 {
-	Name = StrCopy( Name, name );
+	StrCopy( Name, sizeof(Name), name );
 	MakePath();
 }
 
@@ -122,7 +86,7 @@ void cPath::SetName( char *name )
 //============================================================================
 void cPath::SetExtName( char *extname )
 {
-	ExtName = StrCopy( ExtName, extname );
+	StrCopy( ExtName, sizeof(ExtName), extname );
 	MakePath();
 }
 
@@ -134,7 +98,7 @@ void cPath::SetExtName( char *extname )
 void cPath::SetPath( char *path )
 {
 	Release();
-	Path = StrCopy( Path, path );
+	StrCopy( Path, sizeof(Path), path );
 	DividePath();
 }
 
@@ -218,72 +182,11 @@ int cPath::DividePath( void )
 	{
 		return 1;
 	}
-	int start = 0;
-	int i = 0;
-	int driveflag = 0;
-	int nameflag = 0;
-	bool kanji = false;
-	while( 1 )
+	_splitpath_s(Path, Drive, PATH_STRING_MAX, Dir, PATH_STRING_MAX, Name, PATH_STRING_MAX, ExtName, PATH_STRING_MAX);
+	if(ExtName[0] == '.')
 	{
-		if ( IsKanji( Path[ i ] ) )
-		{
-			// 漢字の 1 バイト目
-			i ++;
-			kanji = true;
-			continue;
-		}
-		if( ':' == Path[ i ] )
-		{
-			// ドライブ名
-			if ( ( 0 == i ) || ( 1 == driveflag ) )
-			{
-				// 0 文字目、パスの途中に「:」は無効
-				return 1;
-			}
-			Drive = StrCopyPart( Drive, Path, start, i );
-			start = i + 1;
-			driveflag = 1;
-		}
-		if( ( '\\' == Path[ i ] ) || ( '/' == Path[ i ] ) )
-		{
-			if( kanji )
-			{
-				i ++;
-				kanji = false;
-				continue;
-			}
-			// ディレクトリ名
-			Dir = StrAddPart( Dir, Path, start, i );
-			start = i + 1;
-		}
-		if( '.' == Path[ i ] )
-		{
-			// ファイル名
-			if ( 1 == nameflag )
-			{
-				Name = StrAdd( Name, "." );
-			}
-			Name = StrAddPart( Name, Path, start, i - 1 );
-			start = i + 1;
-			nameflag = 1;
-		}
-		if( '\0' == Path[ i ] )
-		{
-			// ファイル名または拡張子
-			if ( 1 == nameflag )
-			{
-				// 拡張子
-				ExtName = StrAddPart( ExtName, Path, start, i - 1 );
-			}
-			else
-			{
-				// ファイル名
-				Name = StrAddPart( Name, Path, start, i - 1 );
-			}
-			break;
-		}
-		kanji = false;
-		i ++;
+		// .を消す
+		StrCopy(ExtName, sizeof(ExtName), &ExtName[1]);
 	}
 	return 0;
 }
@@ -295,13 +198,13 @@ void cPath::MakePath( unsigned int mode )
 {
 	if ( ( mode & PATH_MODE_DRIVE ) && ( Drive != 0 ) )
 	{
-		Path = StrCopy( Path, Drive );
+		StrCopy( Path, sizeof(Path), Drive );
 	} else {
-		Path = StrCopy( Path, "" );
+		StrCopy( Path, sizeof(Path), "" );
 	}
 	if ( ( mode & PATH_MODE_DIR ) && ( Dir != 0 ) )
 	{
-		Path = StrAdd( Path, Dir );
+		StrAdd( Path, sizeof(Path), Dir );
 		if ( strlen( Path ) > 0 )
 		{
 			char dividechar[ 2 ];
@@ -309,20 +212,20 @@ void cPath::MakePath( unsigned int mode )
 			dividechar[ 1 ] = '\0';
 			if ( Path[ strlen( Path ) -1 ] != PATH_DIVIDE_CHAR )
 			{
-				Path = StrAdd( Path, dividechar );
+				StrAdd( Path, sizeof(Path), dividechar );
 			}
 		}
 	}
 	if ( ( mode & PATH_MODE_NAME ) && ( Name != 0 ) )
 	{
-		Path = StrAdd( Path, Name );
+		StrAdd( Path, sizeof(Path), Name );
 	}
 	if ( ( mode & PATH_MODE_EXTNAME ) && ( ExtName != 0 ) )
 	{
 		if ( *ExtName != '\0' )
 		{
-			Path = StrAdd( Path, "." );
-			Path = StrAdd( Path, ExtName );
+			StrAdd( Path, sizeof(Path), "." );
+			StrAdd( Path, sizeof(Path), ExtName );
 		}
 	}
 }
@@ -334,16 +237,9 @@ void cPath::MakePath( unsigned int mode )
 //     : source = コピー元
 // Out : dest のポインタ
 //============================================================================
-char* cPath::StrCopy( char *dest, char *source )
+char* cPath::StrCopy( char *dest, size_t dest_size, char *source )
 {
-#if PATH_STRING_MAX == 0
-	if ( dest != 0 )
-	{
-		free( dest );
-	}
-	dest = (char*)malloc( strlen( source ) + 1 );
-#endif
-	strcpy( dest, source );
+	strcpy_s( dest, dest_size, source );
 	return dest;
 }
 
@@ -358,13 +254,6 @@ char* cPath::StrCopy( char *dest, char *source )
 //============================================================================
 char* cPath::StrCopyPart( char *dest, char *source, int sourcestart, int sourceend )
 {
-#if PATH_STRING_MAX == 0
-	if ( dest != 0 )
-	{
-		free( dest );
-	}
-	dest = (char*)malloc( sourceend - sourcestart + 2 );
-#endif
 	int sourceindex;
 	int destindex = 0;
 	for ( sourceindex = sourcestart; sourceindex <= sourceend; sourceindex ++ )
@@ -383,28 +272,9 @@ char* cPath::StrCopyPart( char *dest, char *source, int sourcestart, int sourcee
 //     : source = コピー元
 // Out : dest のポインタ
 //============================================================================
-char* cPath::StrAdd( char *dest, char *source )
+char* cPath::StrAdd( char *dest, size_t dest_size, char *source )
 {
-#if PATH_STRING_MAX == 0
-	if ( dest != 0 )
-	{
-		char *temp;
-		int size;
-		size = strlen( dest );
-		temp = (char*)malloc( size + 1 );
-		strcpy( temp, dest );
-		free( dest );
-		dest = (char*)malloc( size + strlen( source ) + 1 );
-		strcpy( dest, temp );
-		free( temp );
-	}
-	else
-	{
-		dest = (char*)malloc( strlen( source ) + 1 );
-		memset( dest, 0, strlen( source ) + 1 );
-	}
-#endif
-	strcat( dest, source );
+	strcat_s( dest, dest_size, source );
 	return dest;
 }
 
@@ -419,29 +289,8 @@ char* cPath::StrAdd( char *dest, char *source )
 //============================================================================
 char* cPath::StrAddPart( char *dest, char *source, int sourcestart, int sourceend )
 {
-#if PATH_STRING_MAX == 0
-	if ( dest != 0 )
-	{
-		char *temp;
-		int size;
-		size = strlen( dest );
-		temp = (char*)malloc( size + 1 );
-		strcpy( temp, dest );
-		free( dest );
-		dest = (char*)malloc( size + strlen( source ) + 1 );
-		strcpy( dest, temp );
-		free( temp );
-	}
-	else
-	{
-		dest = (char*)malloc( sourceend - sourcestart + 2 );
-		memset( dest, 0, sourceend - sourcestart + 2 );
-	}
-#endif
-	int sourceindex;
-	int destindex;
-	destindex = strlen( dest );
-	for ( sourceindex = sourcestart; sourceindex <= sourceend; sourceindex ++ )
+	size_t destindex = strlen( dest );
+	for (size_t sourceindex = sourcestart; sourceindex <= sourceend; sourceindex ++ )
 	{
 		dest[ destindex ] = source[ sourceindex ];
 		destindex ++;
