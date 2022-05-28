@@ -15,7 +15,7 @@ D88 ディスクイメージファイルにブートプログラムを記録す�
 
 ## ダウンロード
 
-https://github.com/kuran-kuran/BasicConverter/tree/main/Download
+https://github.com/kuran-kuran/MZDiskExplorer/tree/main/Download
 
 ## ファイル構成
 ```
