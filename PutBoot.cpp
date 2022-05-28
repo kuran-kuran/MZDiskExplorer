@@ -59,6 +59,16 @@ BOOL cPutBoot::OnInitDialog()
 	m_RunAdr.Clear();
 	sprintf_s( temp, sizeof(temp), "%04X", RunAdr );
 	m_RunAdr.ReplaceSel( temp );
+	if(MzDiskClass->DiskType() == Disk::MZ80K_SP6010)
+	{
+		m_Machine.EnableWindow(FALSE);
+		m_RunAdr.EnableWindow(FALSE);
+	}
+	else
+	{
+		m_Machine.EnableWindow(TRUE);
+		m_RunAdr.EnableWindow(TRUE);
+	}
 
 	return TRUE;  // コントロールにフォーカスを設定しないとき、戻り値は TRUE となります
 	              // 例外: OCX プロパティ ページの戻り値は FALSE となります
@@ -106,7 +116,7 @@ void cPutBoot::OnOK()
 			result = MzDiskClass->PutBoot( DataPath.GetBuffer( 260 ), &ipl, Disk::FILEMODE_MZT );
 		}
 	}
-	if(MzDiskClass->DiskType() == Disk::MZ80K_SP6010)
+	else if(MzDiskClass->DiskType() == Disk::MZ80K_SP6010)
 	{
 		if ( 0 == FileType )
 		{

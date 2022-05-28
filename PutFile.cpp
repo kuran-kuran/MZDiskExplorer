@@ -89,6 +89,22 @@ BOOL cPutFile::OnInitDialog()
 	m_Minute.Clear();
 	sprintf_s( temp, sizeof(temp), "%02d", Minute );
 	m_Minute.ReplaceSel( temp );
+	if(MzDiskClass->DiskType() == Disk::MZ80K_SP6010)
+	{
+		m_Year.EnableWindow(FALSE);
+		m_Month.EnableWindow(FALSE);
+		m_Day.EnableWindow(FALSE);
+		m_Hour.EnableWindow(FALSE);
+		m_Minute.EnableWindow(FALSE);
+	}
+	else
+	{
+		m_Year.EnableWindow(TRUE);
+		m_Month.EnableWindow(TRUE);
+		m_Day.EnableWindow(TRUE);
+		m_Hour.EnableWindow(TRUE);
+		m_Minute.EnableWindow(TRUE);
+	}
 	return TRUE;  // コントロールにフォーカスを設定しないとき、戻り値は TRUE となります
 	              // 例外: OCX プロパティ ページの戻り値は FALSE となります
 }
@@ -111,7 +127,7 @@ void cPutFile::OnOK()
 		Mode = m_Mode.GetCurSel() + 1;
 		if( 1 == m_Attr.GetCurSel() )
 		{
-			Attr |= 0x80;
+			Attr |= 0x1;
 		}
 		m_FileSize.SetSel( 0, -1, FALSE );
 		ZeroMemory( temp, sizeof( temp ) );
@@ -211,7 +227,7 @@ void cPutFile::OnOK()
 		Mode = m_Mode.GetCurSel() + 1;
 		if( 1 == m_Attr.GetCurSel() )
 		{
-			Attr |= 0x80;
+			Attr |= 0x1;
 		}
 		m_FileSize.SetSel( 0, -1, FALSE );
 		ZeroMemory( temp, sizeof( temp ) );
@@ -231,9 +247,9 @@ void cPutFile::OnOK()
 
 		ZeroMemory( &dir, sizeof( dir ) );
 		dir.mode = Mode;
-		if( 5 == dir.mode )
+		if( dir.mode >= 2 )
 		{
-			dir.mode = 3;
+			dir.mode = 0;
 		}
 		strncpy_s( dir.filename, sizeof(dir.filename), FileName.GetBuffer( 16 ), 16 );
 		for ( i = 0; i < 17; i ++ )
