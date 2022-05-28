@@ -3,6 +3,8 @@
 
 #include "stdafx.h"
 #include "MZDiskExplorer.h"
+#include "MzDisk/MzDisk.hpp"
+#include "MzDisk/Mz80Disk.hpp"
 #include "PutBoot.h"
 
 #ifdef _DEBUG
@@ -55,8 +57,18 @@ BOOL cPutBoot::OnInitDialog()
 	m_Machine.SetCurSel( Machine );
 	m_RunAdr.SetSel( 0, -1, FALSE );
 	m_RunAdr.Clear();
-	sprintf( temp, "%04X", RunAdr );
+	sprintf_s( temp, sizeof(temp), "%04X", RunAdr );
 	m_RunAdr.ReplaceSel( temp );
+	if(MzDiskClass->DiskType() == Disk::MZ80K_SP6010)
+	{
+		m_Machine.EnableWindow(FALSE);
+		m_RunAdr.EnableWindow(FALSE);
+	}
+	else
+	{
+		m_Machine.EnableWindow(TRUE);
+		m_RunAdr.EnableWindow(TRUE);
+	}
 
 	return TRUE;  // コントロールにフォーカスを設定しないとき、戻り値は TRUE となります
 	              // 例外: OCX プロパティ ページの戻り値は FALSE となります
@@ -65,40 +77,55 @@ BOOL cPutBoot::OnInitDialog()
 void cPutBoot::OnOK() 
 {
 	// TODO: この位置にその他の検証用のコードを追加してください
-	char temp[ 261 ];
-	char *temp2;
-	int i;
-	m_BootName.SetSel( 0, -1, FALSE );
-	ZeroMemory( temp, sizeof( temp ) );
-	int size = m_BootName.GetLine( 0, temp, 10 );
-	temp[size] = '\0';
-	BootName = temp;
-	Machine = m_Machine.GetCurSel();
-	m_RunAdr.SetSel( 0, -1, FALSE );
-	size = m_RunAdr.GetLine( 0, temp, 260 );
-	temp[size] = '\0';
-	RunAdr = (unsigned short)strtol( temp, &temp2, 16 );
-	IPL ipl;
-	ZeroMemory( &ipl, sizeof( ipl ) );
-	ipl.Machine = Machine;
-	strncpy( ipl.Bootname, BootName.GetBuffer( 10 ), 10 );
-	for ( i = 0; i < 11; i ++ )
+	int result;
+	if(MzDiskClass->DiskType() == Disk::MZ2000)
 	{
-		if ( '\0' == ipl.Bootname[ i ] )
+		char temp[ 261 ];
+		char *temp2;
+		int i;
+		m_BootName.SetSel( 0, -1, FALSE );
+		ZeroMemory( temp, sizeof( temp ) );
+		int size = m_BootName.GetLine( 0, temp, 10 );
+		temp[size] = '\0';
+		BootName = temp;
+		Machine = m_Machine.GetCurSel();
+		m_RunAdr.SetSel( 0, -1, FALSE );
+		ZeroMemory( temp, sizeof( temp ) );
+		size = m_RunAdr.GetLine( 0, temp, 260 );
+		temp[size] = '\0';
+		RunAdr = (unsigned short)strtol( temp, &temp2, 16 );
+		MzDisk::IPL ipl;
+		ZeroMemory( &ipl, sizeof( ipl ) );
+		ipl.machine = Machine;
+		strncpy_s( ipl.bootname, sizeof(ipl.bootname), BootName.GetBuffer( 10 ), 10 );
+		for ( i = 0; i < 11; i ++ )
 		{
-			ipl.Bootname[ i ] = '\xD';
-			break;
+			if ( '\0' == ipl.bootname[ i ] )
+			{
+				ipl.bootname[ i ] = '\xD';
+				break;
+			}
+		}
+		ipl.runAdr = RunAdr;
+		if ( 0 == FileType )
+		{
+			result = MzDiskClass->PutBoot( DataPath.GetBuffer( 260 ), &ipl, Disk::FILEMODE_BIN );
+		}
+		else if ( 1 == FileType )
+		{
+			result = MzDiskClass->PutBoot( DataPath.GetBuffer( 260 ), &ipl, Disk::FILEMODE_MZT );
 		}
 	}
-	ipl.RunAdr = RunAdr;
-	int result;
-	if ( 0 == FileType )
+	else if(MzDiskClass->DiskType() == Disk::MZ80K_SP6010)
 	{
-		result = MzDiskClass->PutBoot( DataPath.GetBuffer( 260 ), &ipl, MZDISK_FILEMODE_BIN );
-	}
-	else if ( 1 == FileType )
-	{
-		result = MzDiskClass->PutBoot( DataPath.GetBuffer( 260 ), &ipl, MZDISK_FILEMODE_MZT );
+		if ( 0 == FileType )
+		{
+			result = MzDiskClass->PutBoot( DataPath.GetBuffer( 260 ), NULL, Disk::FILEMODE_BIN );
+		}
+		else if ( 1 == FileType )
+		{
+			result = MzDiskClass->PutBoot( DataPath.GetBuffer( 260 ), NULL, Disk::FILEMODE_MZT );
+		}
 	}
 	if( 0 != result )
 	{

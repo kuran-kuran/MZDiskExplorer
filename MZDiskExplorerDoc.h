@@ -5,8 +5,8 @@
 #if !defined(AFX_MZDISKEXPLORERDOC_H__31A6F4BB_C60D_4B88_AE4E_72D55E7A6A9E__INCLUDED_)
 #define AFX_MZDISKEXPLORERDOC_H__31A6F4BB_C60D_4B88_AE4E_72D55E7A6A9E__INCLUDED_
 
-#include "mzdisk.h"	// ClassView ‚É‚æ‚Á‚Ä’Ç‰Á‚³‚ê‚Ü‚µ‚½B
 #include "LeftView.h"	// ClassView ‚É‚æ‚Á‚Ä’Ç‰Á‚³‚ê‚Ü‚µ‚½B
+#include "MzDisk/Disk.hpp"
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
@@ -41,9 +41,10 @@ public:
 	HTREEITEM DirHandle[ DIRHANDLE_MAX ];
 	int DirSector[ DIRHANDLE_MAX ];
 	int DirHandleCount;
-	cMzDisk MzDiskClass;
+	Disk* MzDiskClass;
 	int SaveType;
 	int Machine;
+	CString FilePath;
 	virtual ~CMZDiskExplorerDoc();
 	int MakeFileList( int dirsector );
 	int MakeTree( int dirsector, HTREEITEM parenthandle );

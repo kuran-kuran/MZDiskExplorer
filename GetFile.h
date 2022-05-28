@@ -6,7 +6,7 @@
 #endif // _MSC_VER > 1000
 // GetFile.h : ヘッダー ファイル
 //
-#include "mzdisk.h"
+#include "MzDisk/Disk.hpp"
 
 /////////////////////////////////////////////////////////////////////////////
 // cGetFile ダイアログ
@@ -21,7 +21,7 @@ public:
 	char FileName[ MAX_PATH ];
 	void SetFile( char *filename );
 	cGetFile(CWnd* pParent = NULL);   // 標準のコンストラクタ
-	cMzDisk *MzDiskClass;
+	Disk *MzDiskClass;
 	int SaveType;
 
 // ダイアログ データ

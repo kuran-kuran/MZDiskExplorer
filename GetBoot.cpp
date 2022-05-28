@@ -63,7 +63,7 @@ BOOL cGetBoot::OnInitDialog()
 
 void cGetBoot::SetFile(char *filename)
 {
-	strcpy( FileName, filename );
+	strcpy_s( FileName, sizeof(FileName), filename );
 }
 
 void cGetBoot::OnOK() 
@@ -74,11 +74,11 @@ void cGetBoot::OnOK()
 	select = m_FileType.GetCurSel();
 	if ( 0 == select )
 	{
-		result = MzDiskClass->GetBoot( FileName, MZDISK_FILEMODE_BIN );
+		result = MzDiskClass->GetBoot( FileName, Disk::FILEMODE_BIN );
 	}
 	else
 	{
-		result = MzDiskClass->GetBoot( FileName, MZDISK_FILEMODE_MZT );
+		result = MzDiskClass->GetBoot( FileName, Disk::FILEMODE_MZT );
 	}
 	if( 0 != result )
 	{
@@ -148,7 +148,7 @@ void cGetBoot::OnRef()
 		datapath = SelFile.GetPathName();
 	}
 	memset( savepath, 0, MAX_PATH );
-	strcpy( savepath, datapath.GetBuffer( MAX_PATH ) );
+	strcpy_s( savepath, sizeof(savepath), datapath.GetBuffer( MAX_PATH ) );
 	m_Path.SetSel( 0, -1, FALSE );
 	m_Path.Clear();
 	m_Path.ReplaceSel( datapath, FALSE );

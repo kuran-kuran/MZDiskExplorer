@@ -143,7 +143,7 @@ void cDebug::SetOutputType( int type )
 void cDebug::DeleteFile( void )
 {
 	#if defined _WIN32
-		unlink( DEBUG_FILE );
+		_unlink( DEBUG_FILE );
 	#endif
 }
 
@@ -157,7 +157,7 @@ void cDebug::Output( const char* outputstring, ... ) const
 	char str[ 1000 ];
 	va_list arglist;
 	va_start( arglist, outputstring );
-	vsprintf( str, outputstring, arglist );
+	vsprintf_s( str, sizeof(str), outputstring, arglist );
 	va_end( arglist );
 	if ( 0 == OutputType ) {
 		#if defined _WIN32
@@ -187,10 +187,17 @@ void cDebug::Output( const char* outputstring, ... ) const
 		#else
 			FILE *fp;
 			// ファイルオープン
-			fp = fopen( DEBUG_FILE, "r+" );
-			if ( NULL == fp ) {
+			bool retry = false;
+			if (fopen_s( &fp, DEBUG_FILE, "r+" ) != 0)
+			{
+				retry = true;
+			}
+			if ( retry == true ) {
 				// ファイル作成
-				fp = fopen( DEBUG_FILE, "w+" );
+				if ( fopen_s( &fp, DEBUG_FILE, "w+" ) != 0)
+				{
+					fp = NULL;
+				}
 			}
 			if ( fp != NULL ) {
 				fseek( fp, 0L, SEEK_END );
@@ -214,7 +221,7 @@ void cDebug::OutputDump( const void *address, int width, int height, U32 mode ) 
 	int x, y;
 	const U8 *dump_address = (U8*)address;
 	for ( y=0; y<height; y++ ) {
-		Output( "%08X", (U32)dump_address );
+		Output( "%016X", (U64)dump_address );
 		Output( " : " );
 		for ( x=0; x<width; x++ ) {
 			if ( mode & DEBUG_DUMP8 ) {
@@ -316,7 +323,7 @@ void cDebug::MemoryStatus( void )
 		if ( MallocAddress[ i ] != NULL ) {
 			char file[ 1024 ];
 			bool find = false;
-			int srcindex = strlen( MallocFile[ i ] ) - 1;
+			size_t srcindex = strlen( MallocFile[ i ] ) - 1;
 			while( 0 <= srcindex-- ) {
 				if ( ( '\\' == MallocFile[ i ][ srcindex ] ) ||
 					 ( '/' == MallocFile[ i ][ srcindex ] ) ) {
@@ -326,11 +333,11 @@ void cDebug::MemoryStatus( void )
 				}
 			}
 			if ( find ) {
-				strcpy( file, &MallocFile[ i ][ srcindex ] );
+				strcpy_s( file, sizeof(file), &MallocFile[ i ][ srcindex ] );
 			} else {
-				strcpy( file, MallocFile[ i ] );
+				strcpy_s( file, sizeof(file), MallocFile[ i ] );
 			}
-			sprintf( str, "%s の %d 行目で確保された %d バイト(%p) は未開放です.\n",
+			sprintf_s( str, sizeof(str), "%s の %d 行目で確保された %d バイト(%p) は未開放です.\n",
 					 file,
 					 MallocLine[ i ],
 					 MallocSize[ i ],
@@ -339,7 +346,7 @@ void cDebug::MemoryStatus( void )
 			Output( str );
 		}
 	}
-	sprintf( str, "開放していないメモリは %d バイトです.\n", sum );
+	sprintf_s( str, sizeof(str), "開放していないメモリは %d バイトです.\n", sum );
 	Output( str );
 }
 

@@ -11,7 +11,9 @@
 #include "PutFile.h"
 #include "PutBoot.h"
 #include "MakeNewDisk.h"
-#include "mzdisk.h"
+#include "MzDisk/Disk.hpp"
+#include "MzDisk/MzDisk.hpp"
+#include "MzDisk/Mz80Disk.hpp"
 #include "path.h"
 #include "MainFrm.h"
 
@@ -50,6 +52,7 @@ END_MESSAGE_MAP()
 CMZDiskExplorerDoc::CMZDiskExplorerDoc()
 {
 	// TODO: この位置に１度だけ呼ばれる構築用のコードを追加してください。
+	MzDiskClass = NULL;
 	FirstInit = 1;
 	SaveType = 0;
 	ImageInit = 0;
@@ -87,45 +90,89 @@ BOOL CMZDiskExplorerDoc::OnNewDocument()
 		newdisk.DiskType = 0;
 		if ( IDOK == newdisk.DoModal() )
 		{
-			U32 disktype = MZDISK_DISKTYPE_MZ2500_2DD;
+			unsigned int disktype = MzDisk::DISKTYPE_MZ2500_2DD;
+			int needClassType = 0;
 			switch( newdisk.DiskType )
 			{
 				case 0:
-					disktype = MZDISK_DISKTYPE_MZ2500_2DD;
+					disktype = MzDisk::DISKTYPE_MZ2500_2DD;
+					needClassType = Disk::MZ2000;
 					break;
 				case 1:
-					disktype = MZDISK_DISKTYPE_MZ2500_2D40;
+					disktype = MzDisk::DISKTYPE_MZ2500_2DD40;
+					needClassType = Disk::MZ2000;
 					break;
 				case 2:
-					disktype = MZDISK_DISKTYPE_MZ2500_2D35;
+					disktype = MzDisk::DISKTYPE_MZ2500_2DD35;
+					needClassType = Disk::MZ2000;
 					break;
 				case 3:
-					disktype = MZDISK_DISKTYPE_MZ2000_2D35;
+					disktype = MzDisk::DISKTYPE_MZ80B_2D35;
+					needClassType = Disk::MZ2000;
+					break;
+				case 4:
+					disktype = MzDisk::DISKTYPE_MZ2000_2D40;
+					needClassType = Disk::MZ2000;
+					break;
+				case 5:
+					disktype = Mz80Disk::DISKTYPE_MZ80_SP6010_2S;
+					needClassType = Disk::MZ80K_SP6010;
+					break;
+				case 6:
+					disktype = Mz80Disk::DISKTYPE_MZ80_SP6110_2S;
+					needClassType = Disk::MZ80K_SP6110;
 					break;
 				default:
-					disktype = MZDISK_DISKTYPE_MZ2500_2DD;
+					disktype = MzDisk::DISKTYPE_MZ2500_2DD;
+					needClassType = Disk::MZ2000;
 					break;
 			}
-			MzDiskClass.Format( disktype );
-			// ツリー画面作成
-			DirHandleCount = 0;
-			tree = &LeftView->GetTreeCtrl();
-			tree->DeleteAllItems();
-			DirHandle[ 0 ] = tree->InsertItem( "root" );
-			DirSector[ 0 ] = 0x10;
-			DirHandleCount ++;
-			MakeTree( 0x10, DirHandle[ 0 ] );
-			MzDiskClass.SetDirSector( -1 );
-			// ファイル画面作成
-			MakeFileList( 0x10 );
-			MzDiskClass.SetDirSector( -1 );
-			ImageInit = 1;
+			if(MzDiskClass != NULL)
+			{
+				// クラスが違っていたら一旦NULLにする
+				if(MzDiskClass->DiskType() != needClassType)
+				{
+					delete MzDiskClass;
+					MzDiskClass = NULL;
+				}
+			}
+			if(MzDiskClass == NULL)
+			{
+				if(needClassType == Disk::MZ2000)
+				{
+					MzDiskClass = new MzDisk;
+				}
+				else if(needClassType == Disk::MZ80K_SP6010)
+				{
+					MzDiskClass = new Mz80Disk;
+				}
+				else if(needClassType == Disk::MZ80K_SP6110)
+				{
+					// MZ-80K SP6110 未実装
+				}
+			}
+			if(MzDiskClass != NULL)
+			{
+				MzDiskClass->Format( disktype );
+				// ツリー画面作成
+				DirHandleCount = 0;
+				tree = &LeftView->GetTreeCtrl();
+				tree->DeleteAllItems();
+				DirHandle[ 0 ] = tree->InsertItem( "root" );
+				DirSector[ 0 ] = 0x10;
+				DirHandleCount ++;
+				MakeTree( 0x10, DirHandle[ 0 ] );
+				MzDiskClass->SetDirSector( -1 );
+				// ファイル画面作成
+				MakeFileList( 0x10 );
+				MzDiskClass->SetDirSector( -1 );
+				ImageInit = 1;
+				FirstInit = 0;
+			}
 		}
 	}
-	FirstInit = 0;
 	return TRUE;
 }
-
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -145,39 +192,54 @@ void CMZDiskExplorerDoc::Serialize(CArchive& ar)
 		if ( 0 == ImageInit ) {
 			return;
 		}
-		char *temp;
-		int size;
-		size = MzDiskClass.GetSize( MZDISK_TYPE_D88 );
-		temp = new char[ size ];
-		MzDiskClass.Save( temp, MZDISK_TYPE_D88 );
+		if ( MzDiskClass == NULL ) {
+			return;
+		}
+		std::vector<unsigned char> writeBuffer;
+		MzDiskClass->Save( writeBuffer );
 		// イメージファイル書き込み
 		CFile *file;
 		file = ar.GetFile();
 		ar.Flush();
-		ar.Write( temp, size );
-		delete [] temp;
+		ar.Write( &writeBuffer[0], static_cast<UINT>(writeBuffer.size()) );
 	}
 	else
 	{
 		// TODO: この位置に読み込み用のコードを追加してください。
-		int length;
 		CFile *file;
-		char *temp;
-		CString filepath;
 		cPath path;
 		// イメージファイル読み込み
 		file = ar.GetFile();
 		ar.Flush();
-		filepath = file->GetFilePath();
-		path.SetPath( filepath.GetBuffer( 260 ) );
-		if ( ( 0 == stricmp( path.GetExtName(), "d88" ) ) ||
-			 ( 0 == stricmp( path.GetExtName(), "d20" ) ) )
+		FilePath = file->GetFilePath();
+		path.SetPath( FilePath.GetBuffer( 260 ) );
+		if ( ( 0 == _stricmp( path.GetExtName(), "d88" ) ) ||
+			 ( 0 == _stricmp( path.GetExtName(), "d20" ) ) )
 		{
-			length = file->GetLength();
-			temp = new char[ length ];
-			file->Read( temp, length );
-			MzDiskClass.Load( temp, MZDISK_TYPE_D88 );
-			delete [] temp;
+			UINT length = static_cast<UINT>(file->GetLength());
+			std::vector<unsigned char> readBuffer;
+			readBuffer.resize(length);
+			file->Read( &readBuffer[0], length );
+			if(MzDiskClass != NULL)
+			{
+				delete MzDiskClass;
+				MzDiskClass = NULL;
+			}
+			int diskType = Disk::DiskType(readBuffer);
+			if(diskType == Disk::MZ2000)
+			{
+				MzDiskClass = new MzDisk;
+			}
+			else if(diskType == Disk::MZ80K_SP6010)
+			{
+				MzDiskClass = new Mz80Disk;
+			}
+			else
+			{
+				MzDiskClass = NULL;
+				AfxThrowArchiveException(CArchiveException::generic, "");
+			}
+			MzDiskClass->Load( readBuffer );
 			// ツリー画面作成
 			DirHandleCount = 0;
 			CTreeCtrl* tree;
@@ -187,10 +249,10 @@ void CMZDiskExplorerDoc::Serialize(CArchive& ar)
 			DirSector[ 0 ] = 0x10;
 			DirHandleCount ++;
 			MakeTree( 0x10, DirHandle[ 0 ] );
-			MzDiskClass.SetDirSector( -1 );
+			MzDiskClass->SetDirSector( -1 );
 			// ファイル画面作成
 			MakeFileList( 0x10 );
-			MzDiskClass.SetDirSector( -1 );
+			MzDiskClass->SetDirSector( -1 );
 			ImageInit = 1;
 		} else {
 			CTreeCtrl* tree;
@@ -202,11 +264,17 @@ void CMZDiskExplorerDoc::Serialize(CArchive& ar)
 			ImageInit = 0;
 		}
 	}
-	CMainFrame *pMainFrame;
-	char str[ 100 ];
-	sprintf( str, "%d/%d", MzDiskClass.GetUseBlockSize() * MzDiskClass.GetClusterSize(), MzDiskClass.GetAllBlockSize() * MzDiskClass.GetClusterSize() );
-	pMainFrame = ( CMainFrame* )AfxGetMainWnd();
-	pMainFrame->PutStatusBarSize( str );
+	if(MzDiskClass != NULL)
+	{
+		CMainFrame *pMainFrame;
+		char str[ 200 ];
+		int use = MzDiskClass->GetUseBlockSize() * MzDiskClass->GetClusterSize();
+		int total = MzDiskClass->GetAllBlockSize() * MzDiskClass->GetClusterSize();
+		int free = total - use;
+		sprintf_s( str, sizeof(str), "Type: %s    Size: %d/%d    Free: %d", MzDiskClass->DiskTypeText().c_str(), use, total, free );
+		pMainFrame = ( CMainFrame* )AfxGetMainWnd();
+		pMainFrame->PutStatusBarSize( str );
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -229,44 +297,95 @@ void CMZDiskExplorerDoc::Dump(CDumpContext& dc) const
 
 int CMZDiskExplorerDoc::MakeTree( int dirsector, HTREEITEM parenthandle )
 {
-	DIRECTORY dir;
-	int i;
-	POSITION pos;
-	CLeftView *LeftView;
-	pos = GetFirstViewPosition();
-	LeftView = (CLeftView*)GetNextView( pos );
-	CTreeCtrl *tree;
-	tree = &LeftView->GetTreeCtrl();
-	MzDiskClass.SetDirSector( dirsector );
-	for ( i = 0; i < 64; i ++ )
+	if(MzDiskClass == NULL)
 	{
-		int j;
-		MzDiskClass.GetDir( &dir, i );
-		if ( 0xF == dir.Mode ) {
-			char dirname[ 17 ];
-			memcpy( dirname, dir.Filename, 17 );
-			for ( j = 0; j < 17; j ++ )
-			{
-				if ( 0x0D == dirname[ j ] )
+		return 0;
+	}
+	if(MzDiskClass->DiskType() == Disk::MZ2000)
+	{
+		MzDisk::DIRECTORY dir;
+		int i;
+		POSITION pos;
+		CLeftView *LeftView;
+		pos = GetFirstViewPosition();
+		LeftView = (CLeftView*)GetNextView( pos );
+		CTreeCtrl *tree;
+		tree = &LeftView->GetTreeCtrl();
+		MzDiskClass->SetDirSector( dirsector );
+		for ( i = 0; i < 64; i ++ )
+		{
+			int j;
+			MzDiskClass->GetDir( &dir, i );
+			if ( 0xF == dir.mode ) {
+				char dirname[ 17 ];
+				memcpy( dirname, dir.filename, 17 );
+				for ( j = 0; j < 17; j ++ )
 				{
-					dirname[ j ] = '\0';
+					if ( 0x0D == dirname[ j ] )
+					{
+						dirname[ j ] = '\0';
+					}
+				}
+				if ( ( 0 == strcmp( dirname, "."  ) ) || ( 0 == strcmp( dirname, ".." ) ) )
+				{
+					continue;
+				}
+				DirHandle[ DirHandleCount ] = tree->InsertItem( dirname, parenthandle );
+				DirSector[ DirHandleCount ] = dir.startSector;
+				int temp;
+				temp = DirHandleCount;
+				DirHandleCount ++;
+				if ( 1 == MakeTree( dir.startSector, DirHandle[ temp ] ) ) {
+					return 1;
+				}
+				MzDiskClass->SetDirSector( dirsector );
+				if ( DirHandleCount >= DIRHANDLE_MAX ) {
+					return 1;
 				}
 			}
-			if ( ( 0 == strcmp( dirname, "."  ) ) || ( 0 == strcmp( dirname, ".." ) ) )
-			{
-				continue;
-			}
-			DirHandle[ DirHandleCount ] = tree->InsertItem( dirname, parenthandle );
-			DirSector[ DirHandleCount ] = dir.StartSector;
-			int temp;
-			temp = DirHandleCount;
-			DirHandleCount ++;
-			if ( 1 == MakeTree( dir.StartSector, DirHandle[ temp ] ) ) {
-				return 1;
-			}
-			MzDiskClass.SetDirSector( dirsector );
-			if ( DirHandleCount >= DIRHANDLE_MAX ) {
-				return 1;
+		}
+	}
+	else if(MzDiskClass->DiskType() == Disk::MZ80K_SP6010)
+	{
+		Mz80Disk::DIRECTORY dir;
+		int i;
+		POSITION pos;
+		CLeftView *LeftView;
+		pos = GetFirstViewPosition();
+		LeftView = (CLeftView*)GetNextView( pos );
+		CTreeCtrl *tree;
+		tree = &LeftView->GetTreeCtrl();
+		MzDiskClass->SetDirSector( dirsector );
+		for ( i = 0; i < 28; i ++ )
+		{
+			int j;
+			MzDiskClass->GetDir( &dir, i );
+			if ( 0xF == dir.mode ) {
+				char dirname[ 17 ];
+				memcpy( dirname, dir.filename, 17 );
+				for ( j = 0; j < 17; j ++ )
+				{
+					if ( 0x0D == dirname[ j ] )
+					{
+						dirname[ j ] = '\0';
+					}
+				}
+				if ( ( 0 == strcmp( dirname, "."  ) ) || ( 0 == strcmp( dirname, ".." ) ) )
+				{
+					continue;
+				}
+				DirHandle[ DirHandleCount ] = tree->InsertItem( dirname, parenthandle );
+				DirSector[ DirHandleCount ] = dir.startSector;
+				int temp;
+				temp = DirHandleCount;
+				DirHandleCount ++;
+				if ( 1 == MakeTree( dir.startSector, DirHandle[ temp ] ) ) {
+					return 1;
+				}
+				MzDiskClass->SetDirSector( dirsector );
+				if ( DirHandleCount >= DIRHANDLE_MAX ) {
+					return 1;
+				}
 			}
 		}
 	}
@@ -275,6 +394,10 @@ int CMZDiskExplorerDoc::MakeTree( int dirsector, HTREEITEM parenthandle )
 
 int CMZDiskExplorerDoc::MakeFileList( int dirsector )
 {
+	if(MzDiskClass == NULL)
+	{
+		return 0;
+	}
 	POSITION pos;
 	CMZDiskExplorerView *FileView;
 	pos = GetFirstViewPosition();
@@ -284,111 +407,230 @@ int CMZDiskExplorerDoc::MakeFileList( int dirsector )
 	list = &FileView->GetListCtrl();
 	list->DeleteAllItems();
 	// ファイル
-	MzDiskClass.SetDirSector( dirsector );
-	LV_ITEM item;
-	DIRECTORY dir;
-	int i;
-	int j;
-	int itemindex = 0;
-	int year;
-	int month;
-	int day;
-	int hour;
-	int minute;
-	for ( i = 0; i < 64; i ++ )
+	if(MzDiskClass->DiskType() == Disk::MZ2000)
 	{
-		struct {
-			U8 mode;
-			char modestr[ 6 ];
-		} modetbl[] = {
-			0x01, "OBJ  ",
-			0x02, "BTX  ",
-			0x03, "BSD  ",
-			0x04, "BRD  ",
-			0x05, "RB   ",
-			0x07, "LIB  ",
-			0x0A, "SYS  ",
-			0x0B, "GR   ",
-			0x0F, "DIR  ",
-			0x80, "NSWAP",
-			0x81, "SWAP "
-		};
-		char work[ 17 ];
-		MzDiskClass.GetDir( &dir, i );
-		if ( ( 0 == dir.Mode ) || ( 0x80 == dir.Mode ) || ( 0x82 == dir.Mode ) || ( 0xF == dir.Mode ) )
+		MzDiskClass->SetDirSector( dirsector );
+		LV_ITEM item;
+		MzDisk::DIRECTORY dir;
+		int i;
+		int j;
+		int itemindex = 0;
+		int year;
+		int month;
+		int day;
+		int hour;
+		int minute;
+		for ( i = 0; i < 64; i ++ )
 		{
-			continue;
-		}
-		memcpy( work, dir.Filename, 17 );
-		for ( j = 0; j < 17; j ++ )
-		{
-			if ( 0x0D == work[ j ] )
+			struct {
+				unsigned char mode;
+				char modestr[ 6 ];
+			} modetbl[] = {
+				0x01, "OBJ  ",
+				0x02, "BTX  ",
+				0x03, "BSD  ",
+				0x04, "BRD  ",
+				0x05, "RB   ",
+				0x07, "LIB  ",
+				0x0A, "SYS  ",
+				0x0B, "GR   ",
+				0x0F, "DIR  ",
+				0x80, "NSWAP",
+				0x81, "SWAP "
+			};
+			char work[ 17 ];
+			ZeroMemory(work, sizeof(work));
+			MzDiskClass->GetDir( &dir, i );
+			if ( ( 0 == dir.mode ) || ( 0x80 == dir.mode ) || ( 0x82 == dir.mode ) || ( 0xF == dir.mode ) )
 			{
-				work[ j ] = '\0';
+				continue;
 			}
-		}
-		// ファイル名
-		item.mask = LVIF_TEXT;
-		item.iItem = itemindex;
-		item.iSubItem = 0;
-		item.pszText = work;
-		list->InsertItem( &item );
-		// モード
-		item.iSubItem = 1;
-		item.pszText = "";
-		for ( j = 0; j < 10; j ++ )
-		{
-			if ( modetbl[ j ].mode == dir.Mode )
+			memcpy( work, dir.filename, 17 );
+			for ( j = 0; j < 17; j ++ )
 			{
-				item.pszText = (char*)&modetbl[ j ].modestr;
-				break;
+				if ( 0x0D == work[ j ] )
+				{
+					work[ j ] = '\0';
+				}
 			}
+			// ファイル名
+			item.mask = LVIF_TEXT;
+			item.iItem = itemindex;
+			item.iSubItem = 0;
+			item.pszText = work;
+			list->InsertItem( &item );
+			// モード
+			item.iSubItem = 1;
+			item.pszText = "";
+			for ( j = 0; j < 10; j ++ )
+			{
+				if ( modetbl[ j ].mode == dir.mode )
+				{
+					item.pszText = (char*)&modetbl[ j ].modestr;
+					break;
+				}
+			}
+			list->SetItem( &item );
+			// 属性
+			item.iSubItem = 2;
+			sprintf_s( work, sizeof(work), "%02X", dir.attr );
+			item.pszText = work;
+			list->SetItem( &item );
+			// ファイルサイズ
+			item.iSubItem = 3;
+			if( 4 == dir.mode )
+			{
+				sprintf_s( work, sizeof(work), "%7d", dir.size * 32 );
+			}
+			else
+			{
+				sprintf_s( work, sizeof(work), "%7d", dir.size );
+			}
+			item.pszText = work;
+			list->SetItem( &item );
+			// ロードアドレス
+			item.iSubItem = 4;
+			sprintf_s( work, sizeof(work), "%04X", dir.loadAdr );
+			item.pszText = work;
+			list->SetItem( &item );
+			// 実行アドレス
+			item.iSubItem = 5;
+			sprintf_s( work, sizeof(work), "%04X", dir.runAdr );
+			item.pszText = work;
+			list->SetItem( &item );
+			// 作成日付
+			item.iSubItem = 6;
+			year = ( dir.date & 0xF ) + ( ( dir.date >> 4 ) & 0xF ) * 10;
+			month = ( ( dir.date >> 11 ) & 0xF ) + ( ( dir.date >> 15 ) & 0x1 ) * 10;
+			day = ( ( dir.date >> 5 ) & 0x8 ) + ( ( dir.date >> 21 ) & 0x7 ) + ( ( dir.date >> 9 ) & 0x3 ) * 10;
+			hour = ( ( dir.date >> 31 ) & 0x1 ) + ( ( dir.date >> 15 ) & 0xE ) + ( ( dir.date >> 19 ) & 0x3 ) * 10;
+			minute = ( ( dir.date >> 24 ) & 0xF ) + ( ( dir.date >> 28 ) & 7 ) * 10;
+			sprintf_s( work, sizeof(work), "%02d/%02d/%02d %02d:%02d", year, month, day, hour, minute );
+			item.pszText = work;
+			list->SetItem( &item );
+			// 開始セクタ
+			item.iSubItem = 7;
+			sprintf_s( work, sizeof(work), "%04X", dir.startSector );
+			item.pszText = work;
+			list->SetItem( &item );
+			ItemToDirIndex[ itemindex ] = i;
+			itemindex++;
 		}
-		list->SetItem( &item );
-		// 属性
-		item.iSubItem = 2;
-		sprintf( work, "%02X", dir.Attr );
-		item.pszText = work;
-		list->SetItem( &item );
-		// ファイルサイズ
-		item.iSubItem = 3;
-		if( 4 == dir.Mode )
+	}
+	else if(MzDiskClass->DiskType() == Disk::MZ80K_SP6010)
+	{
+		MzDiskClass->SetDirSector( dirsector );
+		LV_ITEM item;
+		Mz80Disk::DIRECTORY dir;
+		int i;
+		int j;
+		int itemindex = 0;
+		int year;
+		int month;
+		int day;
+		int hour;
+		int minute;
+		for ( i = 0; i < 28; i ++ )
 		{
-			sprintf( work, "%7d", dir.Size * 32 );
+			struct {
+				unsigned char mode;
+				char modestr[ 6 ];
+			} modetbl[] = {
+				0x01, "OBJ  ",
+				0x02, "BTX  ",
+				0x03, "BSD  ",
+				0x04, "BRD  ",
+				0x05, "RB   ",
+				0x07, "LIB  ",
+				0x0A, "SYS  ",
+				0x0B, "GR   ",
+				0x0F, "DIR  ",
+				0x80, "NSWAP",
+				0x81, "SWAP "
+			};
+			char work[ 17 ];
+			ZeroMemory(work, sizeof(work));
+			MzDiskClass->GetDir( &dir, i );
+			if ( ( 0 == dir.mode ) || ( 0x80 == dir.mode ) || ( 0x82 == dir.mode ) || ( 0xF == dir.mode ) )
+			{
+				continue;
+			}
+			memcpy( work, dir.filename, 16 );
+			for ( j = 0; j < 17; j ++ )
+			{
+				if ( 0x0D == work[ j ] )
+				{
+					work[ j ] = '\0';
+				}
+			}
+			// ファイル名
+			item.mask = LVIF_TEXT;
+			item.iItem = itemindex;
+			item.iSubItem = 0;
+			item.pszText = work;
+			list->InsertItem( &item );
+			// モード
+			item.iSubItem = 1;
+			item.pszText = "";
+			for ( j = 0; j < 10; j ++ )
+			{
+				if ( modetbl[ j ].mode == dir.mode )
+				{
+					item.pszText = (char*)&modetbl[ j ].modestr;
+					break;
+				}
+			}
+			list->SetItem( &item );
+			// 属性
+			item.iSubItem = 2;
+			sprintf_s( work, sizeof(work), "%02X", dir.attr );
+			item.pszText = work;
+			list->SetItem( &item );
+			// ファイルサイズ
+			item.iSubItem = 3;
+			if( 4 == dir.mode )
+			{
+				sprintf_s( work, sizeof(work), "%7d", dir.size * 32 );
+			}
+			else
+			{
+				sprintf_s( work, sizeof(work), "%7d", dir.size );
+			}
+			item.pszText = work;
+			list->SetItem( &item );
+			// ロードアドレス
+			item.iSubItem = 4;
+			sprintf_s( work, sizeof(work), "%04X", dir.loadAdr );
+			item.pszText = work;
+			list->SetItem( &item );
+			// 実行アドレス
+			item.iSubItem = 5;
+			sprintf_s( work, sizeof(work), "%04X", dir.runAdr );
+			item.pszText = work;
+			list->SetItem( &item );
+			// 作成日付
+			item.iSubItem = 6;
+			year = 0;
+			month = 0;
+			day = 0;
+			hour = 0;
+			minute = 0;
+			sprintf_s( work, sizeof(work), "%02d/%02d/%02d %02d:%02d", year, month, day, hour, minute );
+			item.pszText = work;
+			list->SetItem( &item );
+			// 開始セクタ
+			item.iSubItem = 7;
+			sprintf_s( work, sizeof(work), "%d", dir.startSector );
+			item.pszText = work;
+			list->SetItem( &item );
+			// 開始トラック
+			item.iSubItem = 8;
+			sprintf_s( work, sizeof(work), "%d", dir.startTrack );
+			item.pszText = work;
+			list->SetItem( &item );
+			ItemToDirIndex[ itemindex ] = i;
+			itemindex++;
 		}
-		else
-		{
-			sprintf( work, "%7d", dir.Size );
-		}
-		item.pszText = work;
-		list->SetItem( &item );
-		// ロードアドレス
-		item.iSubItem = 4;
-		sprintf( work, "%04X", dir.LoadAdr );
-		item.pszText = work;
-		list->SetItem( &item );
-		// 実行アドレス
-		item.iSubItem = 5;
-		sprintf( work, "%04X", dir.RunAdr );
-		item.pszText = work;
-		list->SetItem( &item );
-		// 作成日付
-		item.iSubItem = 6;
-		year = ( dir.Date & 0xF ) + ( ( dir.Date >> 4 ) & 0xF ) * 10;
-		month = ( ( dir.Date >> 11 ) & 0xF ) + ( ( dir.Date >> 15 ) & 0x1 ) * 10;
-		day = ( ( dir.Date >> 5 ) & 0x8 ) + ( ( dir.Date >> 21 ) & 0x7 ) + ( ( dir.Date >> 9 ) & 0x3 ) * 10;
-		hour = ( ( dir.Date >> 31 ) & 0x1 ) + ( ( dir.Date >> 15 ) & 0xE ) + ( ( dir.Date >> 19 ) & 0x3 ) * 10;
-		minute = ( ( dir.Date >> 24 ) & 0xF ) + ( ( dir.Date >> 28 ) & 7 ) * 10;
-		sprintf( work, "%02d/%02d/%02d %02d:%02d", year, month, day, hour, minute );
-		item.pszText = work;
-		list->SetItem( &item );
-		// 開始セクタ
-		item.iSubItem = 7;
-		sprintf( work, "%04X", dir.StartSector );
-		item.pszText = work;
-		list->SetItem( &item );
-		ItemToDirIndex[ itemindex ] = i;
-		itemindex++;
 	}
 	return 0;
 }
@@ -422,31 +664,38 @@ void CMZDiskExplorerDoc::OnUpdateEditGetboot(CCmdUI* pCmdUI)
 void CMZDiskExplorerDoc::OnEditGetboot() 
 {
 	// TODO: この位置にコマンド ハンドラ用のコードを追加してください
-	char buffer[ 256 ];
 	char bootname[ 12 ];
-	int i;
-	MzDiskClass.GetSector( buffer, 0 );
-	ZeroMemory( bootname, sizeof( bootname ) );
-	memcpy( bootname, &buffer[ 7 ], 11 );
-	for ( i = 0; i < 12; i ++ )
+	if(MzDiskClass->DiskType() == Disk::MZ2000)
 	{
-		if ( 0xD == bootname[ i ] )
+		int i;
+		std::vector<unsigned char> buffer;
+		MzDiskClass->ReadSector(buffer, 0, 1);
+		ZeroMemory( bootname, sizeof( bootname ) );
+		memcpy( bootname, &buffer[ 7 ], 11 );
+		for ( i = 0; i < 12; i ++ )
 		{
-			bootname[ i ] = '\0';
+			if ( 0xD == bootname[ i ] )
+			{
+				bootname[ i ] = '\0';
+			}
 		}
+	}
+	else
+	{
+		strcpy_s(bootname, 12, "Boot.mzt");
 	}
 	// ダイアログ表示
 	cGetBoot getbootdialog;
 	char pathname[ 260 ];
 	CString cpathname;
 	cpathname = GetPathName();
-	strcpy( pathname, cpathname.GetBuffer( 260 ) );
+	strcpy_s( pathname, sizeof(pathname), cpathname.GetBuffer( 260 ) );
 	cPath path;
 	path.SetPath( pathname );
 	path.SetName( bootname );
 	path.SetExtName( "" );
 	getbootdialog.SetFile( path.GetPath() );
-	getbootdialog.MzDiskClass = &MzDiskClass;
+	getbootdialog.MzDiskClass = MzDiskClass;
 	getbootdialog.SaveType = SaveType;
 	getbootdialog.DoModal();
 	SaveType = getbootdialog.SaveType;
@@ -516,22 +765,27 @@ void CMZDiskExplorerDoc::OnEditPutfile(CString datapath)
 	{
 		return;
 	}
+	if (MzDiskClass == NULL)
+	{
+		return;
+	}
 	cPath path;
 	path.SetPath( datapath.GetBuffer( 260 ) );
 	cPutFile putfiledialog;
 	CFile file;
 	file.Open( path.GetPath(), CFile::modeRead );
-	putfiledialog.FileSize = file.GetLength();
+	putfiledialog.FileSize = static_cast<int>(file.GetLength());
 	putfiledialog.DataPath = datapath;
 	SYSTEMTIME systemtime;
 	::GetLocalTime( &systemtime );
-	if ( 0 == stricmp( path.GetExtName(), "MZT" ) )
+	if ( 0 == _stricmp( path.GetExtName(), "MZT" ) )
 	{
-		MZTHEAD mzthead;
-		char filename[ 17 ];
+		MzDisk::MZTHEAD mzthead;
+		char filename[ 18 ];
+		ZeroMemory(filename, sizeof(filename));
 		int i;
 		file.Read( &mzthead, 128 );
-		strncpy( filename, mzthead.Filename, 17 );
+		strncpy_s( filename, sizeof(filename), mzthead.filename, 17 );
 		for ( i = 0; i < 17; i ++ )
 		{
 			if ( 0xD == filename[ i ] )
@@ -540,16 +794,27 @@ void CMZDiskExplorerDoc::OnEditPutfile(CString datapath)
 			}
 		}
 		putfiledialog.FileName = filename;
-		putfiledialog.Mode = mzthead.Mode;
+		putfiledialog.Mode = mzthead.mode;
 		putfiledialog.Attr = 0;
-		putfiledialog.FileSize = mzthead.Size;
-		putfiledialog.LoadAdr = mzthead.LoadAdr;
-		putfiledialog.RunAdr = mzthead.RunAdr;
-		putfiledialog.Year = systemtime.wYear % 100;
-		putfiledialog.Month = systemtime.wMonth;
-		putfiledialog.Day = systemtime.wDay;
-		putfiledialog.Hour = systemtime.wHour;
-		putfiledialog.Minute = systemtime.wMinute;
+		putfiledialog.FileSize = mzthead.size;
+		putfiledialog.LoadAdr = mzthead.loadAdr;
+		putfiledialog.RunAdr = mzthead.runAdr;
+		if(MzDiskClass->DiskType() == Disk::MZ2000)
+		{
+			putfiledialog.Year = systemtime.wYear % 100;
+			putfiledialog.Month = systemtime.wMonth;
+			putfiledialog.Day = systemtime.wDay;
+			putfiledialog.Hour = systemtime.wHour;
+			putfiledialog.Minute = systemtime.wMinute;
+		}
+		else
+		{
+			putfiledialog.Year = 0;
+			putfiledialog.Month = 0;
+			putfiledialog.Day = 0;
+			putfiledialog.Hour = 0;
+			putfiledialog.Minute = 0;
+		}
 		putfiledialog.FileType = 1;	// MZT
 	}
 	else
@@ -580,15 +845,18 @@ void CMZDiskExplorerDoc::OnEditPutfile(CString datapath)
 	}
 	else
 	{
-		putfiledialog.MzDiskClass = &MzDiskClass;
+		putfiledialog.MzDiskClass = MzDiskClass;
 		putfiledialog.DoModal();
 	}
 	// ファイル画面作成
-	MakeFileList( MzDiskClass.GetDirSector() );
+	MakeFileList( MzDiskClass->GetDirSector() );
 	// ステータスバー描画
 	CMainFrame *pMainFrame;
-	char str[ 100 ];
-	sprintf( str, "%d/%d", MzDiskClass.GetUseBlockSize() * MzDiskClass.GetClusterSize(), MzDiskClass.GetAllBlockSize() * MzDiskClass.GetClusterSize() );
+	char str[ 200 ];
+	int use = MzDiskClass->GetUseBlockSize() * MzDiskClass->GetClusterSize();
+	int total = MzDiskClass->GetAllBlockSize() * MzDiskClass->GetClusterSize();
+	int free = total - use;
+	sprintf_s( str, sizeof(str), "Type: %s    Size: %d/%d    Free: %d", MzDiskClass->DiskTypeText().c_str(), use, total, free );
 	pMainFrame = ( CMainFrame* )AfxGetMainWnd();
 	pMainFrame->PutStatusBarSize( str );
 }
@@ -608,6 +876,10 @@ void CMZDiskExplorerDoc::OnUpdateEditPutboot(CCmdUI* pCmdUI)
 
 void CMZDiskExplorerDoc::OnEditPutboot() 
 {
+	if(MzDiskClass == NULL)
+	{
+		return;
+	}
 	// TODO: この位置にコマンド ハンドラ用のコードを追加してください
 	CString datapath;
 	datapath = GetPathName();
@@ -624,13 +896,14 @@ void CMZDiskExplorerDoc::OnEditPutboot()
 	size_t size;
 	file.Open( path.GetPath(), CFile::modeRead );
 	putBootdialog.DataPath = datapath;
-	if ( 0 == stricmp( path.GetExtName(), "MZT" ) )
+	if ( 0 == _stricmp( path.GetExtName(), "MZT" ) )
 	{
-		MZTHEAD mzthead;
-		char filename[ 17 ];
+		MzDisk::MZTHEAD mzthead;
+		char filename[ 18 ];
+		ZeroMemory(filename, sizeof(filename));
 		int i;
 		file.Read( &mzthead, 128 );
-		strncpy( filename, mzthead.Filename, 17 );
+		strncpy_s( filename, sizeof(filename), mzthead.filename, 17 );
 		for ( i = 0; i < 17; i ++ )
 		{
 			if ( 0xD == filename[ i ] )
@@ -656,13 +929,16 @@ void CMZDiskExplorerDoc::OnEditPutboot()
 	{
 		putBootdialog.RunAdr = 0;
 		putBootdialog.Machine = Machine;
-		putBootdialog.MzDiskClass = &MzDiskClass;
+		putBootdialog.MzDiskClass = MzDiskClass;
 		putBootdialog.DoModal();
 		Machine = putBootdialog.Machine;
 		// ステータスバー描画
 		CMainFrame *pMainFrame;
-		char str[ 100 ];
-		sprintf( str, "%d/%d", MzDiskClass.GetUseBlockSize() * MzDiskClass.GetClusterSize(), MzDiskClass.GetAllBlockSize() * MzDiskClass.GetClusterSize() );
+		char str[ 200 ];
+		int use = MzDiskClass->GetUseBlockSize() * MzDiskClass->GetClusterSize();
+		int total = MzDiskClass->GetAllBlockSize() * MzDiskClass->GetClusterSize();
+		int free = total - use;
+		sprintf_s( str, sizeof(str), "Type: %s    Size: %d/%d    Free: %d", MzDiskClass->DiskTypeText().c_str(), use, total, free );
 		pMainFrame = ( CMainFrame* )AfxGetMainWnd();
 		pMainFrame->PutStatusBarSize( str );
 	}
@@ -683,6 +959,10 @@ void CMZDiskExplorerDoc::OnUpdateEditDel(CCmdUI* pCmdUI)
 
 void CMZDiskExplorerDoc::OnEditDel() 
 {
+	if(MzDiskClass == NULL)
+	{
+		return;
+	}
 	// TODO: この位置にコマンド ハンドラ用のコードを追加してください
 	POSITION pos;
 	CMZDiskExplorerView *FileView;
@@ -691,40 +971,86 @@ void CMZDiskExplorerDoc::OnEditDel()
 	FileView = (CMZDiskExplorerView*)GetNextView( pos );
 	CListCtrl *list;
 	list = &FileView->GetListCtrl();
-	DIRECTORY dir;
-	int select = -1;
-	select = list->GetNextItem( select, LVNI_ALL | LVNI_SELECTED );
-	if ( -1 == select )
+	if(MzDiskClass->DiskType() == Disk::MZ2000)
 	{
-		return;
-	}
-	if ( FileView->MessageBox( "選択したファイルを削除してよろしいですか？\nOK またはキャンセルを選んでください。\n", "ファイル削除", MB_OKCANCEL ) != IDOK )
-	{
-		return;
-	}
-	select = -1;
-	while ( 1 )
-	{
+		MzDisk::DIRECTORY dir;
+		int select = -1;
 		select = list->GetNextItem( select, LVNI_ALL | LVNI_SELECTED );
 		if ( -1 == select )
 		{
-			break;
+			return;
 		}
-		MzDiskClass.GetDir( &dir, ItemToDirIndex[ select ] );
-		if ( 0 == dir.Mode )
+		if ( FileView->MessageBox( "選択したファイルを削除してよろしいですか？\nOK またはキャンセルを選んでください。\n", "ファイル削除", MB_OKCANCEL ) != IDOK )
 		{
-			continue;
+			return;
 		}
-		MzDiskClass.DelFile( ItemToDirIndex[ select ] );
+		select = -1;
+		while ( 1 )
+		{
+			select = list->GetNextItem( select, LVNI_ALL | LVNI_SELECTED );
+			if ( -1 == select )
+			{
+				break;
+			}
+			MzDiskClass->GetDir( &dir, ItemToDirIndex[ select ] );
+			if ( 0 == dir.mode )
+			{
+				continue;
+			}
+			MzDiskClass->DelFile( ItemToDirIndex[ select ] );
+		}
+		// ファイル画面作成
+		MakeFileList( MzDiskClass->GetDirSector() );
+		// ステータスバー描画
+		CMainFrame *pMainFrame;
+		char str[ 200 ];
+		int use = MzDiskClass->GetUseBlockSize() * MzDiskClass->GetClusterSize();
+		int total = MzDiskClass->GetAllBlockSize() * MzDiskClass->GetClusterSize();
+		int free = total - use;
+		sprintf_s( str, sizeof(str), "Type: %s    Size: %d/%d    Free: %d Bytes", MzDiskClass->DiskTypeText().c_str(), use, total, free );
+		pMainFrame = ( CMainFrame* )AfxGetMainWnd();
+		pMainFrame->PutStatusBarSize( str );
 	}
-	// ファイル画面作成
-	MakeFileList( MzDiskClass.GetDirSector() );
-	// ステータスバー描画
-	CMainFrame *pMainFrame;
-	char str[ 100 ];
-	sprintf( str, "%d/%d", MzDiskClass.GetUseBlockSize() * MzDiskClass.GetClusterSize(), MzDiskClass.GetAllBlockSize() * MzDiskClass.GetClusterSize() );
-	pMainFrame = ( CMainFrame* )AfxGetMainWnd();
-	pMainFrame->PutStatusBarSize( str );
+	else if(MzDiskClass->DiskType() == Disk::MZ80K_SP6010)
+	{
+		Mz80Disk::DIRECTORY dir;
+		int select = -1;
+		select = list->GetNextItem( select, LVNI_ALL | LVNI_SELECTED );
+		if ( -1 == select )
+		{
+			return;
+		}
+		if ( FileView->MessageBox( "選択したファイルを削除してよろしいですか？\nOK またはキャンセルを選んでください。\n", "ファイル削除", MB_OKCANCEL ) != IDOK )
+		{
+			return;
+		}
+		select = -1;
+		while ( 1 )
+		{
+			select = list->GetNextItem( select, LVNI_ALL | LVNI_SELECTED );
+			if ( -1 == select )
+			{
+				break;
+			}
+			MzDiskClass->GetDir( &dir, ItemToDirIndex[ select ] );
+			if ( 0 == dir.mode )
+			{
+				continue;
+			}
+			MzDiskClass->DelFile( ItemToDirIndex[ select ] );
+		}
+		// ファイル画面作成
+		MakeFileList( MzDiskClass->GetDirSector() );
+		// ステータスバー描画
+		CMainFrame *pMainFrame;
+		char str[ 200 ];
+		int use = MzDiskClass->GetUseBlockSize() * MzDiskClass->GetClusterSize();
+		int total = MzDiskClass->GetAllBlockSize() * MzDiskClass->GetClusterSize();
+		int free = total - use;
+		sprintf_s( str, sizeof(str), "Type: %s    Size: %d/%d    Free: %d Bytes", MzDiskClass->DiskTypeText().c_str(), use, total, free );
+		pMainFrame = ( CMainFrame* )AfxGetMainWnd();
+		pMainFrame->PutStatusBarSize( str );
+	}
 }
 
 void CMZDiskExplorerDoc::OnUpdateFileExportBeta(CCmdUI* pCmdUI) 
@@ -732,8 +1058,7 @@ void CMZDiskExplorerDoc::OnUpdateFileExportBeta(CCmdUI* pCmdUI)
 	// TODO: この位置に command update UI ハンドラ用のコードを追加してください
 	if ( 1 == ImageInit )
 	{
-//		pCmdUI->Enable( TRUE );
-		pCmdUI->Enable( FALSE );
+		pCmdUI->Enable( TRUE );
 	}
 	else
 	{
@@ -744,5 +1069,15 @@ void CMZDiskExplorerDoc::OnUpdateFileExportBeta(CCmdUI* pCmdUI)
 void CMZDiskExplorerDoc::OnFileExportBeta() 
 {
 	// TODO: この位置にコマンド ハンドラ用のコードを追加してください
-	
+	cPath path;
+	path.SetPath(FilePath.GetBuffer(260));
+	path.SetExtName("beta");
+	CFileDialog SelFile( TRUE, "beta", path.GetPath(), OFN_HIDEREADONLY, "BETA file|*.beta|全てのファイル|*.*||" );
+	if ( IDCANCEL == SelFile.DoModal() )
+	{
+		return;
+	}
+	CString datapath = SelFile.GetPathName();
+	MzDiskClass->ExportBeta(datapath.GetBuffer(260));
+	MessageBox(NULL, "betaイメージの作成が完了しました", "betaイメージ", MB_OK);
 }

@@ -6,7 +6,7 @@
 #endif // _MSC_VER > 1000
 // GetBoot.h : ヘッダー ファイル
 //
-#include "mzdisk.h"
+#include "MzDisk/Disk.hpp"
 
 /////////////////////////////////////////////////////////////////////////////
 // cGetBoot ダイアログ
@@ -16,7 +16,7 @@ class cGetBoot : public CDialog
 // コンストラクション
 public:
 	char FileName[ MAX_PATH ];
-	cMzDisk *MzDiskClass;
+	Disk *MzDiskClass;
 	int SaveType;
 	void SetFile( char *filename );
 	cGetBoot(CWnd* pParent = NULL);   // 標準のコンストラクタ
