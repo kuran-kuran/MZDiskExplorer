@@ -167,10 +167,20 @@ BOOL CMZDiskExplorerDoc::OnNewDocument()
 				MakeFileList( 0x10 );
 				MzDiskClass->SetDirSector( -1 );
 				ImageInit = 1;
-				FirstInit = 0;
+				// ステータスバー描画
+				CMainFrame *pMainFrame;
+				char str[ 200 ];
+				int use = MzDiskClass->GetUseBlockSize() * MzDiskClass->GetClusterSize();
+				int total = MzDiskClass->GetAllBlockSize() * MzDiskClass->GetClusterSize();
+				int free = total - use;
+				sprintf_s( str, sizeof(str), "Type: %s    Size: %d/%d    Free: %d Bytes", MzDiskClass->DiskTypeText().c_str(), use, total, free );
+				pMainFrame = ( CMainFrame* )AfxGetMainWnd();
+				pMainFrame->PutStatusBarSize( str );
+				FilePath = "Blank.d88";
 			}
 		}
 	}
+	FirstInit = 0;
 	return TRUE;
 }
 
