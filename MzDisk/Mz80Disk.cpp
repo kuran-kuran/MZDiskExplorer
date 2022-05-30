@@ -722,8 +722,7 @@ int Mz80Disk::GetDirSector( void )
 //============================================================================
 void Mz80Disk::GetDir(void* dirData, int dirindex)
 {
-	DIRECTORY* dirdata = reinterpret_cast<DIRECTORY*>(dirData);
-	*dirdata = this->directory[dirindex];
+	memcpy(dirData, &this->directory[dirindex], sizeof(DIRECTORY));
 }
 
 //============================================================================
