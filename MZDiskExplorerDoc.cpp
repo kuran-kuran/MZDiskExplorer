@@ -61,6 +61,11 @@ CMZDiskExplorerDoc::CMZDiskExplorerDoc()
 
 CMZDiskExplorerDoc::~CMZDiskExplorerDoc()
 {
+	if(MzDiskClass != NULL)
+	{
+		delete MzDiskClass;
+		MzDiskClass = NULL;
+	}
 }
 
 BOOL CMZDiskExplorerDoc::OnNewDocument()
@@ -153,7 +158,7 @@ BOOL CMZDiskExplorerDoc::OnNewDocument()
 			}
 			if(MzDiskClass != NULL)
 			{
-				MzDiskClass->Format( disktype );
+				MzDiskClass->Format( disktype, newdisk.VolumeNumber );
 				// ƒcƒŠ[‰æ–Êì¬
 				DirHandleCount = 0;
 				tree = &LeftView->GetTreeCtrl();

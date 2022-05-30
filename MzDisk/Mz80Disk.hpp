@@ -54,7 +54,7 @@ public:
 	~Mz80Disk();
 	int DiskType(void);
 	std::string DiskTypeText(void);
-	void Format(int type);
+	void Format(int type, int volumeNumber);
 	int Load(std::string path);
 	int Load(const std::vector<unsigned char>& buffer);
 	int Save(std::string path);

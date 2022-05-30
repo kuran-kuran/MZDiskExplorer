@@ -15,12 +15,12 @@ class cMakeNewDisk : public CDialog
 // コンストラクション
 public:
 	int DiskType;
+	int VolumeNumber;
 	cMakeNewDisk(CWnd* pParent = NULL);   // 標準のコンストラクタ
 
 // ダイアログ データ
 	//{{AFX_DATA(cMakeNewDisk)
 	enum { IDD = IDD_NEWDISK };
-	CComboBox	m_DiskType;
 	//}}AFX_DATA
 
 
@@ -40,6 +40,11 @@ protected:
 	virtual void OnOK();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+private:
+	CComboBox	m_DiskType;
+	CEdit m_VolumeNumber;
+	afx_msg void OnCbnSelchangeDisktype();
+	void AdjustVolumeNumber();
 };
 
 //{{AFX_INSERT_LOCATION}}

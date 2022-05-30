@@ -49,7 +49,7 @@ std::string MzDisk::DiskTypeText(void)
 //     : DISKTYPE_MZ2000_2D40  // MZ-2000 (MZ-1F07)
 // Out : エラーコード ( 0 = 正常 )
 //============================================================================
-void MzDisk::Format(int type)
+void MzDisk::Format(int type, int volumeNumber)
 {
 	if(type == DISKTYPE_MZ2500_2DD)
 	{
@@ -84,7 +84,7 @@ void MzDisk::Format(int type)
 		std::vector<unsigned char> buffer;
 		buffer.resize(static_cast<size_t>(this->sectorSize) * 8, 0);
 		buffer[0] = 0x80;
-		buffer[1] = 0x01;
+		buffer[1] = static_cast<unsigned char>(volumeNumber);
 		WriteSector(buffer, 16, 8);
 	}
 	else
@@ -141,7 +141,7 @@ void MzDisk::Format(int type)
 	}
 	else if(type == DISKTYPE_MZ80B_2D35)
 	{
-		this->bitmap[0] = 0x01;
+		this->bitmap[0] = static_cast<unsigned char>(volumeNumber);
 		this->bitmap[1] = 0x30;
 		this->bitmap[2] = 0x30;
 		this->bitmap[3] = 0x00;
@@ -151,7 +151,7 @@ void MzDisk::Format(int type)
 	}
 	else if(type == DISKTYPE_MZ2000_2D40)
 	{
-		this->bitmap[0] = 0x01;
+		this->bitmap[0] = static_cast<unsigned char>(volumeNumber);
 		this->bitmap[1] = 0x30;
 		this->bitmap[2] = 0x30;
 		this->bitmap[3] = 0x00;

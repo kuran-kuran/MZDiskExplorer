@@ -26,7 +26,7 @@ public:
 	void ExportBeta(std::string path);
 	virtual int DiskType(void) = 0;
 	virtual std::string DiskTypeText(void) = 0;
-	virtual void Format(int type) = 0;
+	virtual void Format(int type, int volumeNumber) = 0;
 	virtual int Load(std::string path) = 0;
 	virtual int Load(const std::vector<unsigned char>& buffer) = 0;
 	virtual int Save(std::string path) = 0;
