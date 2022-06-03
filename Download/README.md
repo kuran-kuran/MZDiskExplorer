@@ -9,7 +9,7 @@
 - ブートプログラムの開始アドレスに16進数が入力できなかったのでできるように修正。
 - その他細かいバグを修正。
 
-[MZDiskExplorer201.zip](https://github.com/kuran-kuran/BasicConverter/raw/main/Release/MZDiskExplorer201.zip)
+[MZDiskExplorer201.zip](https://github.com/kuran-kuran/BasicConverter/raw/main/Download/MZDiskExplorer201.zip)
 
 ### 2022/05/29 Version 2.0.0
 
@@ -18,7 +18,7 @@
 - BSD/BRD形式のファイルを正常に削除できなかったので修正。
 - その他細かいバグを修正。
 
-[MZDiskExplorer200.zip](https://github.com/kuran-kuran/BasicConverter/raw/main/Release/MZDiskExplorer200.zip)
+[MZDiskExplorer200.zip](https://github.com/kuran-kuran/BasicConverter/raw/main/Download/MZDiskExplorer200.zip)
 
 ### 旧バージョンダウンロード
 
