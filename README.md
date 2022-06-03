@@ -1,4 +1,4 @@
-# MZDiskExplorer 2.0.0
+# MZDiskExplorer 2.0.1
 これは、MZ用のD88ディスクイメージファイルを操作するためのプログラムです。
 
 https://github.com/kuran-kuran/MZDiskExplorer

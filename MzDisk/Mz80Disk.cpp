@@ -48,7 +48,7 @@ std::string Mz80Disk::DiskTypeText(void)
 //     : DISKTYPE_MZ2000_2D40  // MZ-2000 (MZ-1F07)
 // Out : エラーコード ( 0 = 正常 )
 //============================================================================
-void Mz80Disk::Format(int type)
+void Mz80Disk::Format(int type, int volumeNumber)
 {
 	if(type == DISKTYPE_MZ80_SP6010_2S)
 	{
@@ -78,7 +78,7 @@ void Mz80Disk::Format(int type)
 		std::vector<unsigned char> buffer;
 		buffer.resize(static_cast<size_t>(this->sectorSize) * 14, 0);
 		buffer[0] = 0x80;
-		buffer[1] = 0x01;
+		buffer[1] = static_cast<unsigned char>(volumeNumber);
 		WriteSector(buffer, 16, 14);
 	}
 	// ビットマップ
@@ -86,11 +86,11 @@ void Mz80Disk::Format(int type)
 	this->bitmap.resize(256, 0);
 	if(type == DISKTYPE_MZ80_SP6010_2S)
 	{
-		this->bitmap[1] = 0x01;
+		this->bitmap[1] = static_cast<unsigned char>(volumeNumber);
 	}
 	else if(type == DISKTYPE_MZ80_SP6110_2S)
 	{
-		this->bitmap[1] = 0x01;
+		this->bitmap[0] = static_cast<unsigned char>(volumeNumber);
 	}
 	WriteSector(this->bitmap, 14, 2);
 	// ディスク情報格納
@@ -722,8 +722,7 @@ int Mz80Disk::GetDirSector( void )
 //============================================================================
 void Mz80Disk::GetDir(void* dirData, int dirindex)
 {
-	DIRECTORY* dirdata = reinterpret_cast<DIRECTORY*>(dirData);
-	*dirdata = this->directory[dirindex];
+	memcpy(dirData, &this->directory[dirindex], sizeof(DIRECTORY));
 }
 
 //============================================================================

@@ -5,7 +5,9 @@
 #include "FileData.hpp"
 #include "MzDisk.hpp"
 
-#define IsKanji(c) ( (unsigned char)((int)((unsigned char)(c) ^ 0x20) - 0x0A1) < 0x3C )
+// 漢字の1バイト目か
+#define IsKanji(c) ((((0x81 <= c) && (c <= 0x9F)) || ((0xE0 <= c) && (c <= 0xFC))))
+#define IsKanji2(c) ((((0x40 <= c) && (c <= 0x7E) || ((0x80 <= c) && (c <= 0xFC))))
 
 //============================================================================
 // コンストラクタ
@@ -49,7 +51,7 @@ std::string MzDisk::DiskTypeText(void)
 //     : DISKTYPE_MZ2000_2D40  // MZ-2000 (MZ-1F07)
 // Out : エラーコード ( 0 = 正常 )
 //============================================================================
-void MzDisk::Format(int type)
+void MzDisk::Format(int type, int volumeNumber)
 {
 	if(type == DISKTYPE_MZ2500_2DD)
 	{
@@ -84,7 +86,7 @@ void MzDisk::Format(int type)
 		std::vector<unsigned char> buffer;
 		buffer.resize(static_cast<size_t>(this->sectorSize) * 8, 0);
 		buffer[0] = 0x80;
-		buffer[1] = 0x01;
+		buffer[1] = static_cast<unsigned char>(volumeNumber);
 		WriteSector(buffer, 16, 8);
 	}
 	else
@@ -116,7 +118,7 @@ void MzDisk::Format(int type)
 		this->bitmap[2] = 0x18;
 		this->bitmap[3] = 0x00;
 		this->bitmap[4] = 0x00;
-		this->bitmap[5] = 0x50;
+		this->bitmap[5] = 0x05;
 		this->bitmap[255] = 0x01;
 	}
 	else if(type == DISKTYPE_MZ2500_2DD40)
@@ -126,7 +128,7 @@ void MzDisk::Format(int type)
 		this->bitmap[2] = 0x30;
 		this->bitmap[3] = 0x00;
 		this->bitmap[4] = 0x00;
-		this->bitmap[5] = 0x50;
+		this->bitmap[5] = 0x05;
 		this->bitmap[255] = 0x00;
 	}
 	else if(type == DISKTYPE_MZ2500_2DD35)
@@ -136,27 +138,27 @@ void MzDisk::Format(int type)
 		this->bitmap[2] = 0x30;
 		this->bitmap[3] = 0x00;
 		this->bitmap[4] = 0x60;
-		this->bitmap[5] = 0x40;
+		this->bitmap[5] = 0x04;
 		this->bitmap[255] = 0x00;
 	}
 	else if(type == DISKTYPE_MZ80B_2D35)
 	{
-		this->bitmap[0] = 0x01;
+		this->bitmap[0] = static_cast<unsigned char>(volumeNumber);
 		this->bitmap[1] = 0x30;
 		this->bitmap[2] = 0x30;
 		this->bitmap[3] = 0x00;
 		this->bitmap[4] = 0x60;
-		this->bitmap[5] = 0x40;
+		this->bitmap[5] = 0x04;
 		this->bitmap[255] = 0x00;
 	}
 	else if(type == DISKTYPE_MZ2000_2D40)
 	{
-		this->bitmap[0] = 0x01;
+		this->bitmap[0] = static_cast<unsigned char>(volumeNumber);
 		this->bitmap[1] = 0x30;
 		this->bitmap[2] = 0x30;
 		this->bitmap[3] = 0x00;
 		this->bitmap[4] = 0x00;
-		this->bitmap[5] = 0x50;
+		this->bitmap[5] = 0x05;
 		this->bitmap[255] = 0x00;
 	}
 	WriteSector(this->bitmap, 15, 1);
@@ -452,7 +454,7 @@ int MzDisk::PutFile(std::string path, void* dirInfo, unsigned int mode, unsigned
 		{
 			ConvertBsdFile(dirinfo, mode, type, readSize, dataSize, bufferTemp);
 		}
-		else if(type == FILETYPE_BSD)
+		if(type == FILETYPE_BSD)
 		{
 			if(PutBsdFile(dirinfo, mode, mzthead, select, dataSize, bufferTemp) == false)
 			{
@@ -489,19 +491,23 @@ void MzDisk::ConvertBsdFile(DIRECTORY *dirinfo, unsigned int mode, unsigned int&
 	{
 		int back = -1;
 		std::vector<unsigned char> convTemp;
-		convTemp.resize(readSize, 0);
+		convTemp.resize(dataSize, 0);
 		int j = 0;
-		for(int i = 0; i < readSize; ++ i)
+		for(int i = 0; i < dataSize; ++ i)
 		{
-			if(bufferTemp[i] == 0x0A)
+			// CRLFの場合はLFを消す
+			if((bufferTemp[i] == 0x0A) && (back == 0x0D))
 			{
-				if(!IsKanji(back))
-				{
-					back = bufferTemp[i];
-					continue;
-				}
+				back = bufferTemp[i];
+				continue;
 			}
-			convTemp[j] = bufferTemp[i];
+			unsigned char data = bufferTemp[i];
+			// LFの場合はCRにする
+			if((bufferTemp[i] == 0x0A) && (back != 0x0D))
+			{
+				data = 0x0D;
+			}
+			convTemp[j] = data;
 			++ j;
 			back = bufferTemp[i];
 		}
@@ -1107,8 +1113,7 @@ int MzDisk::GetDirSector( void )
 //============================================================================
 void MzDisk::GetDir(void* dirData, int dirindex)
 {
-	DIRECTORY* dirdata = reinterpret_cast<DIRECTORY*>(dirData);
-	*dirdata = this->directory[dirindex];
+	memcpy(dirData, &this->directory[dirindex], sizeof(DIRECTORY));
 }
 
 //============================================================================
