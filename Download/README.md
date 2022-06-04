@@ -2,6 +2,14 @@
 
 ## ダウンロード
 
+### 2022/06/03 Version 2.0.2
+
+- 新規作成で作ったディスクサイズがおかしかったのを修正。
+- ベタディスクイメージの読み込みに対応した。
+- その他細かいバグを修正。
+
+[MZDiskExplorer202.zip](https://github.com/kuran-kuran/MZDiskExplorer/raw/main/Download/MZDiskExplorer202.zip)
+
 ### 2022/06/03 Version 2.0.1
 
 - 新規作成ができなくなっていたので修正。
