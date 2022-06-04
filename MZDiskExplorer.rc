@@ -120,7 +120,7 @@ BEGIN
         MENUITEM "è„èëÇ´ï€ë∂(&S)\tCtrl+S",           ID_FILE_SAVE
         MENUITEM "ñºëOÇïtÇØÇƒï€ë∂(&A)...",             ID_FILE_SAVE_AS
         MENUITEM "Õﬁ¿√ﬁ®Ω∏≤“∞ºﬁçÏê¨",             ID_FILE_EXPORT_BETA
-        MENUITEM "Õﬁ¿≤“∞ºﬁì«Ç›çûÇ›",                ID_FILE_IMPORT_BETA
+        MENUITEM "Õﬁ¿√ﬁ®Ω∏≤“∞ºﬁì«Ç›çûÇ›",           ID_FILE_IMPORT_BETA
         MENUITEM SEPARATOR
         MENUITEM "ç≈ãﬂégÇ¡ÇΩÃß≤Ÿ",                   ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
