@@ -14,9 +14,9 @@ Mz80Disk::Mz80Disk()
 :diskType(0)
 ,bitmap(NULL)
 ,fileType(0)
-,sectorSize(128)
 ,dirSector(16)
 {
+	this->sectorSize = 128;
 }
 
 //============================================================================
@@ -41,11 +41,8 @@ std::string Mz80Disk::DiskTypeText(void)
 //----------------------------------------------------------------------------
 // In  : path = イメージファイル
 //     : type
-//     : DISKTYPE_MZ2500_2DD   // MZ-2500
-//     : DISKTYPE_MZ2500_2DD40 // MZ-2500
-//     : DISKTYPE_MZ2500_2DD35 // MZ-2500
-//     : DISKTYPE_MZ80B_2D35   // MZ-80B (MZ-80BF)
-//     : DISKTYPE_MZ2000_2D40  // MZ-2000 (MZ-1F07)
+//     : DISKTYPE_MZ80_SP6010_2S   // MZ-80K SP-6010
+//     : DISKTYPE_MZ80_SP6110_2S   // MZ-80K SP-6110 非対応
 // Out : エラーコード ( 0 = 正常 )
 //============================================================================
 void Mz80Disk::Format(int type, int volumeNumber)
@@ -121,16 +118,7 @@ int Mz80Disk::Load(const std::vector<unsigned char>& buffer)
 		this->image.Load(image, header->diskSize);
 		std::vector<unsigned char> buffer;
 		ReadSector(this->bitmap, 14, 2);
-		// ディスク情報格納
-		int trackMax = 0;
-		for(int i = 0; i < D88Image::TRACK_MAX; ++ i)
-		{
-			if(header->trackTable[i] != 0)
-			{
-				++ trackMax;
-			}
-		}
-		ReadDirectory();
+		Update();
 		return 0;
 	}
 	catch(const std::exception& error)
@@ -139,6 +127,22 @@ int Mz80Disk::Load(const std::vector<unsigned char>& buffer)
 	}
 }
 
+void Mz80Disk::Update(void)
+{
+	// ディスク情報格納
+	D88Image::Header header;
+	this->image.GetHeader(header);
+	int trackMax = 0;
+	for(int i = 0; i < D88Image::TRACK_MAX; ++ i)
+	{
+		if(header.trackTable[i] != 0)
+		{
+			++ trackMax;
+		}
+	}
+	ReadDirectory();
+
+}
 int Mz80Disk::Save(std::string path)
 {
 	std::vector<unsigned char> buffer;
@@ -450,7 +454,7 @@ int Mz80Disk::DelFile(int dirindex)
 		DelBitmap(start, 1);
 		std::vector<unsigned char> buffer;
 		ReadSector(buffer, sector, 1);
-		sector = static_cast<int>(buffer[this->sectorSize - 2]) * 16 + static_cast<int>(buffer[this->sectorSize - 1]) - 1;
+		sector = static_cast<int>(buffer[static_cast<size_t>(this->sectorSize) - 2]) * 16 + static_cast<int>(buffer[static_cast<size_t>(this->sectorSize) - 1]) - 1;
 	}
 	this->directory[dirindex].mode = 0;
 	// 管理情報をD88イメージに書き込み

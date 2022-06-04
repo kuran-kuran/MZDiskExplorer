@@ -81,6 +81,7 @@ public:
 	void Format(int type, int volumeNumber);
 	int Load(std::string path);
 	int Load(const std::vector<unsigned char>& buffer);
+	void Update(void);
 	int Save(std::string path);
 	int Save(std::vector<unsigned char>& buffer);
 	int GetFile(int dirindex, std::string path, unsigned int mode);
@@ -108,7 +109,6 @@ private:
 	std::vector<DIRECTORY> directory;
 	int fileType;
 	int clusterSize;
-	int sectorSize;
 	int dirSector;
 	MzDisk(MzDisk&);
 	MzDisk& operator = (MzDisk&);

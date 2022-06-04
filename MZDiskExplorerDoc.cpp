@@ -42,21 +42,28 @@ BEGIN_MESSAGE_MAP(CMZDiskExplorerDoc, CDocument)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_DEL, OnUpdateEditDel)
 	ON_COMMAND(ID_EDIT_DEL, OnEditDel)
 	ON_UPDATE_COMMAND_UI(ID_FILE_EXPORT_BETA, OnUpdateFileExportBeta)
+	ON_UPDATE_COMMAND_UI(ID_FILE_IMPORT_BETA, OnUpdateFileImportBeta)
 	ON_COMMAND(ID_FILE_EXPORT_BETA, OnFileExportBeta)
 	//}}AFX_MSG_MAP
+	ON_COMMAND(ID_FILE_IMPORT_BETA, &CMZDiskExplorerDoc::OnFileImportBeta)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CMZDiskExplorerDoc クラスの構築/消滅
 
 CMZDiskExplorerDoc::CMZDiskExplorerDoc()
+:ImageInit(0)
+,ItemToDirIndex()
+,DirHandle()
+,DirSector()
+,DirHandleCount(0)
+,MzDiskClass(NULL)
+,SaveType(0)
+,Machine(1)
+,FilePath()
+,FirstInit(1)
 {
 	// TODO: この位置に１度だけ呼ばれる構築用のコードを追加してください。
-	MzDiskClass = NULL;
-	FirstInit = 1;
-	SaveType = 0;
-	ImageInit = 0;
-	Machine = 1;
 }
 
 CMZDiskExplorerDoc::~CMZDiskExplorerDoc()
@@ -255,20 +262,7 @@ void CMZDiskExplorerDoc::Serialize(CArchive& ar)
 				AfxThrowArchiveException(CArchiveException::generic, "");
 			}
 			MzDiskClass->Load( readBuffer );
-			// ツリー画面作成
-			DirHandleCount = 0;
-			CTreeCtrl* tree;
-			tree = &LeftView->GetTreeCtrl();
-			tree->DeleteAllItems();
-			DirHandle[ 0 ] = tree->InsertItem( "root" );
-			DirSector[ 0 ] = 0x10;
-			DirHandleCount ++;
-			MakeTree( 0x10, DirHandle[ 0 ] );
-			MzDiskClass->SetDirSector( -1 );
-			// ファイル画面作成
-			MakeFileList( 0x10 );
-			MzDiskClass->SetDirSector( -1 );
-			ImageInit = 1;
+			Update();
 		} else {
 			CTreeCtrl* tree;
 			tree = &LeftView->GetTreeCtrl();
@@ -290,6 +284,26 @@ void CMZDiskExplorerDoc::Serialize(CArchive& ar)
 		pMainFrame = ( CMainFrame* )AfxGetMainWnd();
 		pMainFrame->PutStatusBarSize( str );
 	}
+}
+
+void CMZDiskExplorerDoc::Update()
+{
+	POSITION pos = GetFirstViewPosition();
+	CLeftView* LeftView = (CLeftView*)GetNextView( pos );
+	// ツリー画面作成
+	DirHandleCount = 0;
+	CTreeCtrl* tree;
+	tree = &LeftView->GetTreeCtrl();
+	tree->DeleteAllItems();
+	DirHandle[ 0 ] = tree->InsertItem( "root" );
+	DirSector[ 0 ] = 0x10;
+	DirHandleCount ++;
+	MakeTree( 0x10, DirHandle[ 0 ] );
+	MzDiskClass->SetDirSector( -1 );
+	// ファイル画面作成
+	MakeFileList( 0x10 );
+	MzDiskClass->SetDirSector( -1 );
+	ImageInit = 1;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -377,7 +391,7 @@ int CMZDiskExplorerDoc::MakeTree( int dirsector, HTREEITEM parenthandle )
 			MzDiskClass->GetDir( &dir, i );
 			if ( 0xF == dir.mode ) {
 				char dirname[ 17 ];
-				memcpy( dirname, dir.filename, 17 );
+				memcpy( dirname, dir.filename, 16 );
 				for ( j = 0; j < 17; j ++ )
 				{
 					if ( 0x0D == dirname[ j ] )
@@ -1081,6 +1095,19 @@ void CMZDiskExplorerDoc::OnUpdateFileExportBeta(CCmdUI* pCmdUI)
 	}
 }
 
+void CMZDiskExplorerDoc::OnUpdateFileImportBeta(CCmdUI* pCmdUI) 
+{
+	// TODO: この位置に command update UI ハンドラ用のコードを追加してください
+	if ( 1 == ImageInit )
+	{
+		pCmdUI->Enable( TRUE );
+	}
+	else
+	{
+		pCmdUI->Enable( FALSE );
+	}
+}
+
 void CMZDiskExplorerDoc::OnFileExportBeta() 
 {
 	// TODO: この位置にコマンド ハンドラ用のコードを追加してください
@@ -1095,4 +1122,21 @@ void CMZDiskExplorerDoc::OnFileExportBeta()
 	CString datapath = SelFile.GetPathName();
 	MzDiskClass->ExportBeta(datapath.GetBuffer(260));
 	MessageBox(NULL, "betaイメージの作成が完了しました", "betaイメージ", MB_OK);
+}
+
+
+void CMZDiskExplorerDoc::OnFileImportBeta()
+{
+	// TODO: ここにコマンド ハンドラー コードを追加します。
+	cPath path;
+	path.SetPath(FilePath.GetBuffer(260));
+	path.SetExtName("beta");
+	CFileDialog SelFile( TRUE, "beta", path.GetPath(), OFN_HIDEREADONLY, "BETA file|*.beta|全てのファイル|*.*||" );
+	if ( IDCANCEL == SelFile.DoModal() )
+	{
+		return;
+	}
+	CString datapath = SelFile.GetPathName();
+	MzDiskClass->ImportBeta(datapath.GetBuffer(260));
+	Update();
 }

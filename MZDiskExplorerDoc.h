@@ -71,11 +71,15 @@ protected:
 	afx_msg void OnUpdateEditDel(CCmdUI* pCmdUI);
 	afx_msg void OnEditDel();
 	afx_msg void OnUpdateFileExportBeta(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateFileImportBeta(CCmdUI* pCmdUI);
 	afx_msg void OnFileExportBeta();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 private:
+	void Update();
 	int FirstInit;
+public:
+	afx_msg void OnFileImportBeta();
 };
 
 /////////////////////////////////////////////////////////////////////////////

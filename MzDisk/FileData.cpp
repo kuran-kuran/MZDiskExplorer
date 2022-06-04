@@ -23,6 +23,10 @@ namespace dms
 		{
 			throw std::runtime_error(dms::Format("File not found: %s", path.c_str()));
 		}
+		if(file == NULL)
+		{
+			throw std::runtime_error(dms::Format("File not found: %s", path.c_str()));
+		}
 		long position;
 		fseek(file, 0, SEEK_END);
 		position = ftell(file);
@@ -44,6 +48,10 @@ namespace dms
 		{
 			throw std::runtime_error(dms::Format("Save file open error: %s", path.c_str()));
 		}
+		if(file == NULL)
+		{
+			throw std::runtime_error(dms::Format("Save file open error: %s", path.c_str()));
+		}
 		fwrite(&this->buffer[0], 1, this->buffer.size(), file);
 		fclose(file);
 	}
@@ -57,6 +65,10 @@ namespace dms
 			{
 				throw std::runtime_error(dms::Format("SaveAdd file open error: %s", path.c_str()));
 			}
+		}
+		if(file == NULL)
+		{
+			throw std::runtime_error(dms::Format("SaveAdd file open error: %s", path.c_str()));
 		}
 		fseek(file, 0, SEEK_END);
 		fwrite(&this->buffer[0], 1, this->buffer.size(), file);

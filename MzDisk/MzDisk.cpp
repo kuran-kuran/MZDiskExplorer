@@ -17,9 +17,9 @@ MzDisk::MzDisk()
 ,bitmap(NULL)
 ,fileType(0)
 ,clusterSize(0)
-,sectorSize(256)
 ,dirSector(16)
 {
+	this->sectorSize = 256;
 }
 
 //============================================================================
@@ -78,7 +78,7 @@ void MzDisk::Format(int type, int volumeNumber)
 		return;
 	}
 	// 物理フォーマット
-	this->image.Format(type, 0xBF ^ 0xFF);
+	this->image.Format(type, 0);//0xBF ^ 0xFF);
 	// 論理フォーマット
 	if(type == DISKTYPE_MZ80B_2D35 || type == DISKTYPE_MZ2000_2D40)
 	{
@@ -189,25 +189,33 @@ int MzDisk::Load(const std::vector<unsigned char>& buffer)
 		const void* image = &buffer[0];
 		const D88Image::Header* header = reinterpret_cast<const D88Image::Header*>(image);
 		this->image.Load(image, header->diskSize);
-		std::vector<unsigned char> buffer;
-		ReadSector(this->bitmap, 15, 1);
-		// ディスク情報格納
-		int trackMax = 0;
-		for(int i = 0; i < D88Image::TRACK_MAX; ++ i)
-		{
-			if(header->trackTable[i] != 0)
-			{
-				++ trackMax;
-			}
-		}
-		this->clusterSize = this->sectorSize * (this->bitmap[255] + 1);
-		ReadDirectory();
+		Update();
 		return 0;
 	}
 	catch(const std::exception& error)
 	{
 		return 1;
 	}
+}
+
+void MzDisk::Update(void)
+{
+	D88Image::Header header;
+	this->image.GetHeader(header);
+	std::vector<unsigned char> buffer;
+	this->bitmap.clear();
+	ReadSector(this->bitmap, 15, 1);
+	// ディスク情報格納
+	int trackMax = 0;
+	for(int i = 0; i < D88Image::TRACK_MAX; ++ i)
+	{
+		if(header.trackTable[i] != 0)
+		{
+			++ trackMax;
+		}
+	}
+	this->clusterSize = this->sectorSize * (this->bitmap[255] + 1);
+	ReadDirectory();
 }
 
 int MzDisk::Save(std::string path)

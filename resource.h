@@ -47,6 +47,8 @@
 #define ID_EDIT_DEL                     32780
 #define ID_FILE_EXPORT_BETA             32782
 #define ID_EXPORT_BETA                  32782
+#define ID_32783                        32783
+#define ID_FILE_IMPORT_BETA             32784
 #define ID_STATUSBAR                    57345
 #define ID_INDICATOR_SIZE               59143
 
@@ -56,7 +58,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        145
-#define _APS_NEXT_COMMAND_VALUE         32783
+#define _APS_NEXT_COMMAND_VALUE         32785
 #define _APS_NEXT_CONTROL_VALUE         1024
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
