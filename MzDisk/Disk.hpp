@@ -24,11 +24,13 @@ public:
 	static int DiskType(std::string path);
 	static int DiskType(const std::vector<unsigned char>& buffer);
 	void ExportBeta(std::string path);
+	void ImportBeta(std::string path);
 	virtual int DiskType(void) = 0;
 	virtual std::string DiskTypeText(void) = 0;
 	virtual void Format(int type, int volumeNumber) = 0;
 	virtual int Load(std::string path) = 0;
 	virtual int Load(const std::vector<unsigned char>& buffer) = 0;
+	virtual void Update(void) = 0;
 	virtual int Save(std::string path) = 0;
 	virtual int Save(std::vector<unsigned char>& buffer) = 0;
 	virtual int GetFile(int dirindex, std::string path, unsigned int mode) = 0;
@@ -52,6 +54,7 @@ public:
 protected:
 	void ReverseBuffer(std::vector<unsigned char>& buffer);
 	D88Image image;
+	int sectorSize;
 private:
 	static int DiskType(D88Image& image);
 };

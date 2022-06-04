@@ -41,7 +41,7 @@ public:
 		char name[17]; // ディスクの名前(ASCII + '\0')
 		char reserve[9];
 		char writeProtect; // ライトプロテクト  0x00 なし, 0x10 あり
-		char diskType; // ディスクの種類 0x00 2D, 0x10 2DD, 0x20 2HD, 0x30 1D, 0x40 1DD
+		char diskType; // ディスクの種類 0x00 2D/2S, 0x10 2DD, 0x20 2HD, 0x30 1D, 0x40 1DD
 		int diskSize; // ディスクのサイズ
 		int trackTable[TRACK_MAX]; // トラック部のオフセットテーブル (0Track～163Track, 4*164 = 656(0x290))
 	};
@@ -88,7 +88,7 @@ public:
 	void Save(std::string path);
 	void Save(std::vector<unsigned char>& buffer);
 	void Format(int mediaType, unsigned char clearByte);
-	void Format(int diskType, int track, int sectorCount, int sectorSize, unsigned char clearByte);
+	void Format(int diskType, unsigned char recordingDensity, int track, int sectorCount, int sectorSize, unsigned char clearByte);
 	void GetHeader(Header& header) const;
 	int GetNumberOfSector(int track);
 	void GetSectorInfo(SectorInfo& sectorInfo, int c, int h, int r, int index = 0) const;

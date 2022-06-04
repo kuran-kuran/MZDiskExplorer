@@ -84,19 +84,19 @@ void D88Image::Save(std::vector<unsigned char>& buffer)
 //			  DISK_2D_40_256_16, DISK_2S_35_128_16, DISK_2HD_77_1024_8, DISK_2HD_80_512_15, DISK_2HD_80_512_18
 void D88Image::Format(int mediaType, unsigned char clearByte)
 {
-	static const int diskTypeTable[] = {DISK_2DD, DISK_2D, DISK_2DD, DISK_2D, DISK_2D, DISK_2S, DISK_2HD, DISK_2HD, DISK_2HD};
+	static const int diskTypeTable[] = {DISK_2DD, DISK_2DD, DISK_2DD, DISK_2D, DISK_2D, DISK_2S, DISK_2HD, DISK_2HD, DISK_2HD};
+	static const unsigned char recordingDensityTable[] = {0x0, 0x0, 0x0, 0x40, 0x40, 0x40, 0x01, 0x01, 0x01};
 	static const int trackTable[] = {160, 80, 70, 70, 80, 70, 154, 160, 160};
 	static const int sectorCountTable[] = {16, 16, 16, 16, 16, 16, 8, 15, 18};
 	static const int sectorSizeTable[] = {256, 256, 256, 256, 256, 128, 1024, 512, 512};
 	std::vector<SectorInfo> sectorInfoList;
-	Format(diskTypeTable[mediaType], trackTable[mediaType], sectorCountTable[mediaType], sectorSizeTable[mediaType], clearByte);
+	Format(diskTypeTable[mediaType], recordingDensityTable[mediaType], trackTable[mediaType], sectorCountTable[mediaType], sectorSizeTable[mediaType], clearByte);
 }
 
 // D88ƒCƒ[ƒW‚ð‰Šú‰»‚·‚é
 // diskType: DISK_2S, DISK_2D, DISK_2DD, DISK_2HD, DISK_1D, DISK_1DD
-void D88Image::Format(int diskType, int track, int sectorCount, int sectorSize, unsigned char clearByte)
+void D88Image::Format(int diskType, unsigned char recordingDensity, int track, int sectorCount, int sectorSize, unsigned char clearByte)
 {
-	static const int recordingDensityTable[] = {0x00, 0x00, 0x40, 0x00, 0x00, 0x40, 0x01, 0x00, 0x40};
 	memset(this->diskImage.header.name, 0, sizeof(this->diskImage.header.name));
 	memset(this->diskImage.header.reserve, 0, sizeof(this->diskImage.header.reserve));
 	this->diskImage.header.writeProtect = 0x00;
@@ -115,25 +115,25 @@ void D88Image::Format(int diskType, int track, int sectorCount, int sectorSize, 
 	{
 		TrackImage trackImage;
 		this->diskImage.trackData[trackIndex].sectorImage.clear();
-		for(int sectorIndex = 0; sectorIndex < sectorCount; ++ sectorIndex)
-		{
-			SectorImage sectorImage;
-			sectorImage.sectorInfo.c = trackIndex / 2;
-			sectorImage.sectorInfo.h = trackIndex % 2;
-			sectorImage.sectorInfo.r = sectorIndex + 1;
-			sectorImage.sectorInfo.n = n;
-			sectorImage.sectorInfo.numberOfSector = sectorCount;
-			sectorImage.sectorInfo.recordingDensity = recordingDensityTable[diskType];
-			sectorImage.sectorInfo.deletedMark = 0;
-			sectorImage.sectorInfo.status = 0;
-			memset(sectorImage.sectorInfo.reserve, 0, sizeof(sectorImage.sectorInfo.reserve));
-			sectorImage.sectorInfo.sizeOfData = sectorSize;
-			sectorImage.sectorBuffer.clear();
-			sectorImage.sectorBuffer.resize(sectorSize, clearByte);
-			this->diskImage.trackData[trackIndex].sectorImage.push_back(sectorImage);
-		}
 		if(trackIndex < track)
 		{
+			for(int sectorIndex = 0; sectorIndex < sectorCount; ++ sectorIndex)
+			{
+				SectorImage sectorImage;
+				sectorImage.sectorInfo.c = trackIndex / 2;
+				sectorImage.sectorInfo.h = trackIndex % 2;
+				sectorImage.sectorInfo.r = sectorIndex + 1;
+				sectorImage.sectorInfo.n = n;
+				sectorImage.sectorInfo.numberOfSector = sectorCount;
+				sectorImage.sectorInfo.recordingDensity = recordingDensity;
+				sectorImage.sectorInfo.deletedMark = 0;
+				sectorImage.sectorInfo.status = 0;
+				memset(sectorImage.sectorInfo.reserve, 0, sizeof(sectorImage.sectorInfo.reserve));
+				sectorImage.sectorInfo.sizeOfData = sectorSize;
+				sectorImage.sectorBuffer.clear();
+				sectorImage.sectorBuffer.resize(sectorSize, clearByte);
+				this->diskImage.trackData[trackIndex].sectorImage.push_back(sectorImage);
+			}
 			this->diskImage.header.trackTable[trackIndex] = offset;
 			offset += ((sectorSize + sizeof(SectorInfo))* sectorCount);
 		}

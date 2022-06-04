@@ -120,7 +120,7 @@ BEGIN
         MENUITEM "上書き保存(&S)\tCtrl+S",           ID_FILE_SAVE
         MENUITEM "名前を付けて保存(&A)...",             ID_FILE_SAVE_AS
         MENUITEM "ﾍﾞﾀﾃﾞｨｽｸｲﾒｰｼﾞ作成",             ID_FILE_EXPORT_BETA
-        MENUITEM SEPARATOR
+        MENUITEM "ﾍﾞﾀｲﾒｰｼﾞ読み込み",                ID_FILE_IMPORT_BETA
         MENUITEM SEPARATOR
         MENUITEM "最近使ったﾌｧｲﾙ",                   ID_FILE_MRU_FILE1, GRAYED
         MENUITEM SEPARATOR
@@ -181,15 +181,15 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 193, 56
+IDD_ABOUTBOX DIALOGEX 0, 0, 217, 60
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "MZDiskExplorerのﾊﾞｰｼﾞｮﾝ情報"
 FONT 9, "ＭＳ Ｐゴシック", 0, 0, 0x0
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
-    LTEXT           "MZDiskExplorer Version 2.0.1",IDC_STATIC,40,10,88,8,SS_NOPREFIX
-    LTEXT           "Copyright (C) 2003-2022 by kuran_kuran",IDC_STATIC,40,25,127,8
-    DEFPUSHBUTTON   "OK",IDOK,136,35,50,14,WS_GROUP
+    LTEXT           "MZDiskExplorer Version 2.0.2",IDC_STATIC,40,10,117,8,SS_NOPREFIX
+    LTEXT           "Copyright (C) 2003-2022 by kuran_kuran",IDC_STATIC,40,25,149,8
+    DEFPUSHBUTTON   "OK",IDOK,160,39,50,14,WS_GROUP
 END
 
 IDD_GETFILE DIALOG 0, 0, 259, 79
@@ -316,8 +316,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,0,1,0
- PRODUCTVERSION 2,0,1,0
+ FILEVERSION 2,0,2,0
+ PRODUCTVERSION 2,0,2,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x29L
@@ -333,12 +333,12 @@ BEGIN
         BLOCK "041104b0"
         BEGIN
             VALUE "FileDescription", "MZDiskExplorer"
-            VALUE "FileVersion", "2.0.1.0"
+            VALUE "FileVersion", "2.0.2.0"
             VALUE "InternalName", "MZDiskExplorer"
             VALUE "LegalCopyright", "Copyright (C) 2003-2022 by kuran_kuran"
             VALUE "OriginalFilename", "MZDiskExplorer.exe"
             VALUE "ProductName", "MZDiskExplorer"
-            VALUE "ProductVersion", "2.0.1.0"
+            VALUE "ProductVersion", "2.0.2.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -359,9 +359,9 @@ BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 186
+        RIGHTMARGIN, 210
         TOPMARGIN, 7
-        BOTTOMMARGIN, 49
+        BOTTOMMARGIN, 53
     END
 
     IDD_GETFILE, DIALOG
@@ -686,6 +686,11 @@ BEGIN
     ID_EDIT_PUTBOOT         "ブートプログラムを登録する"
     ID_EDIT_DEL             "ディスクイメージからファイルを消去する"
     ID_EXPORT_BETA          "ベタディスクイメージを作成する"
+END
+
+STRINGTABLE
+BEGIN
+    ID_FILE_IMPORT_BETA     "ベタディスクイメージを読み込む"
 END
 
 #endif    // 日本語 (日本) resources

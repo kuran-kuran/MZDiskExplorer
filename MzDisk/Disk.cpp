@@ -7,6 +7,7 @@
 
 Disk::Disk()
 :image()
+,sectorSize(0)
 {
 }
 
@@ -100,6 +101,69 @@ void Disk::ExportBeta(std::string path)
 			}
 		}
 	}
+}
+
+void Disk::ImportBeta(std::string path)
+{
+	dms::FileData file;
+	file.Load(path);
+	size_t size = file.GetBufferSize();
+	std::vector<unsigned char> betaBuffer;
+	file.GetBuffer(betaBuffer);
+	int diskType = DiskType();
+	D88Image::Header header;
+	this->image.GetHeader(header);
+	int trackMax = -1;
+	for(int i = 0; i < D88Image::TRACK_MAX; ++ i)
+	{
+		if(header.trackTable[i] == 0)
+		{
+			trackMax = i;
+			break;
+		}
+	}
+	if(trackMax <= 0)
+	{
+		return;
+	}
+	int cylinderMax = trackMax / 2;
+	D88Image::SectorInfo sectorInfo;
+	std::vector<unsigned char> sectorBuffer;
+	size_t betaIndex = 0;
+	for(int c = 0; c < cylinderMax; ++ c)
+	{
+		for(int h = 0; h < 2; ++ h)
+		{
+			for(int r = 1; r <= 16; ++ r)
+			{
+				sectorBuffer.clear();
+				int rest = static_cast<int>(size) - static_cast<int>(betaIndex);
+				if(rest > this->sectorSize)
+				{
+					rest = this->sectorSize;
+				}
+				unsigned char* source = reinterpret_cast<unsigned char*>(&betaBuffer[betaIndex]);
+				std::copy(source, source + rest, std::back_inserter(sectorBuffer));
+				if(sectorBuffer.size() < this->sectorSize)
+				{
+					sectorBuffer.resize(this->sectorSize, 0);
+				}
+				if(diskType == Disk::MZ2000)
+				{
+					this->image.GetSectorInfo(sectorInfo, c, 1 - h, r);
+					ReverseBuffer(sectorBuffer);
+					this->image.WriteSector(sectorInfo, sectorBuffer, c, 1 - h, r);
+				}
+				else
+				{
+					this->image.GetSectorInfo(sectorInfo, c, h, r);
+					this->image.WriteSector(sectorInfo, sectorBuffer, c, h, r);
+				}
+				betaIndex += this->sectorSize;
+			}
+		}
+	}
+	Update();
 }
 
 void Disk::ReverseBuffer(std::vector<unsigned char>& buffer)
