@@ -72,6 +72,7 @@ public:
 	void DelBitmap(int start, int length);
 	void SetDirSector(int sector);
 	int GetDirSector(void);
+	int GetDirCount(void);
 	void GetDir(void* dirData, int dirindex);
 	int GetUseBlockSize(void);
 	int GetAllBlockSize(void);

@@ -40,6 +40,7 @@ public:
 	virtual int PutBoot(std::string path, void *iplInfo, unsigned int mode, unsigned char machine = 0x01) = 0;
 	virtual void SetDirSector(int sector) = 0;
 	virtual int GetDirSector(void) = 0;
+	virtual int GetDirCount(void) = 0;
 	virtual void GetDir(void* dirData, int dirindex) = 0;
 	virtual int GetUseBlockSize(void) = 0;
 	virtual int GetClusterSize(void) = 0;

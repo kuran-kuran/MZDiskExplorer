@@ -259,7 +259,7 @@ void CMZDiskExplorerDoc::Serialize(CArchive& ar)
 			else
 			{
 				MzDiskClass = NULL;
-				AfxThrowArchiveException(CArchiveException::generic, "");
+				AfxThrowArchiveException(CArchiveException::genericException, "");
 			}
 			MzDiskClass->Load( readBuffer );
 			Update();
@@ -449,7 +449,8 @@ int CMZDiskExplorerDoc::MakeFileList( int dirsector )
 		int day;
 		int hour;
 		int minute;
-		for ( i = 0; i < 64; i ++ )
+		int dircount = MzDiskClass->GetDirCount();
+		for ( i = 0; i < dircount; i ++ )
 		{
 			struct {
 				unsigned char mode;
@@ -559,7 +560,8 @@ int CMZDiskExplorerDoc::MakeFileList( int dirsector )
 		int day;
 		int hour;
 		int minute;
-		for ( i = 0; i < 28; i ++ )
+		int dircount = MzDiskClass->GetDirCount();
+		for ( i = 0; i < dircount; i ++ )
 		{
 			struct {
 				unsigned char mode;

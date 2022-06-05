@@ -91,6 +91,7 @@ public:
 	int PutBoot(std::string path, void* iplInfo, unsigned int mode, unsigned char machine = 0x01);
 	void SetDirSector(int sector);
 	int GetDirSector(void);
+	int GetDirCount(void);
 	void GetDir(void* dirData, int dirindex);
 	int GetUseBlockSize(void);
 	int GetClusterSize(void);

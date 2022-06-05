@@ -61,7 +61,7 @@ BOOL CMZDiskExplorerApp::InitInstance()
 #ifdef _AFXDLL
 	Enable3dControls();		// 共有 DLL の中で MFC を使用する場合にはここを呼び出してください。
 #else
-	Enable3dControlsStatic();	// MFC と静的にリンクしている場合にはここを呼び出してください。
+	//Enable3dControlsStatic();	// MFC と静的にリンクしている場合にはここを呼び出してください。
 #endif
 
 	// 設定が保存される下のレジストリ キーを変更します。

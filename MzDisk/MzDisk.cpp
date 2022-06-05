@@ -194,6 +194,7 @@ int MzDisk::Load(const std::vector<unsigned char>& buffer)
 	}
 	catch(const std::exception& error)
 	{
+		(void)error;
 		return 1;
 	}
 }
@@ -248,6 +249,7 @@ int MzDisk::Save(std::vector<unsigned char>& buffer)
 	}
 	catch(const std::exception& error)
 	{
+		(void)error;
 		return 1;
 	}
 }
@@ -352,6 +354,7 @@ int MzDisk::GetFile(int dirindex, std::string path, unsigned int mode)
 	}
 	catch(const std::exception& error)
 	{
+		(void)error;
 		return 1;
 	}
 }
@@ -398,12 +401,13 @@ int MzDisk::PutFile(std::string path, void* dirInfo, unsigned int mode, unsigned
 		FILE* fp;
 		if(fopen_s(&fp, path.c_str(), "rb") != 0)
 		{
-			throw std::runtime_error(dms::Format("Can not open file"));
+			// ファイルを読み込むことができない
+			return 2;
 		}
 		if(fp == NULL)
 		{
-			// MZT ファイルを読み込むことができない
-			throw std::runtime_error(dms::Format("Can not read file"));
+			// ファイルを読み込むことができない
+			return 2;
 		}
 		// ファイルサイズ取得
 		fseek(fp, 0, SEEK_END);
@@ -415,7 +419,7 @@ int MzDisk::PutFile(std::string path, void* dirInfo, unsigned int mode, unsigned
 			if(dataSize <= 128)
 			{
 				// ファイルサイズが足りない
-				throw std::runtime_error(dms::Format("Invalid file size"));
+				return 3;
 			}
 			dataSize -= 128;	// ヘッダを除いたデータサイズ
 			// ヘッダ情報作成
@@ -448,7 +452,7 @@ int MzDisk::PutFile(std::string path, void* dirInfo, unsigned int mode, unsigned
 				if(strncmp(this->directory[i].filename, filename, strlen(filename)) == 0)
 				{
 					// 同じファイル名が存在する
-					throw std::runtime_error(dms::Format("Already same file name"));
+					return 5;
 				}
 			}
 		}
@@ -466,21 +470,24 @@ int MzDisk::PutFile(std::string path, void* dirInfo, unsigned int mode, unsigned
 		{
 			if(PutBsdFile(dirinfo, mode, mzthead, select, dataSize, bufferTemp) == false)
 			{
-				throw std::runtime_error(dms::Format("Faild write BSD file"));
+				// ビットマップの空き容量が無い
+				return 4;
 			}
 		}
 		else if(type == FILETYPE_BRD)
 		{
 			if(PutBrdFile(dirinfo, mode, mzthead, select, dataSize, bufferTemp) == false)
 			{
-				throw std::runtime_error(dms::Format("Faild write BRD file"));
+				// ビットマップの空き容量が無い
+				return 4;
 			}
 		}
 		else
 		{
 			if(PutObjFile(dirinfo, mode, mzthead, select, dataSize, bufferTemp, type) == false)
 			{
-				throw std::runtime_error(dms::Format("Faild write BTX or OBJ file"));
+				// ビットマップの空き容量が無い
+				return 4;
 			}
 		}
 		// 管理情報をD88イメージに書き込み
@@ -489,6 +496,7 @@ int MzDisk::PutFile(std::string path, void* dirInfo, unsigned int mode, unsigned
 	}
 	catch(const std::exception& error)
 	{
+		(void)error;
 		return 1;
 	}
 }
@@ -1111,6 +1119,11 @@ void MzDisk::SetDirSector( int sector )
 int MzDisk::GetDirSector( void )
 {
 	return this->dirSector;
+}
+
+int MzDisk::GetDirCount(void)
+{
+	return static_cast<int>(this->directory.size());
 }
 
 //============================================================================

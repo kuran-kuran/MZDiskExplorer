@@ -123,6 +123,7 @@ int Mz80Disk::Load(const std::vector<unsigned char>& buffer)
 	}
 	catch(const std::exception& error)
 	{
+		(void)error;
 		return 1;
 	}
 }
@@ -173,6 +174,7 @@ int Mz80Disk::Save(std::vector<unsigned char>& buffer)
 	}
 	catch(const std::exception& error)
 	{
+		(void)error;
 		return 1;
 	}
 }
@@ -245,6 +247,7 @@ int Mz80Disk::GetFile(int dirindex, std::string path, unsigned int mode)
 	}
 	catch(const std::exception& error)
 	{
+		(void)error;
 		return 1;
 	}
 }
@@ -291,12 +294,13 @@ int Mz80Disk::PutFile(std::string path, void* dirInfo, unsigned int mode, unsign
 		FILE* fp;
 		if(fopen_s(&fp, path.c_str(), "rb") != 0)
 		{
-			throw std::runtime_error(dms::Format("Can not open file"));
+			// ファイルを読み込むことができない
+			return 2;
 		}
 		if(fp == NULL)
 		{
-			// MZT ファイルを読み込むことができない
-			throw std::runtime_error(dms::Format("Can not read file"));
+			// ファイルを読み込むことができない
+			return 2;
 		}
 		// ファイルサイズ取得
 		fseek(fp, 0, SEEK_END);
@@ -308,7 +312,7 @@ int Mz80Disk::PutFile(std::string path, void* dirInfo, unsigned int mode, unsign
 			if(dataSize <= 128)
 			{
 				// ファイルサイズが足りない
-				throw std::runtime_error(dms::Format("Invalid file size"));
+				return 3;
 			}
 			dataSize -= 128;	// ヘッダを除いたデータサイズ
 			// ヘッダ情報作成
@@ -341,7 +345,7 @@ int Mz80Disk::PutFile(std::string path, void* dirInfo, unsigned int mode, unsign
 				if(strncmp(this->directory[i].filename, filename, strlen(filename)) == 0)
 				{
 					// 同じファイル名が存在する
-					throw std::runtime_error(dms::Format("Already same file name"));
+					return 5;
 				}
 			}
 		}
@@ -353,7 +357,8 @@ int Mz80Disk::PutFile(std::string path, void* dirInfo, unsigned int mode, unsign
 		fclose(fp);
 		if(PutFileData(dirinfo, mode, mzthead, select, dataSize, bufferTemp) == false)
 		{
-			throw std::runtime_error(dms::Format("Faild write file"));
+			// ビットマップの空き容量が無い
+			return 4;
 		}
 		// 管理情報をD88イメージに書き込み
 		FlushWrite();
@@ -361,6 +366,7 @@ int Mz80Disk::PutFile(std::string path, void* dirInfo, unsigned int mode, unsign
 	}
 	catch(const std::exception& error)
 	{
+		(void)error;
 		return 1;
 	}
 }
@@ -718,6 +724,11 @@ int Mz80Disk::GetDirSector( void )
 	return this->dirSector;
 }
 
+int Mz80Disk::GetDirCount(void)
+{
+	return static_cast<int>(this->directory.size());
+}
+
 //============================================================================
 //  ディレクトリ情報を取得する
 //----------------------------------------------------------------------------
@@ -941,8 +952,8 @@ void Mz80Disk::ReadDirectory(void)
 	}
 	this->directory.clear();
 	std::vector<unsigned char> buffer;
-	ReadSector(buffer, this->dirSector, 14);
-	size_t directoryCount = this->sectorSize * 14 / 64;
+	ReadSector(buffer, this->dirSector, 48);
+	size_t directoryCount = this->sectorSize * 48 / 64;
 	for(size_t i = 0; i < directoryCount; ++ i)
 	{
 		DIRECTORY* directory = reinterpret_cast<DIRECTORY*>(&buffer[i * 64]);
