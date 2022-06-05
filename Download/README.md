@@ -2,7 +2,15 @@
 
 ## ダウンロード
 
-### 2022/06/03 Version 2.0.2
+### 2022/06/05 Version 2.0.3
+
+- MZ-80Kのディレクトリが94個中の28個しか読み取れないのを修正。
+- ファイル転送時のエラーメッセージがおかしかったのを修正。
+- その他細かいバグを修正。
+
+[MZDiskExplorer203.zip](https://github.com/kuran-kuran/MZDiskExplorer/raw/main/Download/MZDiskExplorer203.zip)
+
+### 2022/06/04 Version 2.0.2
 
 - 新規作成で作ったディスクサイズがおかしかったのを修正。
 - ベタディスクイメージの読み込みに対応した。
