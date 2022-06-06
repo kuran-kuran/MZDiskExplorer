@@ -142,22 +142,25 @@ void Disk::ImportBeta(std::string path)
 				{
 					rest = this->sectorSize;
 				}
-				unsigned char* source = reinterpret_cast<unsigned char*>(&betaBuffer[betaIndex]);
-				std::copy(source, source + rest, std::back_inserter(sectorBuffer));
-				if(sectorBuffer.size() < this->sectorSize)
+				if(betaBuffer.size() > betaIndex)
 				{
-					sectorBuffer.resize(this->sectorSize, 0);
-				}
-				if(diskType == Disk::MZ2000)
-				{
-					this->image.GetSectorInfo(sectorInfo, c, 1 - h, r);
-					ReverseBuffer(sectorBuffer);
-					this->image.WriteSector(sectorInfo, sectorBuffer, c, 1 - h, r);
-				}
-				else
-				{
-					this->image.GetSectorInfo(sectorInfo, c, h, r);
-					this->image.WriteSector(sectorInfo, sectorBuffer, c, h, r);
+					unsigned char* source = reinterpret_cast<unsigned char*>(&betaBuffer[betaIndex]);
+					std::copy(source, source + rest, std::back_inserter(sectorBuffer));
+					if(sectorBuffer.size() < this->sectorSize)
+					{
+						sectorBuffer.resize(this->sectorSize, 0);
+					}
+					if(diskType == Disk::MZ2000)
+					{
+						this->image.GetSectorInfo(sectorInfo, c, 1 - h, r);
+						ReverseBuffer(sectorBuffer);
+						this->image.WriteSector(sectorInfo, sectorBuffer, c, 1 - h, r);
+					}
+					else
+					{
+						this->image.GetSectorInfo(sectorInfo, c, h, r);
+						this->image.WriteSector(sectorInfo, sectorBuffer, c, h, r);
+					}
 				}
 				betaIndex += this->sectorSize;
 			}
@@ -172,4 +175,45 @@ void Disk::ReverseBuffer(std::vector<unsigned char>& buffer)
 	{
 		buffer[i] ^= 0xFF;
 	}
+}
+
+bool Disk::IsNotAvailableFileCharacter(char character)
+{
+	if(character == '\\')
+	{
+		return true;
+	}
+	else if(character == '/')
+	{
+		return true;
+	}
+	else if(character == ':')
+	{
+		return true;
+	}
+	else if(character == '*')
+	{
+		return true;
+	}
+	else if(character == '?')
+	{
+		return true;
+	}
+	else if(character == '\"')
+	{
+		return true;
+	}
+	else if(character == '<')
+	{
+		return true;
+	}
+	else if(character == '>')
+	{
+		return true;
+	}
+	else if(character == '|')
+	{
+		return true;
+	}
+	return false;
 }

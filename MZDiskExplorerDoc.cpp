@@ -16,6 +16,7 @@
 #include "MzDisk/Mz80Disk.hpp"
 #include "path.h"
 #include "MainFrm.h"
+#include <iterator>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -435,6 +436,7 @@ int CMZDiskExplorerDoc::MakeFileList( int dirsector )
 	CListCtrl *list;
 	list = &FileView->GetListCtrl();
 	list->DeleteAllItems();
+	int total = MzDiskClass->GetAllBlockSize() * MzDiskClass->GetClusterSize();
 	// ファイル
 	if(MzDiskClass->DiskType() == Disk::MZ2000)
 	{
@@ -484,10 +486,15 @@ int CMZDiskExplorerDoc::MakeFileList( int dirsector )
 				}
 			}
 			// ファイル名
+			std::string filename = work;
+			if(total >= 655360)
+			{
+				filename = MzDiskClass->ConvertText(work);
+			}
 			item.mask = LVIF_TEXT;
 			item.iItem = itemindex;
 			item.iSubItem = 0;
-			item.pszText = work;
+			item.pszText = &filename[0];
 			list->InsertItem( &item );
 			// モード
 			item.iSubItem = 1;
@@ -594,11 +601,12 @@ int CMZDiskExplorerDoc::MakeFileList( int dirsector )
 					work[ j ] = '\0';
 				}
 			}
+			std::string filename = MzDiskClass->ConvertText(work);
 			// ファイル名
 			item.mask = LVIF_TEXT;
 			item.iItem = itemindex;
 			item.iSubItem = 0;
-			item.pszText = work;
+			item.pszText = &filename[0];
 			list->InsertItem( &item );
 			// モード
 			item.iSubItem = 1;
@@ -722,8 +730,14 @@ void CMZDiskExplorerDoc::OnEditGetboot()
 	cpathname = GetPathName();
 	strcpy_s( pathname, sizeof(pathname), cpathname.GetBuffer( 260 ) );
 	cPath path;
+	std::string name = bootname;
+	int total = MzDiskClass->GetAllBlockSize() * MzDiskClass->GetClusterSize();
+	if(total >= 655360)
+	{
+		name = MzDiskClass->ConvertText(bootname);
+	}
 	path.SetPath( pathname );
-	path.SetName( bootname );
+	path.SetName( &name[0] );
 	path.SetExtName( "" );
 	getbootdialog.SetFile( path.GetPath() );
 	getbootdialog.MzDiskClass = MzDiskClass;

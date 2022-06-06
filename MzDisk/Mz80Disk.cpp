@@ -695,6 +695,77 @@ void Mz80Disk::DelBitmap(int start, int length)
 	WriteUseSize();
 }
 
+// MZ-80Kの文字をWindowsで使える文字に変換する
+std::string Mz80Disk::ConvertText(std::string text)
+{
+	/* MZ-80K/C,1200,700 */
+	static const char asciiCodeAnk[] =
+	{
+		" !\x22#$%&\x27()*+,-./"	/* 20 */
+		"0123456789:;<=>?"		/* 30 */
+		"@ABCDEFGHIJKLMNO"		/* 40 */
+		"PQRSTUVWXYZ[.].."		/* 50 */
+		"................"		/* 60 */
+		".............\\.."		/* 70 */
+		".｡｢｣､.ｦｧｨｩｪｫｬｭｮｯ"		/* 80 */
+		"ｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿ"		/* 90 */
+		"ﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏ"		/* A0 */
+		"ﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝﾞﾟ"		/* B0 */
+		"................"		/* C0 */
+		"................"		/* D0 */
+		"................"		/* E0 */
+		"................"		/* F0 */
+	};
+	static const char asciiCodeSjis[] =
+	{
+		"　！”＃＄％＆’（）＊＋，－．／"	/* 20 */
+		"０１２３４５６７８９：；＜＝＞？"	/* 30 */
+		"＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯ"	/* 40 */
+		"ＰＱＲＳＴＵＶＷＸＹＺ［＼］↑←"	/* 50 */
+		"※※※※※※※※※※※※※※※※"	/* 60 */
+		"日月火水木金土生年時分秒円￥￡▼"	/* 70 */
+		"↓。「」、．ヲァィゥェォャュョッ"	/* 80 */
+		"ーアイウエオカキクケコサシスセソ"	/* 90 */
+		"タチツテトナニヌネノハヒフヘホマ"	/* A0 */
+		"ミムメモヤユヨラリルレロワン゛゜"	/* B0 */
+		"→※※※※※※※※※※※※※※※"	/* C0 */
+		"※※※※※※※※※※※※※※※※"	/* D0 */
+		"※※※※※※※※※※※※※※※※"	/* E0 */
+		"※※※※※※※※※※※※※※※π"	/* F0 */
+	};
+	std::string result;
+	for(size_t i = 0; i < text.size(); ++ i)
+	{
+		if(IsNotAvailableFileCharacter(text[i]) == true)
+		{
+			result += "_";
+		}
+		else
+		{
+			std::string ascii;
+			std::string sjis;
+			int asciiIndex = static_cast<unsigned char>(text[i]) - 0x20;
+			ascii.push_back(asciiCodeAnk[asciiIndex]);
+			int index = asciiIndex * 2;
+			sjis.push_back(asciiCodeSjis[index]);
+			sjis.push_back(asciiCodeSjis[index + 1]);
+			if((ascii == ".") && (sjis == "※"))
+			{
+				result += "_";
+			}
+			else if((ascii == ".") && (sjis != "※"))
+			{
+				result += sjis;
+			}
+			else
+			{
+				result += ascii;
+			}
+		}
+	}
+	return result;
+}
+
 //============================================================================
 //  ディレクトリ位置を設定する
 //----------------------------------------------------------------------------

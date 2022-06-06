@@ -1091,6 +1091,92 @@ void MzDisk::DelBitmap(int start, int length)
 	WriteUseSize();
 }
 
+// MZ-80B/2000‚Ì•¶š‚ğWindows‚Åg‚¦‚é•¶š‚É•ÏŠ·‚·‚é
+// MZ-2500‚ÌƒfƒBƒXƒN‚Ì‚ÉŒë•ÏŠ·‚µ‚Ä‚µ‚Ü‚¤‚Ì‚Åˆê’Ug‚í‚È‚¢‚æ‚¤‚É‚µ‚½
+std::string MzDisk::ConvertText(std::string text)
+{
+	/* MZ-80B,2000,2200 */
+	static const char asciiCodeAnk[] =
+	{
+		" !\x22#$%&\x27()*+,-./"	/* 20 */
+		"0123456789:;<=>?"		/* 30 */
+		"@ABCDEFGHIJKLMNO"		/* 40 */
+		"PQRSTUVWXYZ[\\]^*"		/* 50 */
+		"*abcdefghijklmno"		/* 60 */
+		"pqrstuvwxyz{|}~."		/* 70 */
+		"................"		/* 80 */
+		".\\.............."		/* 90 */
+		".¡¢£WX¦§¨©ª«ÔÕÖ¯"		/* A0 */
+		"*±²³´µ¶·¸¹º»¼½¾¿"		/* B0 */
+		"ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏ"		/* C0 */
+		"ĞÑÒÓÔÕÖ×ØÙÚÛÜİŞß"		/* D0 */
+		"ZABCDEFGHIJKLMNO"		/* E0 */
+		"0123456789PQRST."		/* F0 */
+	};
+	static const char asciiCodeSjis[] =
+	{
+		"@Ih”“•fij–{C|D^"	/* 20 */
+		"‚O‚P‚Q‚R‚S‚T‚U‚V‚W‚XFGƒ„H"	/* 30 */
+		"—‚`‚a‚b‚c‚d‚e‚f‚g‚h‚i‚j‚k‚l‚m‚n"	/* 40 */
+		"‚o‚p‚q‚r‚s‚t‚u‚v‚w‚x‚ym_nOP"	/* 50 */
+		"L‚‚‚‚ƒ‚„‚…‚†‚‡‚ˆ‚‰‚Š‚‹‚Œ‚‚‚"	/* 60 */
+		"‚‚‘‚’‚“‚”‚•‚–‚—‚˜‚™‚šobp`¦"	/* 70 */
+		"¦«ª¨©¦¦¦¦¦¦¦¦¦¦¦"	/* 80 */
+		"¦¦œ›¦¦¦¦¦¦¦¦¦¦¦"	/* 90 */
+		"¦Buv‚v‚wƒ’ƒ@ƒBƒDƒFƒHƒƒƒ…ƒ‡ƒb"	/* A0 */
+		"¦ƒAƒCƒEƒGƒIƒJƒLƒNƒPƒRƒTƒVƒXƒZƒ\"	/* B0 */
+		"ƒ^ƒ`ƒcƒeƒgƒiƒjƒkƒlƒmƒnƒqƒtƒwƒzƒ}"	/* C0 */
+		"ƒ~ƒ€ƒƒ‚ƒ„ƒ†ƒˆƒ‰ƒŠƒ‹ƒŒƒƒƒ“JK"	/* D0 */
+		"‚y‚`‚a‚b‚c‚d‚e‚f‚g‚h‚i‚j‚k‚l‚m‚n"	/* E0 */
+		"‚O‚P‚Q‚R‚S‚T‚U‚V‚W‚X‚o‚p‚q‚r‚sƒÎ"	/* F0 */
+	};
+	std::string result;
+	bool kanji = false;
+	for(size_t i = 0; i < text.size(); ++ i)
+	{
+		if(kanji == true)
+		{
+			// Š¿š‚Ì2ƒoƒCƒg–Ú
+			result += text[i];
+			kanji = false;
+		}
+		else if(IsKanji(static_cast<unsigned char>(text[i])))
+		{
+			// Š¿š‚Ì1ƒoƒCƒg–Ú
+			result += text[i];
+			kanji = true;
+		}
+		else if(IsNotAvailableFileCharacter(text[i]) == true)
+		{
+			// ƒtƒ@ƒCƒ‹–¼‚Ég‚¦‚È‚¢•¶š
+			result += "_";
+		}
+		else
+		{
+			std::string ascii;
+			std::string sjis;
+			int asciiIndex = static_cast<unsigned char>(text[i]) - 0x20;
+			ascii.push_back(asciiCodeAnk[asciiIndex]);
+			int index = asciiIndex * 2;
+			sjis.push_back(asciiCodeSjis[index]);
+			sjis.push_back(asciiCodeSjis[index + 1]);
+			if((ascii == ".") && (sjis == "¦"))
+			{
+				result += "_";
+			}
+			else if((ascii == ".") && (sjis != "¦"))
+			{
+				result += sjis;
+			}
+			else
+			{
+				result += ascii;
+			}
+		}
+	}
+	return result;
+}
+
 //============================================================================
 //  ƒfƒBƒŒƒNƒgƒŠˆÊ’u‚ğİ’è‚·‚é
 //----------------------------------------------------------------------------

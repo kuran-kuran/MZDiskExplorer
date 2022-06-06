@@ -18,6 +18,9 @@ static char THIS_FILE[] = __FILE__;
 
 cGetBoot::cGetBoot(CWnd* pParent /*=NULL*/)
 	: CDialog(cGetBoot::IDD, pParent)
+	,FileName()
+	,MzDiskClass(NULL)
+	,SaveType(0)
 {
 	//{{AFX_DATA_INIT(cGetBoot)
 		// メモ - ClassWizard はこの位置にマッピング用のマクロを追加または削除します。
@@ -111,7 +114,6 @@ void cGetBoot::OnSelchangeFiletype()
 	m_Path.ReplaceSel( path.GetPath(), FALSE );
 	ZeroMemory( FileName, sizeof( FileName ) );
 	size = m_Path.GetLine( 0, FileName, 260 );
-	FileName[size] = '\0';
 	SaveType = select;
 }
 
@@ -119,12 +121,11 @@ void cGetBoot::OnRef()
 {
 	// TODO: この位置にコントロール通知ハンドラ用のコードを追加してください
 	CString datapath;
-	char savepath[ 260 ];
+	char savepath[ 261 ];
 	int select;
-	char temp[ 260 ];
+	char temp[ 261 ];
 	ZeroMemory( temp, sizeof( temp ) );
 	int size = m_Path.GetLine( 0, temp, 260 );
-	temp[size] = '\0';
 	select = m_FileType.GetCurSel();
 	if ( 0 == select )
 	{
