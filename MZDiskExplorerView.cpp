@@ -220,8 +220,14 @@ void CMZDiskExplorerView::OnEditGetfile()
 			// ダイアログ表示
 			cGetFile getfiledialog;
 			cPath path;
+			int total = pDoc->MzDiskClass->GetAllBlockSize() * pDoc->MzDiskClass->GetClusterSize();
+			std::string name = filename;
+			if(total >= 655360)
+			{
+				name = pDoc->MzDiskClass->ConvertText(filename);
+			}
 			path.SetPath( pathname );
-			path.SetName( filename );
+			path.SetName( name.c_str() );
 			path.SetExtName( extname );
 			strcpy_s( getfiledialog.FileName, sizeof(getfiledialog.FileName), path.GetPath() );
 			getfiledialog.MzDiskClass = pDoc->MzDiskClass;
@@ -286,8 +292,9 @@ void CMZDiskExplorerView::OnEditGetfile()
 			// ダイアログ表示
 			cGetFile getfiledialog;
 			cPath path;
+			std::string name = pDoc->MzDiskClass->ConvertText(filename);
 			path.SetPath( pathname );
-			path.SetName( filename );
+			path.SetName( name.c_str() );
 			path.SetExtName( extname );
 			strcpy_s( getfiledialog.FileName, sizeof(getfiledialog.FileName), path.GetPath() );
 			getfiledialog.MzDiskClass = pDoc->MzDiskClass;

@@ -35,11 +35,11 @@ class cPath {
 	public:
 		cPath();
 		~cPath();
-		void SetDrive( char *drive );
-		void SetDir( char *dir );
-		void SetName( char *name );
-		void SetExtName( char *extname );
-		void SetPath( char *path );
+		void SetDrive( const char *drive );
+		void SetDir( const char *dir );
+		void SetName( const char *name );
+		void SetExtName( const char *extname );
+		void SetPath( const char *path );
 		char* GetPath( unsigned int mode = PATH_MODE_ALL );
 		char* GetDrive( void );
 		char* GetDir( void );
@@ -51,10 +51,10 @@ class cPath {
 		cPath& operator = ( cPath &path );
 		int DividePath( void );
 		void MakePath( unsigned int mode = PATH_MODE_ALL );
-		char* StrCopy( char *dest, size_t dest_size, char *source );
-		char* StrCopyPart( char *dest, char *source, int sourcestart, int sourceend );
-		char* StrAdd( char *dest, size_t dest_size, char *source );
-		char* StrAddPart( char *dest, char *source, int sourcestart, int sourceend );
+		char* StrCopy( char *dest, size_t dest_size, const char *source );
+		char* StrCopyPart( char *dest, const char *source, int sourcestart, int sourceend );
+		char* StrAdd( char *dest, size_t dest_size, const char *source );
+		char* StrAddPart( char *dest, const char *source, int sourcestart, int sourceend );
 		char Drive[ PATH_STRING_MAX ];
 		char Dir[ PATH_STRING_MAX ];
 		char Name[ PATH_STRING_MAX ];

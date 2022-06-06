@@ -103,6 +103,7 @@ public:
 	int GetBitmapSerial(int length);
 	void SetBitmap(int start, int length);
 	void DelBitmap(int start, int length);
+	std::string ConvertText(std::string text);
 //	void DisplayDir(void);
 private:
 	unsigned char diskType;

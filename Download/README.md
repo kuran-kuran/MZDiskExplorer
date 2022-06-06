@@ -2,6 +2,13 @@
 
 ## ダウンロード
 
+### 2022/06/06 Version 2.0.4
+
+- ファイル名が文字化けするのを修正。
+- その他細かいバグを修正。
+
+[MZDiskExplorer204.zip](https://github.com/kuran-kuran/MZDiskExplorer/raw/main/Download/MZDiskExplorer204.zip)
+
 ### 2022/06/05 Version 2.0.3
 
 - MZ-80Kのディレクトリが94個中の28個しか読み取れないのを修正。

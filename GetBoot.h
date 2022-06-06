@@ -15,7 +15,7 @@ class cGetBoot : public CDialog
 {
 // コンストラクション
 public:
-	char FileName[ MAX_PATH ];
+	char FileName[ MAX_PATH + 1 ];
 	Disk *MzDiskClass;
 	int SaveType;
 	void SetFile( char *filename );

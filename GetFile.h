@@ -16,9 +16,9 @@ class cGetFile : public CDialog
 // コンストラクション
 public:
 	int AllOk;
-	char ExtName[ 260 ];
+	char ExtName[ 261 ];
 	int DirIndex;
-	char FileName[ MAX_PATH ];
+	char FileName[ MAX_PATH + 1 ];
 	void SetFile( char *filename );
 	cGetFile(CWnd* pParent = NULL);   // 標準のコンストラクタ
 	Disk *MzDiskClass;

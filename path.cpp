@@ -51,7 +51,7 @@ void cPath::Release( void )
 //----------------------------------------------------------------------------
 // In  : drive = ドライブ
 //============================================================================
-void cPath::SetDrive( char *drive )
+void cPath::SetDrive( const char *drive )
 {
 	StrCopy( Drive, sizeof(Drive), drive );
 	MakePath();
@@ -62,7 +62,7 @@ void cPath::SetDrive( char *drive )
 //----------------------------------------------------------------------------
 // In  : dir = ディレクトリパス
 //============================================================================
-void cPath::SetDir( char *dir )
+void cPath::SetDir( const char *dir )
 {
 	StrCopy( Dir, sizeof(Dir), dir );
 	MakePath();
@@ -73,7 +73,7 @@ void cPath::SetDir( char *dir )
 //----------------------------------------------------------------------------
 // In  : name = ファイルネーム
 //============================================================================
-void cPath::SetName( char *name )
+void cPath::SetName( const char *name )
 {
 	StrCopy( Name, sizeof(Name), name );
 	MakePath();
@@ -84,7 +84,7 @@ void cPath::SetName( char *name )
 //----------------------------------------------------------------------------
 // In  : extname = 拡張子
 //============================================================================
-void cPath::SetExtName( char *extname )
+void cPath::SetExtName( const char *extname )
 {
 	StrCopy( ExtName, sizeof(ExtName), extname );
 	MakePath();
@@ -95,7 +95,7 @@ void cPath::SetExtName( char *extname )
 //----------------------------------------------------------------------------
 // In  : path = パス
 //============================================================================
-void cPath::SetPath( char *path )
+void cPath::SetPath( const char *path )
 {
 	Release();
 	StrCopy( Path, sizeof(Path), path );
@@ -237,7 +237,7 @@ void cPath::MakePath( unsigned int mode )
 //     : source = コピー元
 // Out : dest のポインタ
 //============================================================================
-char* cPath::StrCopy( char *dest, size_t dest_size, char *source )
+char* cPath::StrCopy( char *dest, size_t dest_size, const char *source )
 {
 	strcpy_s( dest, dest_size, source );
 	return dest;
@@ -252,7 +252,7 @@ char* cPath::StrCopy( char *dest, size_t dest_size, char *source )
 //     : sourceend = コピー元の最後の位置
 // Out : dest のポインタ
 //============================================================================
-char* cPath::StrCopyPart( char *dest, char *source, int sourcestart, int sourceend )
+char* cPath::StrCopyPart( char *dest, const char *source, int sourcestart, int sourceend )
 {
 	int sourceindex;
 	int destindex = 0;
@@ -272,7 +272,7 @@ char* cPath::StrCopyPart( char *dest, char *source, int sourcestart, int sourcee
 //     : source = コピー元
 // Out : dest のポインタ
 //============================================================================
-char* cPath::StrAdd( char *dest, size_t dest_size, char *source )
+char* cPath::StrAdd( char *dest, size_t dest_size, const char *source )
 {
 	strcat_s( dest, dest_size, source );
 	return dest;
@@ -287,7 +287,7 @@ char* cPath::StrAdd( char *dest, size_t dest_size, char *source )
 //     : sourceend = コピー元の最後の位置
 // Out : dest のポインタ
 //============================================================================
-char* cPath::StrAddPart( char *dest, char *source, int sourcestart, int sourceend )
+char* cPath::StrAddPart( char *dest, const char *source, int sourcestart, int sourceend )
 {
 	size_t destindex = strlen( dest );
 	for (size_t sourceindex = sourcestart; sourceindex <= sourceend; sourceindex ++ )
