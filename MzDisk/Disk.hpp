@@ -38,6 +38,8 @@ public:
 	virtual int DelFile(int dirindex) = 0;
 	virtual int GetBoot(std::string path, unsigned int mode) = 0;
 	virtual int PutBoot(std::string path, void *iplInfo, unsigned int mode, unsigned char machine = 0x01) = 0;
+	virtual int GetSystem(std::string path, unsigned int mode) = 0;
+	virtual int PutSystem(std::string path, void* iplInfo, unsigned int mode) = 0;
 	virtual void SetDirSector(int sector) = 0;
 	virtual int GetDirSector(void) = 0;
 	virtual int GetDirCount(void) = 0;

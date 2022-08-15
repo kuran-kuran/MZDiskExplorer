@@ -19,6 +19,10 @@ static char THIS_FILE[] = __FILE__;
 
 cPutBoot::cPutBoot(CWnd* pParent /*=NULL*/)
 	: CDialog(cPutBoot::IDD, pParent)
+	,Machine(0)
+	,FileType(0)
+	,RunAdr(0)
+	,MzDiskClass(NULL)
 {
 	//{{AFX_DATA_INIT(cPutBoot)
 		// メモ - ClassWizard はこの位置にマッピング用のマクロを追加または削除します。
@@ -77,7 +81,7 @@ BOOL cPutBoot::OnInitDialog()
 void cPutBoot::OnOK() 
 {
 	// TODO: この位置にその他の検証用のコードを追加してください
-	int result;
+	int result = 1;
 	if(MzDiskClass->DiskType() == Disk::MZ2000)
 	{
 		char temp[ 261 ];

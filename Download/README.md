@@ -2,6 +2,12 @@
 
 ## ダウンロード
 
+### 2022/08/15 Version 2.0.5
+
+- MZ-80K SP-6010形式のディスクのシステムプログラムの取り出し、書き込みに対応しました。
+
+[MZDiskExplorer205.zip](https://github.com/kuran-kuran/MZDiskExplorer/raw/main/Download/MZDiskExplorer205.zip)
+
 ### 2022/06/06 Version 2.0.4
 
 - ファイル名が文字化けするのを修正。

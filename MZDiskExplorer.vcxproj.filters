@@ -32,6 +32,7 @@
     <ClCompile Include="MzDisk\MzDisk.cpp">
       <Filter>MzDisk</Filter>
     </ClCompile>
+    <ClCompile Include="GetSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="debug.h" />
@@ -67,6 +68,7 @@
     <ClInclude Include="MzDisk\MzDisk.hpp">
       <Filter>MzDisk</Filter>
     </ClInclude>
+    <ClInclude Include="GetSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="MZDiskExplorer.reg" />
