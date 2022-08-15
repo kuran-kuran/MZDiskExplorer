@@ -255,6 +255,7 @@
     <ClCompile Include="debug.cpp" />
     <ClCompile Include="GetBoot.cpp" />
     <ClCompile Include="GetFile.cpp" />
+    <ClCompile Include="GetSystem.cpp" />
     <ClCompile Include="LeftView.cpp" />
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="MakeNewDisk.cpp" />
@@ -319,6 +320,7 @@
     <ClInclude Include="generic.h" />
     <ClInclude Include="GetBoot.h" />
     <ClInclude Include="GetFile.h" />
+    <ClInclude Include="GetSystem.h" />
     <ClInclude Include="LeftView.h" />
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="MakeNewDisk.h" />

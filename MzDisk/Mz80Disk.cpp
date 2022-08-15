@@ -499,7 +499,7 @@ int Mz80Disk::GetBoot(std::string path, unsigned int mode)
 		MZTHEAD mzthead;
 		memset(&mzthead, 0, sizeof(MZTHEAD));
 		mzthead.mode = 1;
-		memcpy(mzthead.filename, "IplBoot", 7);
+		memcpy(mzthead.filename, "Boot", 7);
 		for(int i = 0; i < 17; ++ i)
 		{
 			if(mzthead.filename[i] == 0)
@@ -509,6 +509,8 @@ int Mz80Disk::GetBoot(std::string path, unsigned int mode)
 			}
 		}
 		mzthead.size = this->sectorSize * 14;
+		mzthead.loadAdr = 0x9800;
+		mzthead.runAdr = 0x9800;
 		// ヘッダ情報書き込み
 		fwrite(&mzthead, 1, 128, fp);
 	}
@@ -574,6 +576,114 @@ int Mz80Disk::PutBoot(std::string path, void* iplInfo, unsigned int mode, unsign
 	fread(&bufferFile[0], 1, datasize, fp);
 	fclose(fp);
 	WriteSector(bufferFile, 0, fileSectorCount);
+	FlushWrite();
+	return 0;
+}
+
+//============================================================================
+//  ディスクイメージからしててむプログラムを取り出す
+//----------------------------------------------------------------------------
+// In  : path = 保存位置
+//     : mode = ファイルモード
+// Out : 0 = 正常終了
+//============================================================================
+int Mz80Disk::GetSystem(std::string path, unsigned int mode)
+{
+	std::vector<unsigned char> iplBuffer;
+	ReadSector(iplBuffer, 0, 1);
+	if(iplBuffer[0] != 0xC3)
+	{
+		// 起動ディスクではありません
+		return 1;
+	}
+	FILE *fp;
+	if(fopen_s(&fp, path.c_str(), "wb") != 0)
+	{
+		return 1;
+	}
+	if(fp == NULL)
+	{
+		return 1;
+	}
+	int writesize = this->sectorSize * 184;
+	if((mode & FILEMODE_MASK) == FILEMODE_MZT)
+	{
+		// ヘッダ情報作成
+		MZTHEAD mzthead;
+		memset(&mzthead, 0, sizeof(MZTHEAD));
+		mzthead.mode = 1;
+		memcpy(mzthead.filename, "System", 7);
+		for(int i = 0; i < 17; ++ i)
+		{
+			if(mzthead.filename[i] == 0)
+			{
+				mzthead.filename[i] = '\xD';
+				break;
+			}
+		}
+		mzthead.size = writesize;
+		mzthead.loadAdr = 0x1200;
+		mzthead.runAdr = 0x1200;
+		// ヘッダ情報書き込み
+		fwrite(&mzthead, 1, 128, fp);
+	}
+	// データ書き込み
+	std::vector<unsigned char> writeBuffer;
+	int sectorSize = (writesize + this->sectorSize - 1) / this->sectorSize;
+	ReadSector(writeBuffer, 64, sectorSize);
+	fwrite(&writeBuffer[0], 1, writesize, fp);
+	// 書き込み終了
+	fclose( fp );
+	return 0;
+}
+
+//============================================================================
+//  ディスクイメージにシステムプログラムを書き込む
+//----------------------------------------------------------------------------
+// In  : path = ファイル名
+//     : mode = ファイルモード
+//     :   FILEMODE_MZT
+//     :   FILEMODE_BIN
+// Out : 0 = 正常終了
+//============================================================================
+int Mz80Disk::PutSystem(std::string path, void* iplInfo, unsigned int mode)
+{
+	// ファイルを読み込む
+	FILE *fp;
+	if(fopen_s(&fp, path.c_str(), "rb") != 0)
+	{
+		return 1;
+	}
+	if(fp == NULL)
+	{
+		// ファイルを読み込むことができない
+		return 1;
+	}
+	// ファイルサイズ取得
+	fseek(fp, 0, SEEK_END);
+	int datasize = ftell(fp);
+	fseek(fp, 0, SEEK_SET);
+	MZTHEAD mzthead;
+	if(mode == FILEMODE_MZT)
+	{
+		if(datasize <= 128)
+		{
+			// ファイルサイズが足りない
+			return 2;
+		}
+		datasize -= 128;	// ヘッダを除いたデータサイズ
+							// ヘッダ情報作成
+		memset(&mzthead, 0, sizeof(MZTHEAD));
+		fread(&mzthead, 128, 1, fp);
+	}
+	// ファイルデータを読み込む
+	int fileSectorCount = (datasize + this->sectorSize - 1) / this->sectorSize;
+	int fileBufferSize = fileSectorCount * this->sectorSize;
+	std::vector<unsigned char> bufferFile;
+	bufferFile.resize(fileBufferSize, 0);
+	fread(&bufferFile[0], 1, datasize, fp);
+	fclose(fp);
+	WriteSector(bufferFile, 64, fileSectorCount);
 	FlushWrite();
 	return 0;
 }

@@ -13,6 +13,8 @@
 #define IDD_PUTBOOT                     134
 #define IDD_NEWDISK                     136
 #define IDD_FILEINFO                    138
+#define IDD_GETSYSTEM                   139
+#define IDD_PUTBOOT2                    139
 #define IDC_PATH                        1000
 #define IDC_REF                         1001
 #define IDC_STATIC2                     1002
@@ -49,6 +51,10 @@
 #define ID_EXPORT_BETA                  32782
 #define ID_32783                        32783
 #define ID_FILE_IMPORT_BETA             32784
+#define ID_32785                        32785
+#define ID_32786                        32786
+#define ID_EDIT_PUTSYSTEM               32787
+#define ID_EDIT_GETSYSTEM               32788
 #define ID_STATUSBAR                    57345
 #define ID_INDICATOR_SIZE               59143
 
@@ -57,8 +63,8 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        145
-#define _APS_NEXT_COMMAND_VALUE         32785
+#define _APS_NEXT_RESOURCE_VALUE        148
+#define _APS_NEXT_COMMAND_VALUE         32789
 #define _APS_NEXT_CONTROL_VALUE         1024
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
