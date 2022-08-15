@@ -10,6 +10,7 @@
 #include "GetBoot.h"
 #include "PutFile.h"
 #include "PutBoot.h"
+#include "GetSystem.h"
 #include "MakeNewDisk.h"
 #include "MzDisk/Disk.hpp"
 #include "MzDisk/MzDisk.hpp"
@@ -47,6 +48,10 @@ BEGIN_MESSAGE_MAP(CMZDiskExplorerDoc, CDocument)
 	ON_COMMAND(ID_FILE_EXPORT_BETA, OnFileExportBeta)
 	//}}AFX_MSG_MAP
 	ON_COMMAND(ID_FILE_IMPORT_BETA, &CMZDiskExplorerDoc::OnFileImportBeta)
+	ON_COMMAND(ID_EDIT_GETSYSTEM, &CMZDiskExplorerDoc::OnEditGetsystem)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_GETSYSTEM, &CMZDiskExplorerDoc::OnUpdateEditGetsystem)
+	ON_COMMAND(ID_EDIT_PUTSYSTEM, &CMZDiskExplorerDoc::OnEditPutsystem)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_PUTSYSTEM, &CMZDiskExplorerDoc::OnUpdateEditPutsystem)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -721,7 +726,14 @@ void CMZDiskExplorerDoc::OnEditGetboot()
 	}
 	else
 	{
-		strcpy_s(bootname, 12, "Boot.mzt");
+		if(SaveType == 0)
+		{
+			strcpy_s(bootname, 12, "Boot");
+		}
+		else
+		{
+			strcpy_s(bootname, 12, "Boot.mzt");
+		}
 	}
 	// ダイアログ表示
 	cGetBoot getbootdialog;
@@ -1155,4 +1167,148 @@ void CMZDiskExplorerDoc::OnFileImportBeta()
 	CString datapath = SelFile.GetPathName();
 	MzDiskClass->ImportBeta(datapath.GetBuffer(260));
 	Update();
+}
+
+
+// MZ-80Kのシステムプログラム取得
+void CMZDiskExplorerDoc::OnEditGetsystem()
+{
+	// TODO: ここにコマンド ハンドラー コードを追加します。
+	if ( 0 == ImageInit )
+	{
+		return;
+	}
+	if (MzDiskClass == NULL)
+	{
+		return;
+	}
+	if (MzDiskClass->DiskType() != Disk::MZ80K_SP6010)
+	{
+		return;
+	}
+	GetSystem getSystemDiialog;
+	char pathname[ 260 ];
+	CString cpathname = GetPathName();
+	strcpy_s( pathname, sizeof(pathname), cpathname.GetBuffer( 260 ) );
+	cPath path;
+	std::string name = "System";
+	if(SaveType == 1)
+	{
+		name = name + ".mzt";
+	}
+	path.SetPath( pathname );
+	path.SetName( &name[0] );
+	path.SetExtName( "" );
+	getSystemDiialog.SetFile( path.GetPath() );
+	getSystemDiialog.MzDiskClass = MzDiskClass;
+	getSystemDiialog.SaveType = SaveType;
+	getSystemDiialog.DoModal();
+	SaveType = getSystemDiialog.SaveType;
+}
+
+void CMZDiskExplorerDoc::OnUpdateEditGetsystem(CCmdUI* pCmdUI)
+{
+	// TODO:ここにコマンド更新 UI ハンドラー コードを追加します。
+	if (( 1 == ImageInit ) && (MzDiskClass != NULL)  && (MzDiskClass->DiskType() == Disk::MZ80K_SP6010))
+	{
+		pCmdUI->Enable( TRUE );
+	}
+	else
+	{
+		pCmdUI->Enable( FALSE );
+	}
+}
+
+
+void CMZDiskExplorerDoc::OnEditPutsystem()
+{
+	// TODO: ここにコマンド ハンドラー コードを追加します。
+	if ( 0 == ImageInit )
+	{
+		return;
+	}
+	if (MzDiskClass == NULL)
+	{
+		return;
+	}
+	if (MzDiskClass->DiskType() != Disk::MZ80K_SP6010)
+	{
+		return;
+	}
+	// TODO: この位置にコマンド ハンドラ用のコードを追加してください
+	CString datapath = GetPathName();
+	CFileDialog SelFile( TRUE, NULL, NULL, OFN_HIDEREADONLY, "全てのファイル|*.*|MZT file|*.mzt||" );
+	if ( IDCANCEL == SelFile.DoModal() )
+	{
+		return;
+	}
+	datapath = SelFile.GetPathName();
+	cPath path;
+	path.SetPath( datapath.GetBuffer( 260 ) );
+	CFile file;
+	size_t size;
+	int fileType = 0;
+	file.Open( path.GetPath(), CFile::modeRead );
+	if ( 0 == _stricmp( path.GetExtName(), "MZT" ) )
+	{
+		MzDisk::MZTHEAD mzthead;
+		char filename[ 18 ];
+		ZeroMemory(filename, sizeof(filename));
+		int i;
+		file.Read( &mzthead, 128 );
+		strncpy_s( filename, sizeof(filename), mzthead.filename, 17 );
+		for ( i = 0; i < 17; i ++ )
+		{
+			if ( 0xD == filename[ i ] )
+			{
+				filename[ i ] = '\0';
+			}
+		}
+		fileType = 0;	// MZT
+	}
+	else
+	{
+		fileType = 1;	// BIN
+	}
+	size = file.GetLength();
+	file.Close();
+	if (fileType == 0)
+	{
+		size -= 128;
+	}
+	if ( size > 23552 )
+	{
+		MessageBox( NULL, "書き込むファイルのサイズが大きすぎます.\n最大 23552 バイトまでです.", "エラー", MB_OK );
+	}
+	else
+	{
+		// プログラム書き込み
+		MzDiskClass->PutSystem(datapath.GetBuffer(260), NULL, fileType);
+		// ビットマップ書き込み
+		int start = 0;
+		int length = 184;
+		MzDiskClass->SetBitmap(start, length);
+		// ステータスバー描画
+		CMainFrame *pMainFrame;
+		char str[ 200 ];
+		int use = MzDiskClass->GetUseBlockSize() * MzDiskClass->GetClusterSize();
+		int total = MzDiskClass->GetAllBlockSize() * MzDiskClass->GetClusterSize();
+		int free = total - use;
+		sprintf_s( str, sizeof(str), "Type: %s    Size: %d/%d    Free: %d", MzDiskClass->DiskTypeText().c_str(), use, total, free );
+		pMainFrame = ( CMainFrame* )AfxGetMainWnd();
+		pMainFrame->PutStatusBarSize( str );
+	}
+}
+
+void CMZDiskExplorerDoc::OnUpdateEditPutsystem(CCmdUI* pCmdUI)
+{
+	// TODO:ここにコマンド更新 UI ハンドラー コードを追加します。
+	if (( 1 == ImageInit ) && (MzDiskClass != NULL) && (MzDiskClass->DiskType() == Disk::MZ80K_SP6010))
+	{
+		pCmdUI->Enable( TRUE );
+	}
+	else
+	{
+		pCmdUI->Enable( FALSE );
+	}
 }

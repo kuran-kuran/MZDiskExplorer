@@ -89,6 +89,8 @@ public:
 	int DelFile(int dirindex);
 	int GetBoot(std::string path, unsigned int mode);
 	int PutBoot(std::string path, void* iplInfo, unsigned int mode, unsigned char machine = 0x01);
+	int GetSystem(std::string path, unsigned int mode);
+	int PutSystem(std::string path, void* iplInfo, unsigned int mode);
 	void SetDirSector(int sector);
 	int GetDirSector(void);
 	int GetDirCount(void);

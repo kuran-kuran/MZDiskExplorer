@@ -80,6 +80,10 @@ private:
 	int FirstInit;
 public:
 	afx_msg void OnFileImportBeta();
+	afx_msg void OnEditGetsystem();
+	afx_msg void OnUpdateEditGetsystem(CCmdUI* pCmdUI);
+	afx_msg void OnEditPutsystem();
+	afx_msg void OnUpdateEditPutsystem(CCmdUI* pCmdUI);
 };
 
 /////////////////////////////////////////////////////////////////////////////
