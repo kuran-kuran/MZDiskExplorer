@@ -45,6 +45,7 @@ public:
 	int SaveType;
 	int Machine;
 	CString FilePath;
+	bool isUpdated;
 	virtual ~CMZDiskExplorerDoc();
 	int MakeFileList( int dirsector );
 	int MakeTree( int dirsector, HTREEITEM parenthandle );

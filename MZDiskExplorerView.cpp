@@ -365,6 +365,7 @@ void CMZDiskExplorerView::OnNMDblclk(NMHDR* pNMHDR, LRESULT* pResult)
 		editfileDialog.DoModal();
 		// ƒtƒ@ƒCƒ‹‰æ–Êì¬
 		pDoc->MakeFileList(pDoc->MzDiskClass->GetDirSector());
+		pDoc->isUpdated = true;
 	}
 	*pResult = 0;
 }
