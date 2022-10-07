@@ -499,7 +499,7 @@ int Mz80Disk::GetBoot(std::string path, unsigned int mode)
 		MZTHEAD mzthead;
 		memset(&mzthead, 0, sizeof(MZTHEAD));
 		mzthead.mode = 1;
-		memcpy(mzthead.filename, "Boot", 7);
+		memcpy(mzthead.filename, "BOOT", 7);
 		for(int i = 0; i < 17; ++ i)
 		{
 			if(mzthead.filename[i] == 0)
@@ -612,7 +612,7 @@ int Mz80Disk::GetSystem(std::string path, unsigned int mode)
 		MZTHEAD mzthead;
 		memset(&mzthead, 0, sizeof(MZTHEAD));
 		mzthead.mode = 1;
-		memcpy(mzthead.filename, "System", 7);
+		memcpy(mzthead.filename, "SYSTEM", 7);
 		for(int i = 0; i < 17; ++ i)
 		{
 			if(mzthead.filename[i] == 0)
@@ -623,7 +623,7 @@ int Mz80Disk::GetSystem(std::string path, unsigned int mode)
 		}
 		mzthead.size = writesize;
 		mzthead.loadAdr = 0x1200;
-		mzthead.runAdr = 0x1200;
+		mzthead.runAdr = 0x21FA;
 		// ƒwƒbƒ_î•ñ‘‚«ž‚Ý
 		fwrite(&mzthead, 1, 128, fp);
 	}
