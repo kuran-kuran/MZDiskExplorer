@@ -60,6 +60,8 @@ protected:
 	afx_msg void OnUpdateViewStyles(CCmdUI* pCmdUI);
 	afx_msg void OnViewStyle(UINT nCommandID);
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnClose();
 };
 
 /////////////////////////////////////////////////////////////////////////////

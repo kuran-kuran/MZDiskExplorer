@@ -7,6 +7,7 @@
 #include "MainFrm.h"
 #include "LeftView.h"
 #include "MZDiskExplorerView.h"
+#include "MZDiskExplorerDoc.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -27,6 +28,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	//}}AFX_MSG_MAP
 	ON_UPDATE_COMMAND_UI_RANGE(AFX_ID_VIEW_MINIMUM, AFX_ID_VIEW_MAXIMUM, OnUpdateViewStyles)
 	ON_COMMAND_RANGE(AFX_ID_VIEW_MINIMUM, AFX_ID_VIEW_MAXIMUM, OnViewStyle)
+	ON_WM_CLOSE()
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -144,7 +146,7 @@ void CMainFrame::OnUpdateViewStyles(CCmdUI* pCmdUI)
 	// TODO: このコードを変更・拡張して、 View メニューの選択を処理する
 	// ようにしてください。
 
-	CMZDiskExplorerView* pView = GetRightPane(); 
+	CMZDiskExplorerView* pView = GetRightPane();
 
 	// もし右側のペインが作成されないかビューではないなら、
 	// この範囲でコマンドを無効にします
@@ -253,5 +255,25 @@ void CMainFrame::PutStatusBarSize( LPCTSTR str )
 	if( n >= 0 )
 	{
 		m_wndStatusBar.SetPaneText( n,str );
+	}
+}
+
+// 終了確認ダイアログ
+void CMainFrame::OnClose()
+{
+	// TODO: ここにメッセージ ハンドラー コードを追加するか、既定の処理を呼び出します。
+	CMZDiskExplorerView* pView = GetRightPane();
+	CMZDiskExplorerDoc* pDoc = pView->GetDocument();
+	ASSERT_VALID(pDoc);
+	if(pDoc->isUpdated)
+	{
+		if(MessageBox("変更した内容が保存されていませんが\n本当に終了しますか？", "確認", MB_OKCANCEL) == IDOK)
+		{
+			CFrameWnd::OnClose();
+		}
+	}
+	else
+	{
+		CFrameWnd::OnClose();
 	}
 }

@@ -253,6 +253,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="debug.cpp" />
+    <ClCompile Include="EditFile.cpp" />
     <ClCompile Include="GetBoot.cpp" />
     <ClCompile Include="GetFile.cpp" />
     <ClCompile Include="GetSystem.cpp" />
@@ -317,6 +318,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="debug.h" />
+    <ClInclude Include="EditFile.h" />
     <ClInclude Include="generic.h" />
     <ClInclude Include="GetBoot.h" />
     <ClInclude Include="GetFile.h" />

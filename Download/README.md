@@ -1,6 +1,15 @@
 # MZDiskExplorer
 
 ## ダウンロード
+### 2022/10/07 Version 2.0.6
+
+- ファイルダブルクリックでファイル情報を編集できるようにしました。
+- 終了時に確認ダイアログを表示するようにしました。
+- MZ-80ブートプログラム、システムプログラムのfilenameを大文字にしました。
+- ファイル書き込み時に日付の編集が無効になっていたのを修正しました。
+- MZ-80システムプログラムのrunAdrを1200hから21FAhに変更しました。
+
+[MZDiskExplorer206.zip](https://github.com/kuran-kuran/MZDiskExplorer/raw/main/Download/MZDiskExplorer206.zip)
 
 ### 2022/08/15 Version 2.0.5
 

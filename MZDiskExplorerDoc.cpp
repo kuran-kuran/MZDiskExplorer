@@ -68,6 +68,7 @@ CMZDiskExplorerDoc::CMZDiskExplorerDoc()
 ,Machine(1)
 ,FilePath()
 ,FirstInit(1)
+,isUpdated(false)
 {
 	// TODO: この位置に１度だけ呼ばれる構築用のコードを追加してください。
 }
@@ -195,6 +196,7 @@ BOOL CMZDiskExplorerDoc::OnNewDocument()
 				pMainFrame = ( CMainFrame* )AfxGetMainWnd();
 				pMainFrame->PutStatusBarSize( str );
 				FilePath = "Blank.d88";
+				isUpdated = true;
 			}
 		}
 	}
@@ -230,6 +232,7 @@ void CMZDiskExplorerDoc::Serialize(CArchive& ar)
 		file = ar.GetFile();
 		ar.Flush();
 		ar.Write( &writeBuffer[0], static_cast<UINT>(writeBuffer.size()) );
+		isUpdated = false;
 	}
 	else
 	{
@@ -916,6 +919,7 @@ void CMZDiskExplorerDoc::OnEditPutfile(CString datapath)
 	sprintf_s( str, sizeof(str), "Type: %s    Size: %d/%d    Free: %d", MzDiskClass->DiskTypeText().c_str(), use, total, free );
 	pMainFrame = ( CMainFrame* )AfxGetMainWnd();
 	pMainFrame->PutStatusBarSize( str );
+	isUpdated = true;
 }
 
 void CMZDiskExplorerDoc::OnUpdateEditPutboot(CCmdUI* pCmdUI) 
@@ -998,6 +1002,7 @@ void CMZDiskExplorerDoc::OnEditPutboot()
 		sprintf_s( str, sizeof(str), "Type: %s    Size: %d/%d    Free: %d", MzDiskClass->DiskTypeText().c_str(), use, total, free );
 		pMainFrame = ( CMainFrame* )AfxGetMainWnd();
 		pMainFrame->PutStatusBarSize( str );
+		isUpdated = true;
 	}
 }
 
@@ -1067,6 +1072,7 @@ void CMZDiskExplorerDoc::OnEditDel()
 		sprintf_s( str, sizeof(str), "Type: %s    Size: %d/%d    Free: %d Bytes", MzDiskClass->DiskTypeText().c_str(), use, total, free );
 		pMainFrame = ( CMainFrame* )AfxGetMainWnd();
 		pMainFrame->PutStatusBarSize( str );
+		isUpdated = true;
 	}
 	else if(MzDiskClass->DiskType() == Disk::MZ80K_SP6010)
 	{
@@ -1107,6 +1113,7 @@ void CMZDiskExplorerDoc::OnEditDel()
 		sprintf_s( str, sizeof(str), "Type: %s    Size: %d/%d    Free: %d Bytes", MzDiskClass->DiskTypeText().c_str(), use, total, free );
 		pMainFrame = ( CMainFrame* )AfxGetMainWnd();
 		pMainFrame->PutStatusBarSize( str );
+		isUpdated = true;
 	}
 }
 
@@ -1167,6 +1174,7 @@ void CMZDiskExplorerDoc::OnFileImportBeta()
 	CString datapath = SelFile.GetPathName();
 	MzDiskClass->ImportBeta(datapath.GetBuffer(260));
 	Update();
+	isUpdated = true;
 }
 
 
@@ -1297,6 +1305,7 @@ void CMZDiskExplorerDoc::OnEditPutsystem()
 		sprintf_s( str, sizeof(str), "Type: %s    Size: %d/%d    Free: %d", MzDiskClass->DiskTypeText().c_str(), use, total, free );
 		pMainFrame = ( CMainFrame* )AfxGetMainWnd();
 		pMainFrame->PutStatusBarSize( str );
+		isUpdated = true;
 	}
 }
 

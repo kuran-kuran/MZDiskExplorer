@@ -7,6 +7,7 @@
 #include "MZDiskExplorerDoc.h"
 #include "MZDiskExplorerView.h"
 #include "GetFile.h"
+#include "EditFile.h"
 #include "MzDisk/Disk.hpp"
 #include "MzDisk/MzDisk.hpp"
 #include "MzDisk/Mz80Disk.hpp"
@@ -33,6 +34,7 @@ BEGIN_MESSAGE_MAP(CMZDiskExplorerView, CListView)
 	ON_COMMAND(ID_FILE_PRINT, CListView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_DIRECT, CListView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, CListView::OnFilePrintPreview)
+	ON_NOTIFY_REFLECT(NM_DBLCLK, &CMZDiskExplorerView::OnNMDblclk)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -344,4 +346,26 @@ void CMZDiskExplorerView::OnDropFiles(HDROP hDropInfo)
 			pDoc->OnEditPutfile(cpathname);
 		}
 	}
+}
+
+// ファイルをダブルクリックした
+void CMZDiskExplorerView::OnNMDblclk(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
+	// TODO: ここにコントロール通知ハンドラー コードを追加します。
+	int index = pNMItemActivate->iItem;
+	if(index != -1)
+	{
+		CMZDiskExplorerDoc* pDoc = GetDocument();
+		ASSERT_VALID(pDoc);
+		// ダブルクリックで選択したのでファイル取り出しへ
+		EditFile editfileDialog;
+		editfileDialog.MzDiskClass = pDoc->MzDiskClass;
+		editfileDialog.dirIndex = pDoc->ItemToDirIndex[ index ];
+		editfileDialog.DoModal();
+		// ファイル画面作成
+		pDoc->MakeFileList(pDoc->MzDiskClass->GetDirSector());
+		pDoc->isUpdated = true;
+	}
+	*pResult = 0;
 }
