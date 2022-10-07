@@ -57,6 +57,8 @@ protected:
 	DECLARE_MESSAGE_MAP()
 private:
 	int ColumnFlag;
+public:
+	afx_msg void OnNMDblclk(NMHDR* pNMHDR, LRESULT* pResult);
 };
 
 #ifndef _DEBUG  // MZDiskExplorerView.cpp ファイルがデバッグ環境の時使用されます。

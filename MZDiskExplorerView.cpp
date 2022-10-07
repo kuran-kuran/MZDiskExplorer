@@ -33,6 +33,7 @@ BEGIN_MESSAGE_MAP(CMZDiskExplorerView, CListView)
 	ON_COMMAND(ID_FILE_PRINT, CListView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_DIRECT, CListView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, CListView::OnFilePrintPreview)
+	ON_NOTIFY_REFLECT(NM_DBLCLK, &CMZDiskExplorerView::OnNMDblclk)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -344,4 +345,18 @@ void CMZDiskExplorerView::OnDropFiles(HDROP hDropInfo)
 			pDoc->OnEditPutfile(cpathname);
 		}
 	}
+}
+
+// ファイルをダブルクリックした
+void CMZDiskExplorerView::OnNMDblclk(NMHDR* pNMHDR, LRESULT* pResult)
+{
+	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
+	// TODO: ここにコントロール通知ハンドラー コードを追加します。
+	int index = pNMItemActivate->iItem;
+	if(index != -1)
+	{
+		// ダブルクリックで選択したのでファイル取り出しへ
+		OnEditGetfile();
+	}
+	*pResult = 0;
 }

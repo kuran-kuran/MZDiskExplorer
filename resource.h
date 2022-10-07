@@ -15,6 +15,9 @@
 #define IDD_FILEINFO                    138
 #define IDD_GETSYSTEM                   139
 #define IDD_PUTBOOT2                    139
+#define IDD_PUTFILE2                    139
+#define IDD_PUTFILE1                    140
+#define IDD_EDITFILE                    140
 #define IDC_PATH                        1000
 #define IDC_REF                         1001
 #define IDC_STATIC2                     1002
