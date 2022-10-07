@@ -7,6 +7,7 @@
 #include "MZDiskExplorerDoc.h"
 #include "MZDiskExplorerView.h"
 #include "GetFile.h"
+#include "EditFile.h"
 #include "MzDisk/Disk.hpp"
 #include "MzDisk/MzDisk.hpp"
 #include "MzDisk/Mz80Disk.hpp"
@@ -355,8 +356,15 @@ void CMZDiskExplorerView::OnNMDblclk(NMHDR* pNMHDR, LRESULT* pResult)
 	int index = pNMItemActivate->iItem;
 	if(index != -1)
 	{
+		CMZDiskExplorerDoc* pDoc = GetDocument();
+		ASSERT_VALID(pDoc);
 		// ダブルクリックで選択したのでファイル取り出しへ
-		OnEditGetfile();
+		EditFile editfileDialog;
+		editfileDialog.MzDiskClass = pDoc->MzDiskClass;
+		editfileDialog.dirIndex = pDoc->ItemToDirIndex[ index ];
+		editfileDialog.DoModal();
+		// ファイル画面作成
+		pDoc->MakeFileList(pDoc->MzDiskClass->GetDirSector());
 	}
 	*pResult = 0;
 }

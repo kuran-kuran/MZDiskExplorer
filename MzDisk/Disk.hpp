@@ -44,6 +44,7 @@ public:
 	virtual int GetDirSector(void) = 0;
 	virtual int GetDirCount(void) = 0;
 	virtual void GetDir(void* dirData, int dirindex) = 0;
+	virtual void SetDir(void* dirData, int dirindex) = 0;
 	virtual int GetUseBlockSize(void) = 0;
 	virtual int GetClusterSize(void) = 0;
 	virtual int GetAllBlockSize(void) = 0;

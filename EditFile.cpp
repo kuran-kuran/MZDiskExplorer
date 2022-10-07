@@ -1,24 +1,20 @@
-// PutFile.cpp : ƒCƒ“ƒvƒŠƒƒ“ƒe[ƒVƒ‡ƒ“ ƒtƒ@ƒCƒ‹
+ï»¿// EditFile.cpp : å®Ÿè£…ãƒ•ã‚¡ã‚¤ãƒ«
 //
 
 #include "stdafx.h"
 #include "MZDiskExplorer.h"
-#include "PutFile.h"
+#include "EditFile.h"
+#include "afxdialogex.h"
 #include "MzDisk/MzDisk.hpp"
 #include "MzDisk/Mz80Disk.hpp"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-/////////////////////////////////////////////////////////////////////////////
-// cPutFile ƒ_ƒCƒAƒƒO
+// EditFile ãƒ€ã‚¤ã‚¢ãƒ­ã‚°
 
+IMPLEMENT_DYNAMIC(EditFile, CDialog)
 
-cPutFile::cPutFile(CWnd* pParent /*=NULL*/)
-	: CDialog(cPutFile::IDD, pParent)
+EditFile::EditFile(CWnd* pParent /*=nullptr*/)
+	: CDialog(IDD_EDITFILE, pParent)
 ,DataPath()
 ,FileName()
 ,Mode(0)
@@ -44,17 +40,17 @@ cPutFile::cPutFile(CWnd* pParent /*=NULL*/)
 ,m_FileSize()
 ,m_FileName()
 ,m_Attr()
+,dirIndex(0)
 {
-	//{{AFX_DATA_INIT(cPutFile)
-		// ƒƒ‚ - ClassWizard ‚Í‚±‚ÌˆÊ’u‚Éƒ}ƒbƒsƒ“ƒO—p‚Ìƒ}ƒNƒ‚ð’Ç‰Á‚Ü‚½‚Ííœ‚µ‚Ü‚·B
-	//}}AFX_DATA_INIT
 }
 
+EditFile::~EditFile()
+{
+}
 
-void cPutFile::DoDataExchange(CDataExchange* pDX)
+void EditFile::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(cPutFile)
 	DDX_Control(pDX, IDC_HOUR, m_Hour);
 	DDX_Control(pDX, IDC_MONTH, m_Month);
 	DDX_Control(pDX, IDC_MINUTE, m_Minute);
@@ -66,22 +62,74 @@ void cPutFile::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_FILESIZE, m_FileSize);
 	DDX_Control(pDX, IDC_FILENAME, m_FileName);
 	DDX_Control(pDX, IDC_ATTR, m_Attr);
-	//}}AFX_DATA_MAP
 }
 
 
-BEGIN_MESSAGE_MAP(cPutFile, CDialog)
-	//{{AFX_MSG_MAP(cPutFile)
-	ON_WM_CREATE()
-	//}}AFX_MSG_MAP
+BEGIN_MESSAGE_MAP(EditFile, CDialog)
 END_MESSAGE_MAP()
 
-BOOL cPutFile::OnInitDialog() 
+
+// EditFile ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ ãƒãƒ³ãƒ‰ãƒ©ãƒ¼
+
+
+BOOL EditFile::OnInitDialog()
 {
-	char temp[ 20 ];
 	CDialog::OnInitDialog();
-	
-	// TODO: ‚±‚ÌˆÊ’u‚É‰Šú‰»‚Ì•â‘«ˆ—‚ð’Ç‰Á‚µ‚Ä‚­‚¾‚³‚¢
+
+	// TODO: ã“ã“ã«åˆæœŸåŒ–ã‚’è¿½åŠ ã—ã¦ãã ã•ã„
+	char work[17];
+	if(MzDiskClass->DiskType() == Disk::MZ2000)
+	{
+		MzDisk::DIRECTORY dir;
+		MzDiskClass->GetDir(&dir, dirIndex);
+		if((0 == dir.mode) || (0x80 == dir.mode) || (0x82 == dir.mode) || (0xF == dir.mode))
+		{
+			return FALSE;
+		}
+		memcpy(work, dir.filename, 17);
+		for (int j = 0; j < 17; j ++)
+		{
+			if(0x0D == work[j])
+			{
+				work[j] = '\0';
+			}
+		}
+		FileName = work;
+		Mode = dir.mode;
+		Attr = dir.attr;
+		FileSize = dir.size;
+		LoadAdr = dir.loadAdr;
+		RunAdr = dir.runAdr;
+		Year = ( dir.date & 0xF ) + ( ( dir.date >> 4 ) & 0xF ) * 10;
+		Month = ( ( dir.date >> 11 ) & 0xF ) + ( ( dir.date >> 15 ) & 0x1 ) * 10;
+		Day = ( ( dir.date >> 5 ) & 0x8 ) + ( ( dir.date >> 21 ) & 0x7 ) + ( ( dir.date >> 9 ) & 0x3 ) * 10;
+		Hour = ( ( dir.date >> 31 ) & 0x1 ) + ( ( dir.date >> 15 ) & 0xE ) + ( ( dir.date >> 19 ) & 0x3 ) * 10;
+		Minute = ( ( dir.date >> 24 ) & 0xF ) + ( ( dir.date >> 28 ) & 7 ) * 10;
+	}
+	else if(MzDiskClass->DiskType() == Disk::MZ80K_SP6010)
+	{
+		Mz80Disk::DIRECTORY dir;
+		MzDiskClass->GetDir(&dir, dirIndex);
+		if((0 == dir.mode) || (0x80 == dir.mode) || (0x82 == dir.mode) || (0xF == dir.mode))
+		{
+			return FALSE;
+		}
+		memcpy(work, dir.filename, 17);
+		for (int j = 0; j < 17; j ++)
+		{
+			if(0x0D == work[j])
+			{
+				work[j] = '\0';
+			}
+		}
+		FileName = work;
+		Mode = dir.mode;
+		Attr = dir.attr;
+		FileSize = dir.size;
+		LoadAdr = dir.loadAdr;
+	}
+
+	char temp[ 20 ];
 	m_FileName.SetSel( 0, -1, FALSE );
 	m_FileName.Clear();
 	m_FileName.ReplaceSel( FileName.GetBuffer( 260 ) );
@@ -130,16 +178,18 @@ BOOL cPutFile::OnInitDialog()
 		m_Hour.EnableWindow(TRUE);
 		m_Minute.EnableWindow(TRUE);
 	}
-	return TRUE;  // ƒRƒ“ƒgƒ[ƒ‹‚ÉƒtƒH[ƒJƒX‚ðÝ’è‚µ‚È‚¢‚Æ‚«A–ß‚è’l‚Í TRUE ‚Æ‚È‚è‚Ü‚·
-	              // —áŠO: OCX ƒvƒƒpƒeƒB ƒy[ƒW‚Ì–ß‚è’l‚Í FALSE ‚Æ‚È‚è‚Ü‚·
+	return TRUE;  // return TRUE unless you set the focus to a control
+				  // ä¾‹å¤– : OCX ãƒ—ãƒ­ãƒ‘ãƒ†ã‚£ ãƒšãƒ¼ã‚¸ã¯å¿…ãš FALSE ã‚’è¿”ã—ã¾ã™ã€‚
 }
 
-void cPutFile::OnOK() 
+
+void EditFile::OnOK()
 {
-	// TODO: ‚±‚ÌˆÊ’u‚É‚»‚Ì‘¼‚ÌŒŸØ—p‚ÌƒR[ƒh‚ð’Ç‰Á‚µ‚Ä‚­‚¾‚³‚¢
+	// TODO: ã“ã“ã«ç‰¹å®šãªã‚³ãƒ¼ãƒ‰ã‚’è¿½åŠ ã™ã‚‹ã‹ã€ã‚‚ã—ãã¯åŸºåº•ã‚¯ãƒ©ã‚¹ã‚’å‘¼ã³å‡ºã—ã¦ãã ã•ã„ã€‚
 	if(MzDiskClass->DiskType() == Disk::MZ2000)
 	{
 		MzDisk::DIRECTORY dir;
+		MzDiskClass->GetDir(&dir, dirIndex);
 		int i;
 		char temp[ 261 ];
 		char *temp2;
@@ -169,7 +219,7 @@ void cPutFile::OnOK()
 		size = m_RunAdr.GetLine( 0, temp, 260 );
 		temp[size] = '\0';
 		RunAdr = (unsigned short)strtol( temp, &temp2, 16 );
-		// “ú•t
+		// æ—¥ä»˜
 		size = m_Year.GetLine(0, temp, 260);
 		temp[size] = '\0';
 		Year = (int)strtol(temp, &temp2, 10);
@@ -213,49 +263,22 @@ void cPutFile::OnOK()
 		dir.loadAdr = LoadAdr;
 		dir.runAdr = RunAdr;
 		dir.date = ( ( ( Year % 100 ) / 10 ) << 28 ) +
-					( ( ( Year % 100 ) % 10 ) << 24 ) +
-					( ( Month / 10 ) << 23 ) +
-					( ( Month % 10 ) << 19 ) +
-					( ( Day / 10 ) << 17 ) +
-					( ( Day % 10 ) << 13 ) +
-					( ( Hour / 10 ) << 11 ) +
-					( ( Hour % 10 ) << 7 ) +
-					( ( Minute / 10 ) << 4 ) +
-					( ( Minute % 10 ) );
+			( ( ( Year % 100 ) % 10 ) << 24 ) +
+			( ( Month / 10 ) << 23 ) +
+			( ( Month % 10 ) << 19 ) +
+			( ( Day / 10 ) << 17 ) +
+			( ( Day % 10 ) << 13 ) +
+			( ( Hour / 10 ) << 11 ) +
+			( ( Hour % 10 ) << 7 ) +
+			( ( Minute / 10 ) << 4 ) +
+			( ( Minute % 10 ) );
 		dir.date = ( dir.date >> 24 ) + ( ( dir.date >> 8 ) & 0xFF00 ) + ( ( dir.date << 8 ) & 0xFF0000 ) + ( ( dir.date << 24 ) & 0xFF000000 );
-		int result;
-		if ( 0 == FileType )
-		{
-			result = MzDiskClass->PutFile( DataPath.GetBuffer( 260 ), &dir, Disk::FILEMODE_BIN, Mode );
-		}
-		else
-		{
-			result = MzDiskClass->PutFile( DataPath.GetBuffer( 260 ), &dir, Disk::FILEMODE_MZT, Mode );
-		}
-		if( 1 == result )
-		{
-			MessageBox( "ƒfƒBƒXƒNƒCƒ[ƒW‚Ö‚Ìƒtƒ@ƒCƒ‹‘‚«ž‚Ý‚ÉŽ¸”s‚µ‚Ü‚µ‚½. \nƒfƒBƒŒƒNƒgƒŠ‚É‹ó‚«‚ª‚ ‚è‚Ü‚¹‚ñ.", "ƒGƒ‰[", MB_OK );
-		}
-		else if( ( 2 == result ) || ( 3 == result ) )
-		{
-			MessageBox( "ƒfƒBƒXƒNƒCƒ[ƒW‚Ö‚Ìƒtƒ@ƒCƒ‹‘‚«ž‚Ý‚ÉŽ¸”s‚µ‚Ü‚µ‚½. \nƒtƒ@ƒCƒ‹‚ð“Ç‚Ýž‚Þ‚±‚Æ‚ª‚Å‚«‚Ü‚¹‚ñ.", "ƒGƒ‰[", MB_OK );
-		}
-		else if( 4 == result )
-		{
-			MessageBox( "ƒfƒBƒXƒNƒCƒ[ƒW‚Ö‚Ìƒtƒ@ƒCƒ‹‘‚«ž‚Ý‚ÉŽ¸”s‚µ‚Ü‚µ‚½. \nƒrƒbƒgƒ}ƒbƒv‚Ì‹ó‚«‚ª‚ ‚è‚Ü‚¹‚ñ.", "ƒGƒ‰[", MB_OK );
-		}
-		else if( 5 == result )
-		{
-			MessageBox( "ƒfƒBƒXƒNƒCƒ[ƒW‚Ö‚Ìƒtƒ@ƒCƒ‹‘‚«ž‚Ý‚ÉŽ¸”s‚µ‚Ü‚µ‚½. \n“¯‚¶ƒtƒ@ƒCƒ‹–¼‚ª‚·‚Å‚É‘¶Ý‚µ‚Ü‚·.", "ƒGƒ‰[", MB_OK );
-		}
-		else if( 0 != result )
-		{
-			MessageBox( "ƒfƒBƒXƒNƒCƒ[ƒW‚Ö‚Ìƒtƒ@ƒCƒ‹‘‚«ž‚Ý‚ÉŽ¸”s‚µ‚Ü‚µ‚½. \nŒ´ˆö‚Í•s–¾‚Å‚·.", "ƒGƒ‰[", MB_OK );
-		}
+		MzDiskClass->SetDir(&dir, dirIndex);
 	}
 	else if(MzDiskClass->DiskType() == Disk::MZ80K_SP6010)
 	{
 		Mz80Disk::DIRECTORY dir;
+		MzDiskClass->GetDir(&dir, dirIndex);
 		int i;
 		char temp[ 261 ];
 		char *temp2;
@@ -312,35 +335,7 @@ void cPutFile::OnOK()
 		}
 		dir.loadAdr = LoadAdr;
 		dir.runAdr = RunAdr;
-		int result;
-		if ( 0 == FileType )
-		{
-			result = MzDiskClass->PutFile( DataPath.GetBuffer( 260 ), &dir, Disk::FILEMODE_BIN, Mode );
-		}
-		else
-		{
-			result = MzDiskClass->PutFile( DataPath.GetBuffer( 260 ), &dir, Disk::FILEMODE_MZT, Mode );
-		}
-		if( 1 == result )
-		{
-			MessageBox( "ƒfƒBƒXƒNƒCƒ[ƒW‚Ö‚Ìƒtƒ@ƒCƒ‹‘‚«ž‚Ý‚ÉŽ¸”s‚µ‚Ü‚µ‚½. \nƒfƒBƒŒƒNƒgƒŠ‚É‹ó‚«‚ª‚ ‚è‚Ü‚¹‚ñ.", "ƒGƒ‰[", MB_OK );
-		}
-		else if( ( 2 == result ) || ( 3 == result ) )
-		{
-			MessageBox( "ƒfƒBƒXƒNƒCƒ[ƒW‚Ö‚Ìƒtƒ@ƒCƒ‹‘‚«ž‚Ý‚ÉŽ¸”s‚µ‚Ü‚µ‚½. \nƒtƒ@ƒCƒ‹‚ð“Ç‚Ýž‚Þ‚±‚Æ‚ª‚Å‚«‚Ü‚¹‚ñ.", "ƒGƒ‰[", MB_OK );
-		}
-		else if( 4 == result )
-		{
-			MessageBox( "ƒfƒBƒXƒNƒCƒ[ƒW‚Ö‚Ìƒtƒ@ƒCƒ‹‘‚«ž‚Ý‚ÉŽ¸”s‚µ‚Ü‚µ‚½. \nƒrƒbƒgƒ}ƒbƒv‚Ì‹ó‚«‚ª‚ ‚è‚Ü‚¹‚ñ.", "ƒGƒ‰[", MB_OK );
-		}
-		else if( 5 == result )
-		{
-			MessageBox( "ƒfƒBƒXƒNƒCƒ[ƒW‚Ö‚Ìƒtƒ@ƒCƒ‹‘‚«ž‚Ý‚ÉŽ¸”s‚µ‚Ü‚µ‚½. \n“¯‚¶ƒtƒ@ƒCƒ‹–¼‚ª‚·‚Å‚É‘¶Ý‚µ‚Ü‚·.", "ƒGƒ‰[", MB_OK );
-		}
-		else if( 0 != result )
-		{
-			MessageBox( "ƒfƒBƒXƒNƒCƒ[ƒW‚Ö‚Ìƒtƒ@ƒCƒ‹‘‚«ž‚Ý‚ÉŽ¸”s‚µ‚Ü‚µ‚½. \nŒ´ˆö‚Í•s–¾‚Å‚·.", "ƒGƒ‰[", MB_OK );
-		}
+		MzDiskClass->SetDir(&dir, dirIndex);
 	}
 	CDialog::OnOK();
 }

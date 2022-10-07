@@ -95,6 +95,7 @@ public:
 	int GetDirSector(void);
 	int GetDirCount(void);
 	void GetDir(void* dirData, int dirindex);
+	void SetDir(void* dirData, int dirindex);
 	int GetUseBlockSize(void);
 	int GetClusterSize(void);
 	int GetAllBlockSize(void);
