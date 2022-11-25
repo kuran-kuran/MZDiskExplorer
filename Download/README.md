@@ -1,19 +1,27 @@
 # MZDiskExplorer
 
 ## ダウンロード
+### 2022/11/25 Version 2.0.7
+
+- ファイル名が文字化けすることがあったのを修正。
+- ファイル情報編集がメニューから選べなかったのを修正。
+- ファイル情報編集のファイルモードの選択がおかしかったのを修正。
+
+[MZDiskExplorer207.zip](https://github.com/kuran-kuran/MZDiskExplorer/raw/main/Download/MZDiskExplorer207.zip)
+
 ### 2022/10/07 Version 2.0.6
 
-- ファイルダブルクリックでファイル情報を編集できるようにしました。
-- 終了時に確認ダイアログを表示するようにしました。
-- MZ-80ブートプログラム、システムプログラムのfilenameを大文字にしました。
-- ファイル書き込み時に日付の編集が無効になっていたのを修正しました。
-- MZ-80システムプログラムのrunAdrを1200hから21FAhに変更しました。
+- ファイルダブルクリックでファイル情報を編集できるようにした。
+- 終了時に確認ダイアログを表示するようにした。
+- MZ-80ブートプログラム、システムプログラムのfilenameを大文字にした。
+- ファイル書き込み時に日付の編集が無効になっていたのを修正した。
+- MZ-80システムプログラムのrunAdrを1200hから21FAhに変更した。
 
 [MZDiskExplorer206.zip](https://github.com/kuran-kuran/MZDiskExplorer/raw/main/Download/MZDiskExplorer206.zip)
 
 ### 2022/08/15 Version 2.0.5
 
-- MZ-80K SP-6010形式のディスクのシステムプログラムの取り出し、書き込みに対応しました。
+- MZ-80K SP-6010形式のディスクのシステムプログラムの取り出し、書き込みに対応した。
 
 [MZDiskExplorer205.zip](https://github.com/kuran-kuran/MZDiskExplorer/raw/main/Download/MZDiskExplorer205.zip)
 

@@ -85,9 +85,6 @@
     <Image Include="res\Toolbar.bmp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <Filter Include="MzDisk">
       <UniqueIdentifier>{5b214194-e442-48bf-91c6-54d972d0791e}</UniqueIdentifier>
     </Filter>
