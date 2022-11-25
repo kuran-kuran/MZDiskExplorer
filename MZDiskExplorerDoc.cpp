@@ -52,6 +52,7 @@ BEGIN_MESSAGE_MAP(CMZDiskExplorerDoc, CDocument)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_GETSYSTEM, &CMZDiskExplorerDoc::OnUpdateEditGetsystem)
 	ON_COMMAND(ID_EDIT_PUTSYSTEM, &CMZDiskExplorerDoc::OnEditPutsystem)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_PUTSYSTEM, &CMZDiskExplorerDoc::OnUpdateEditPutsystem)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_EDIT, &CMZDiskExplorerDoc::OnUpdateEditEdit)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -495,7 +496,7 @@ int CMZDiskExplorerDoc::MakeFileList( int dirsector )
 			}
 			// ファイル名
 			std::string filename = work;
-			if(total >= 655360)
+			if(total < 655360)
 			{
 				filename = MzDiskClass->ConvertText(work);
 			}
@@ -747,7 +748,7 @@ void CMZDiskExplorerDoc::OnEditGetboot()
 	cPath path;
 	std::string name = bootname;
 	int total = MzDiskClass->GetAllBlockSize() * MzDiskClass->GetClusterSize();
-	if(total >= 655360)
+	if(total < 655360)
 	{
 		name = MzDiskClass->ConvertText(bootname);
 	}
@@ -1159,7 +1160,6 @@ void CMZDiskExplorerDoc::OnFileExportBeta()
 	MessageBox(NULL, "betaイメージの作成が完了しました", "betaイメージ", MB_OK);
 }
 
-
 void CMZDiskExplorerDoc::OnFileImportBeta()
 {
 	// TODO: ここにコマンド ハンドラー コードを追加します。
@@ -1176,7 +1176,6 @@ void CMZDiskExplorerDoc::OnFileImportBeta()
 	Update();
 	isUpdated = true;
 }
-
 
 // MZ-80Kのシステムプログラム取得
 void CMZDiskExplorerDoc::OnEditGetsystem()
@@ -1226,7 +1225,6 @@ void CMZDiskExplorerDoc::OnUpdateEditGetsystem(CCmdUI* pCmdUI)
 		pCmdUI->Enable( FALSE );
 	}
 }
-
 
 void CMZDiskExplorerDoc::OnEditPutsystem()
 {
@@ -1313,6 +1311,19 @@ void CMZDiskExplorerDoc::OnUpdateEditPutsystem(CCmdUI* pCmdUI)
 {
 	// TODO:ここにコマンド更新 UI ハンドラー コードを追加します。
 	if (( 1 == ImageInit ) && (MzDiskClass != NULL) && (MzDiskClass->DiskType() == Disk::MZ80K_SP6010))
+	{
+		pCmdUI->Enable( TRUE );
+	}
+	else
+	{
+		pCmdUI->Enable( FALSE );
+	}
+}
+
+void CMZDiskExplorerDoc::OnUpdateEditEdit(CCmdUI* pCmdUI)
+{
+	// TODO:ここにコマンド更新 UI ハンドラー コードを追加します。
+	if ( 1 == ImageInit )
 	{
 		pCmdUI->Enable( TRUE );
 	}

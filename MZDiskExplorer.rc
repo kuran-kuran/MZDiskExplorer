@@ -189,7 +189,7 @@ CAPTION "MZDiskExplorerÇÃ ﬁ∞ºﬁÆ›èÓïÒ"
 FONT 9, "ÇlÇr ÇoÉSÉVÉbÉN", 0, 0, 0x0
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
-    LTEXT           "MZDiskExplorer Version 2.0.6",IDC_STATIC,40,10,117,8,SS_NOPREFIX
+    LTEXT           "MZDiskExplorer Version 2.0.7",IDC_STATIC,40,10,117,8,SS_NOPREFIX
     LTEXT           "Copyright (C) 2003-2022 by kuran_kuran",IDC_STATIC,40,25,149,8
     DEFPUSHBUTTON   "OK",IDOK,160,39,50,14,WS_GROUP
 END
@@ -584,9 +584,14 @@ BEGIN
 0x5342, 0x0044, 
     IDC_MODE, 0x403, 4, 0
 0x5242, 0x0044, 
-    IDC_MODE, 0x403, 27, 0
-0x5342, 0x2044, 0x8928, 0x8dfc, 0x8373, 0x8152, 0x835b, 0x8268, 0x43f0, 
-0x8252, 0x95c9, 0x8acf, 0x29b7, "\000" 
+    IDC_MODE, 0x403, 3, 0
+0x4252, "\000" 
+    IDC_MODE, 0x403, 4, 0
+0x494c, 0x0042, 
+    IDC_MODE, 0x403, 4, 0
+0x5953, 0x0053, 
+    IDC_MODE, 0x403, 3, 0
+0x5247, "\000" 
     IDC_ATTR, 0x403, 5, 0
 0xc882, 0xb582, "\000" 
     IDC_ATTR, 0x403, 5, 0

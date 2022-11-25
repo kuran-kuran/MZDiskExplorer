@@ -59,6 +59,7 @@ private:
 	int ColumnFlag;
 public:
 	afx_msg void OnNMDblclk(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnEditEdit();
 };
 
 #ifndef _DEBUG  // MZDiskExplorerView.cpp ファイルがデバッグ環境の時使用されます。

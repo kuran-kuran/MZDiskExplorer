@@ -35,6 +35,7 @@ BEGIN_MESSAGE_MAP(CMZDiskExplorerView, CListView)
 	ON_COMMAND(ID_FILE_PRINT_DIRECT, CListView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, CListView::OnFilePrintPreview)
 	ON_NOTIFY_REFLECT(NM_DBLCLK, &CMZDiskExplorerView::OnNMDblclk)
+	ON_COMMAND(ID_EDIT_EDIT, &CMZDiskExplorerView::OnEditEdit)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -224,7 +225,7 @@ void CMZDiskExplorerView::OnEditGetfile()
 			cPath path;
 			int total = pDoc->MzDiskClass->GetAllBlockSize() * pDoc->MzDiskClass->GetClusterSize();
 			std::string name = filename;
-			if(total >= 655360)
+			if(total < 655360)
 			{
 				name = pDoc->MzDiskClass->ConvertText(filename);
 			}
@@ -358,7 +359,7 @@ void CMZDiskExplorerView::OnNMDblclk(NMHDR* pNMHDR, LRESULT* pResult)
 	{
 		CMZDiskExplorerDoc* pDoc = GetDocument();
 		ASSERT_VALID(pDoc);
-		// ダブルクリックで選択したのでファイル取り出しへ
+		// ダブルクリックで選択したのでファイル編集へ
 		EditFile editfileDialog;
 		editfileDialog.MzDiskClass = pDoc->MzDiskClass;
 		editfileDialog.dirIndex = pDoc->ItemToDirIndex[ index ];
@@ -368,4 +369,36 @@ void CMZDiskExplorerView::OnNMDblclk(NMHDR* pNMHDR, LRESULT* pResult)
 		pDoc->isUpdated = true;
 	}
 	*pResult = 0;
+}
+
+
+void CMZDiskExplorerView::OnEditEdit()
+{
+	// TODO: ここにコマンド ハンドラー コードを追加します。
+	CMZDiskExplorerDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	// ファイル取り出し
+	CListCtrl &list = GetListCtrl();
+	ASSERT_VALID(pDoc);
+	int select = -1;
+	int AllOk = 0;
+	char pathname[ 260 ];
+	CString cpathname;
+	cpathname = pDoc->GetPathName();
+	strcpy_s( pathname, sizeof(pathname), cpathname.GetBuffer( 260 ) );
+	while ( 1 )
+	{
+		select = list.GetNextItem( select, LVNI_ALL | LVNI_SELECTED );
+		if ( -1 == select )
+		{
+			break;
+		}
+		EditFile editfileDialog;
+		editfileDialog.MzDiskClass = pDoc->MzDiskClass;
+		editfileDialog.dirIndex = pDoc->ItemToDirIndex[ select ];
+		editfileDialog.DoModal();
+	}
+	// ファイル画面作成
+	pDoc->MakeFileList(pDoc->MzDiskClass->GetDirSector());
+	pDoc->isUpdated = true;
 }

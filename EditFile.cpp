@@ -96,6 +96,18 @@ BOOL EditFile::OnInitDialog()
 		}
 		FileName = work;
 		Mode = dir.mode;
+		if(Mode == 7)
+		{
+			Mode = 6;
+		}
+		else if(Mode == 0xA)
+		{
+			Mode = 7;
+		}
+		else if(Mode == 0xB)
+		{
+			Mode = 8;
+		}
 		Attr = dir.attr;
 		FileSize = dir.size;
 		LoadAdr = dir.loadAdr;
@@ -182,7 +194,6 @@ BOOL EditFile::OnInitDialog()
 				  // 例外 : OCX プロパティ ページは必ず FALSE を返します。
 }
 
-
 void EditFile::OnOK()
 {
 	// TODO: ここに特定なコードを追加するか、もしくは基底クラスを呼び出してください。
@@ -238,9 +249,17 @@ void EditFile::OnOK()
 
 		ZeroMemory( &dir, sizeof( dir ) );
 		dir.mode = Mode;
-		if( 5 == dir.mode )
+		if( 6 == dir.mode )
 		{
-			dir.mode = 3;
+			dir.mode = 7;
+		}
+		else if( 7 == dir.mode )
+		{
+			dir.mode = 0xA;
+		}
+		else if( 8 == dir.mode )
+		{
+			dir.mode = 0xB;
 		}
 		strncpy_s( dir.filename, sizeof(dir.filename), FileName.GetBuffer( 16 ), 16 );
 		for ( i = 0; i < 17; i ++ )

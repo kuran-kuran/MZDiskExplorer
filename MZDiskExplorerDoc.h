@@ -85,6 +85,7 @@ public:
 	afx_msg void OnUpdateEditGetsystem(CCmdUI* pCmdUI);
 	afx_msg void OnEditPutsystem();
 	afx_msg void OnUpdateEditPutsystem(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateEditEdit(CCmdUI* pCmdUI);
 };
 
 /////////////////////////////////////////////////////////////////////////////
