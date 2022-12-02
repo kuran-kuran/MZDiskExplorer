@@ -6,6 +6,7 @@
 #include "PutFile.h"
 #include "MzDisk/MzDisk.hpp"
 #include "MzDisk/Mz80Disk.hpp"
+#include "MzDisk/Mz80SP6110Disk.hpp"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -312,6 +313,112 @@ void cPutFile::OnOK()
 		}
 		dir.loadAdr = LoadAdr;
 		dir.runAdr = RunAdr;
+		int result;
+		if ( 0 == FileType )
+		{
+			result = MzDiskClass->PutFile( DataPath.GetBuffer( 260 ), &dir, Disk::FILEMODE_BIN, Mode );
+		}
+		else
+		{
+			result = MzDiskClass->PutFile( DataPath.GetBuffer( 260 ), &dir, Disk::FILEMODE_MZT, Mode );
+		}
+		if( 1 == result )
+		{
+			MessageBox( "ディスクイメージへのファイル書き込みに失敗しました. \nディレクトリに空きがありません.", "エラー", MB_OK );
+		}
+		else if( ( 2 == result ) || ( 3 == result ) )
+		{
+			MessageBox( "ディスクイメージへのファイル書き込みに失敗しました. \nファイルを読み込むことができません.", "エラー", MB_OK );
+		}
+		else if( 4 == result )
+		{
+			MessageBox( "ディスクイメージへのファイル書き込みに失敗しました. \nビットマップの空きがありません.", "エラー", MB_OK );
+		}
+		else if( 5 == result )
+		{
+			MessageBox( "ディスクイメージへのファイル書き込みに失敗しました. \n同じファイル名がすでに存在します.", "エラー", MB_OK );
+		}
+		else if( 0 != result )
+		{
+			MessageBox( "ディスクイメージへのファイル書き込みに失敗しました. \n原因は不明です.", "エラー", MB_OK );
+		}
+	}
+	else if(MzDiskClass->DiskType() == Disk::MZ80K_SP6110)
+	{
+		MzDisk::DIRECTORY dir;
+		int i;
+		char temp[ 261 ];
+		char *temp2;
+		int mode = 0;
+		m_FileName.SetSel( 0, -1, FALSE );
+		ZeroMemory( temp, sizeof( temp ) );
+		int size = m_FileName.GetLine( 0, temp, 16 );
+		temp[size] = '\0';
+		FileName = temp;
+		Mode = m_Mode.GetCurSel() + 1;
+		if( 1 == m_Attr.GetCurSel() )
+		{
+			Attr |= 0x1;
+		}
+		m_FileSize.SetSel( 0, -1, FALSE );
+		ZeroMemory( temp, sizeof( temp ) );
+		size = m_FileSize.GetLine( 0, temp, 260 );
+		temp[size] = '\0';
+		FileSize = atoi( temp );
+		m_LoadAdr.SetSel( 0, -1, FALSE );
+		temp[size] = '\0';
+		ZeroMemory( temp, sizeof( temp ) );
+		size = m_LoadAdr.GetLine( 0, temp, 260 );
+		LoadAdr = (unsigned short)strtol( temp, &temp2, 16 );
+		m_RunAdr.SetSel( 0, -1, FALSE );
+		ZeroMemory( temp, sizeof( temp ) );
+		size = m_RunAdr.GetLine( 0, temp, 260 );
+		temp[size] = '\0';
+		RunAdr = (unsigned short)strtol( temp, &temp2, 16 );
+		// 日付
+		size = m_Year.GetLine(0, temp, 260);
+		temp[size] = '\0';
+		Year = (int)strtol(temp, &temp2, 10);
+		size = m_Month.GetLine(0, temp, 260);
+		temp[size] = '\0';
+		Month = (int)strtol(temp, &temp2, 10);
+		size = m_Day.GetLine(0, temp, 260);
+		temp[size] = '\0';
+		Day = (int)strtol(temp, &temp2, 10);
+		size = m_Hour.GetLine(0, temp, 260);
+		temp[size] = '\0';
+		Hour = (int)strtol(temp, &temp2, 10);
+		size = m_Minute.GetLine(0, temp, 260);
+		temp[size] = '\0';
+		Minute = (int)strtol(temp, &temp2, 10);
+
+		ZeroMemory( &dir, sizeof( dir ) );
+		dir.mode = Mode;
+		if( 5 == dir.mode )
+		{
+			dir.mode = 3;
+		}
+		strncpy_s( dir.filename, sizeof(dir.filename), FileName.GetBuffer( 16 ), 16 );
+		for ( i = 0; i < 17; i ++ )
+		{
+			if ( '\0' == dir.filename[ i ] )
+			{
+				dir.filename[ i ] = '\xD';
+				break;
+			}
+		}
+		dir.attr = Attr;
+		if(dir.mode == 4)
+		{
+			dir.size = FileSize / 32;
+		}
+		else
+		{
+			dir.size = FileSize;
+		}
+		dir.loadAdr = LoadAdr;
+		dir.runAdr = RunAdr;
+		dir.date = 0;
 		int result;
 		if ( 0 == FileType )
 		{

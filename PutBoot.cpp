@@ -5,6 +5,7 @@
 #include "MZDiskExplorer.h"
 #include "MzDisk/MzDisk.hpp"
 #include "MzDisk/Mz80Disk.hpp"
+#include "MzDisk/Mz80SP6110Disk.hpp"
 #include "PutBoot.h"
 
 #ifdef _DEBUG
@@ -121,6 +122,17 @@ void cPutBoot::OnOK()
 		}
 	}
 	else if(MzDiskClass->DiskType() == Disk::MZ80K_SP6010)
+	{
+		if ( 0 == FileType )
+		{
+			result = MzDiskClass->PutBoot( DataPath.GetBuffer( 260 ), NULL, Disk::FILEMODE_BIN );
+		}
+		else if ( 1 == FileType )
+		{
+			result = MzDiskClass->PutBoot( DataPath.GetBuffer( 260 ), NULL, Disk::FILEMODE_MZT );
+		}
+	}
+	else if(MzDiskClass->DiskType() == Disk::MZ80K_SP6110)
 	{
 		if ( 0 == FileType )
 		{

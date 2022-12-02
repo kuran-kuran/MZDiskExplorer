@@ -47,48 +47,22 @@ std::string Mz80Disk::DiskTypeText(void)
 //============================================================================
 void Mz80Disk::Format(int type, int volumeNumber)
 {
-	if(type == DISKTYPE_MZ80_SP6010_2S)
-	{
-		this->diskType = TYPE_2S;
-	}
-	else if(type == DISKTYPE_MZ80_SP6110_2S)
-	{
-		this->diskType = TYPE_2S;
-	}
-	else
+	if(type != DISKTYPE_MZ80_SP6010_2S)
 	{
 		return;
 	}
+	this->diskType = TYPE_2S;
 	// 物理フォーマット
 	this->image.Format(type, 0x00);
 	// 論理フォーマット
-	if(type == DISKTYPE_MZ80_SP6010_2S)
-	{
-		// ディレクトリ
-		std::vector<unsigned char> buffer;
-		buffer.resize(static_cast<size_t>(this->sectorSize) * 14, 0);
-		WriteSector(buffer, 16, 14);
-	}
-	else
-	{
-		// ディレクトリ
-		std::vector<unsigned char> buffer;
-		buffer.resize(static_cast<size_t>(this->sectorSize) * 14, 0);
-		buffer[0] = 0x80;
-		buffer[1] = static_cast<unsigned char>(volumeNumber);
-		WriteSector(buffer, 16, 14);
-	}
+	// ディレクトリ
+	std::vector<unsigned char> buffer;
+	buffer.resize(static_cast<size_t>(this->sectorSize) * 14, 0);
+	WriteSector(buffer, 16, 14);
 	// ビットマップ
 	this->bitmap.clear();
-	this->bitmap.resize(256, 0);
-	if(type == DISKTYPE_MZ80_SP6010_2S)
-	{
-		this->bitmap[1] = static_cast<unsigned char>(volumeNumber);
-	}
-	else if(type == DISKTYPE_MZ80_SP6110_2S)
-	{
-		this->bitmap[0] = static_cast<unsigned char>(volumeNumber);
-	}
+	this->bitmap.resize(static_cast<size_t>(this->sectorSize) * 2, 0);
+	this->bitmap[1] = static_cast<unsigned char>(volumeNumber);
 	WriteSector(this->bitmap, 14, 2);
 	// ディスク情報格納
 	ReadDirectory();

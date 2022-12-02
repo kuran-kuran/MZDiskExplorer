@@ -293,6 +293,12 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="MzDisk\Mz80SP6110Disk.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="MzDisk\MzDisk.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
@@ -334,6 +340,7 @@
     <ClInclude Include="MzDisk\FileData.hpp" />
     <ClInclude Include="MzDisk\Format.hpp" />
     <ClInclude Include="MzDisk\Mz80Disk.hpp" />
+    <ClInclude Include="MzDisk\Mz80SP6110Disk.hpp" />
     <ClInclude Include="MzDisk\MzDisk.hpp" />
     <ClInclude Include="path.h" />
     <ClInclude Include="PutBoot.h" />

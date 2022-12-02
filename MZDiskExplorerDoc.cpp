@@ -15,6 +15,7 @@
 #include "MzDisk/Disk.hpp"
 #include "MzDisk/MzDisk.hpp"
 #include "MzDisk/Mz80Disk.hpp"
+#include "MzDisk/Mz80SP6110Disk.hpp"
 #include "path.h"
 #include "MainFrm.h"
 #include <iterator>
@@ -139,7 +140,7 @@ BOOL CMZDiskExplorerDoc::OnNewDocument()
 					needClassType = Disk::MZ80K_SP6010;
 					break;
 				case 6:
-					disktype = Mz80Disk::DISKTYPE_MZ80_SP6110_2S;
+					disktype = Mz80SP6110Disk::DISKTYPE_MZ80_SP6110_2S;
 					needClassType = Disk::MZ80K_SP6110;
 					break;
 				default:
@@ -168,7 +169,7 @@ BOOL CMZDiskExplorerDoc::OnNewDocument()
 				}
 				else if(needClassType == Disk::MZ80K_SP6110)
 				{
-					// MZ-80K SP6110 未実装
+					MzDiskClass = new Mz80SP6110Disk;
 				}
 			}
 			if(MzDiskClass != NULL)
@@ -265,6 +266,10 @@ void CMZDiskExplorerDoc::Serialize(CArchive& ar)
 			else if(diskType == Disk::MZ80K_SP6010)
 			{
 				MzDiskClass = new Mz80Disk;
+			}
+			else if(diskType == Disk::MZ80K_SP6110)
+			{
+				MzDiskClass = new Mz80SP6110Disk;
 			}
 			else
 			{
@@ -402,6 +407,50 @@ int CMZDiskExplorerDoc::MakeTree( int dirsector, HTREEITEM parenthandle )
 			if ( 0xF == dir.mode ) {
 				char dirname[ 17 ];
 				memcpy( dirname, dir.filename, 16 );
+				for ( j = 0; j < 17; j ++ )
+				{
+					if ( 0x0D == dirname[ j ] )
+					{
+						dirname[ j ] = '\0';
+					}
+				}
+				if ( ( 0 == strcmp( dirname, "."  ) ) || ( 0 == strcmp( dirname, ".." ) ) )
+				{
+					continue;
+				}
+				DirHandle[ DirHandleCount ] = tree->InsertItem( dirname, parenthandle );
+				DirSector[ DirHandleCount ] = dir.startSector;
+				int temp;
+				temp = DirHandleCount;
+				DirHandleCount ++;
+				if ( 1 == MakeTree( dir.startSector, DirHandle[ temp ] ) ) {
+					return 1;
+				}
+				MzDiskClass->SetDirSector( dirsector );
+				if ( DirHandleCount >= DIRHANDLE_MAX ) {
+					return 1;
+				}
+			}
+		}
+	}
+	else if(MzDiskClass->DiskType() == Disk::MZ80K_SP6110)
+	{
+		MzDisk::DIRECTORY dir;
+		int i;
+		POSITION pos;
+		CLeftView *LeftView;
+		pos = GetFirstViewPosition();
+		LeftView = (CLeftView*)GetNextView( pos );
+		CTreeCtrl *tree;
+		tree = &LeftView->GetTreeCtrl();
+		MzDiskClass->SetDirSector( dirsector );
+		for ( i = 0; i < 64; i ++ )
+		{
+			int j;
+			MzDiskClass->GetDir( &dir, i );
+			if ( 0xF == dir.mode ) {
+				char dirname[ 17 ];
+				memcpy( dirname, dir.filename, 17 );
 				for ( j = 0; j < 17; j ++ )
 				{
 					if ( 0x0D == dirname[ j ] )
@@ -674,6 +723,119 @@ int CMZDiskExplorerDoc::MakeFileList( int dirsector )
 			// 開始トラック
 			item.iSubItem = 8;
 			sprintf_s( work, sizeof(work), "%d", dir.startTrack );
+			item.pszText = work;
+			list->SetItem( &item );
+			ItemToDirIndex[ itemindex ] = i;
+			itemindex++;
+		}
+	}
+	else if(MzDiskClass->DiskType() == Disk::MZ80K_SP6110)
+	{
+		MzDiskClass->SetDirSector( dirsector );
+		LV_ITEM item;
+		MzDisk::DIRECTORY dir;
+		int i;
+		int j;
+		int itemindex = 0;
+		int year;
+		int month;
+		int day;
+		int hour;
+		int minute;
+		int dircount = MzDiskClass->GetDirCount();
+		for ( i = 0; i < dircount; i ++ )
+		{
+			struct {
+				unsigned char mode;
+				char modestr[ 6 ];
+			} modetbl[] = {
+				0x01, "OBJ  ",
+				0x02, "BTX  ",
+				0x03, "BSD  ",
+				0x04, "BRD  ",
+				0x05, "RB   ",
+				0x07, "LIB  ",
+				0x0A, "SYS  ",
+				0x0B, "GR   ",
+				0x0F, "DIR  ",
+				0x80, "NSWAP",
+				0x81, "SWAP "
+			};
+			char work[ 17 ];
+			ZeroMemory(work, sizeof(work));
+			MzDiskClass->GetDir( &dir, i );
+			if ( ( 0 == dir.mode ) || ( 0x80 == dir.mode ) || ( 0x82 == dir.mode ) || ( 0xF == dir.mode ) )
+			{
+				continue;
+			}
+			memcpy( work, dir.filename, 17 );
+			for ( j = 0; j < 17; j ++ )
+			{
+				if ( 0x0D == work[ j ] )
+				{
+					work[ j ] = '\0';
+				}
+			}
+			// ファイル名
+			std::string filename = work;
+			filename = MzDiskClass->ConvertText(work);
+			item.mask = LVIF_TEXT;
+			item.iItem = itemindex;
+			item.iSubItem = 0;
+			item.pszText = &filename[0];
+			list->InsertItem( &item );
+			// モード
+			item.iSubItem = 1;
+			item.pszText = "";
+			for ( j = 0; j < 10; j ++ )
+			{
+				if ( modetbl[ j ].mode == dir.mode )
+				{
+					item.pszText = (char*)&modetbl[ j ].modestr;
+					break;
+				}
+			}
+			list->SetItem( &item );
+			// 属性
+			item.iSubItem = 2;
+			sprintf_s( work, sizeof(work), "%02X", dir.attr );
+			item.pszText = work;
+			list->SetItem( &item );
+			// ファイルサイズ
+			item.iSubItem = 3;
+			if( 4 == dir.mode )
+			{
+				sprintf_s( work, sizeof(work), "%7d", dir.size * 32 );
+			}
+			else
+			{
+				sprintf_s( work, sizeof(work), "%7d", dir.size );
+			}
+			item.pszText = work;
+			list->SetItem( &item );
+			// ロードアドレス
+			item.iSubItem = 4;
+			sprintf_s( work, sizeof(work), "%04X", dir.loadAdr );
+			item.pszText = work;
+			list->SetItem( &item );
+			// 実行アドレス
+			item.iSubItem = 5;
+			sprintf_s( work, sizeof(work), "%04X", dir.runAdr );
+			item.pszText = work;
+			list->SetItem( &item );
+			// 作成日付
+			item.iSubItem = 6;
+			year = ( dir.date & 0xF ) + ( ( dir.date >> 4 ) & 0xF ) * 10;
+			month = ( ( dir.date >> 11 ) & 0xF ) + ( ( dir.date >> 15 ) & 0x1 ) * 10;
+			day = ( ( dir.date >> 5 ) & 0x8 ) + ( ( dir.date >> 21 ) & 0x7 ) + ( ( dir.date >> 9 ) & 0x3 ) * 10;
+			hour = ( ( dir.date >> 31 ) & 0x1 ) + ( ( dir.date >> 15 ) & 0xE ) + ( ( dir.date >> 19 ) & 0x3 ) * 10;
+			minute = ( ( dir.date >> 24 ) & 0xF ) + ( ( dir.date >> 28 ) & 7 ) * 10;
+			sprintf_s( work, sizeof(work), "%02d/%02d/%02d %02d:%02d", year, month, day, hour, minute );
+			item.pszText = work;
+			list->SetItem( &item );
+			// 開始セクタ
+			item.iSubItem = 7;
+			sprintf_s( work, sizeof(work), "%04X", dir.startSector );
 			item.pszText = work;
 			list->SetItem( &item );
 			ItemToDirIndex[ itemindex ] = i;
@@ -1078,6 +1240,47 @@ void CMZDiskExplorerDoc::OnEditDel()
 	else if(MzDiskClass->DiskType() == Disk::MZ80K_SP6010)
 	{
 		Mz80Disk::DIRECTORY dir;
+		int select = -1;
+		select = list->GetNextItem( select, LVNI_ALL | LVNI_SELECTED );
+		if ( -1 == select )
+		{
+			return;
+		}
+		if ( FileView->MessageBox( "選択したファイルを削除してよろしいですか？\nOK またはキャンセルを選んでください。\n", "ファイル削除", MB_OKCANCEL ) != IDOK )
+		{
+			return;
+		}
+		select = -1;
+		while ( 1 )
+		{
+			select = list->GetNextItem( select, LVNI_ALL | LVNI_SELECTED );
+			if ( -1 == select )
+			{
+				break;
+			}
+			MzDiskClass->GetDir( &dir, ItemToDirIndex[ select ] );
+			if ( 0 == dir.mode )
+			{
+				continue;
+			}
+			MzDiskClass->DelFile( ItemToDirIndex[ select ] );
+		}
+		// ファイル画面作成
+		MakeFileList( MzDiskClass->GetDirSector() );
+		// ステータスバー描画
+		CMainFrame *pMainFrame;
+		char str[ 200 ];
+		int use = MzDiskClass->GetUseBlockSize() * MzDiskClass->GetClusterSize();
+		int total = MzDiskClass->GetAllBlockSize() * MzDiskClass->GetClusterSize();
+		int free = total - use;
+		sprintf_s( str, sizeof(str), "Type: %s    Size: %d/%d    Free: %d Bytes", MzDiskClass->DiskTypeText().c_str(), use, total, free );
+		pMainFrame = ( CMainFrame* )AfxGetMainWnd();
+		pMainFrame->PutStatusBarSize( str );
+		isUpdated = true;
+	}
+	else if(MzDiskClass->DiskType() == Disk::MZ80K_SP6110)
+	{
+		MzDisk::DIRECTORY dir;
 		int select = -1;
 		select = list->GetNextItem( select, LVNI_ALL | LVNI_SELECTED );
 		if ( -1 == select )
