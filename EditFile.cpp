@@ -246,7 +246,8 @@ void EditFile::OnOK()
 		ZeroMemory( temp, sizeof( temp ) );
 		int size = m_FileName.GetLine( 0, temp, 16 );
 		temp[size] = '\0';
-		FileName = temp;
+		std::string mzFileName = MzDiskClass->ConvertMzText(temp);
+		FileName = &mzFileName[0];
 		Mode = m_Mode.GetCurSel() + 1;
 		if( 1 == m_Attr.GetCurSel() )
 		{
@@ -344,7 +345,8 @@ void EditFile::OnOK()
 		ZeroMemory( temp, sizeof( temp ) );
 		int size = m_FileName.GetLine( 0, temp, 16 );
 		temp[size] = '\0';
-		FileName = temp;
+		std::string mzFileName = MzDiskClass->ConvertMzText(temp);
+		FileName = &mzFileName[0];
 		Mode = m_Mode.GetCurSel() + 1;
 		if( 1 == m_Attr.GetCurSel() )
 		{
@@ -407,7 +409,8 @@ void EditFile::OnOK()
 		ZeroMemory( temp, sizeof( temp ) );
 		int size = m_FileName.GetLine( 0, temp, 16 );
 		temp[size] = '\0';
-		FileName = temp;
+		std::string mzFileName = MzDiskClass->ConvertMzText(temp);
+		FileName = &mzFileName[0];
 		Mode = m_Mode.GetCurSel() + 1;
 		if( 1 == m_Attr.GetCurSel() )
 		{

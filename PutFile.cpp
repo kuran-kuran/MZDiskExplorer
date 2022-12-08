@@ -194,7 +194,10 @@ void cPutFile::OnOK()
 		{
 			dir.mode = 3;
 		}
-		strncpy_s( dir.filename, sizeof(dir.filename), FileName.GetBuffer( 16 ), 16 );
+		std::string filename = FileName.GetBuffer( 16 );
+		std::string mzFilename = MzDiskClass->ConvertMzText(filename);
+		mzFilename.resize(17);
+		strncpy_s( dir.filename, sizeof(dir.filename), &mzFilename[0], 16 );
 		for ( i = 0; i < 17; i ++ )
 		{
 			if ( '\0' == dir.filename[ i ] )
@@ -295,7 +298,10 @@ void cPutFile::OnOK()
 		{
 			dir.mode = 0;
 		}
-		strncpy_s( dir.filename, sizeof(dir.filename), FileName.GetBuffer( 16 ), 16 );
+		std::string filename = FileName.GetBuffer( 16 );
+		std::string mzFilename = MzDiskClass->ConvertMzText(filename);
+		mzFilename.resize(17);
+		strncpy_s( dir.filename, sizeof(dir.filename), &mzFilename[0], 16 );
 		for ( i = 0; i < 17; i ++ )
 		{
 			if ( '\0' == dir.filename[ i ] )
@@ -401,7 +407,10 @@ void cPutFile::OnOK()
 		{
 			dir.mode = 3;
 		}
-		strncpy_s( dir.filename, sizeof(dir.filename), FileName.GetBuffer( 16 ), 16 );
+		std::string filename = FileName.GetBuffer( 16 );
+		std::string mzFilename = MzDiskClass->ConvertMzText(filename);
+		mzFilename.resize(17);
+		strncpy_s( dir.filename, sizeof(dir.filename), &mzFilename[0], 16 );
 		for ( i = 0; i < 17; i ++ )
 		{
 			if ( '\0' == dir.filename[ i ] )

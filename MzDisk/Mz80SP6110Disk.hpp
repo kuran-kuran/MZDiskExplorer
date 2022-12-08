@@ -98,7 +98,8 @@ public:
 	void SetBitmap(int start, int length);
 	void DelBitmap(int start, int length);
 	std::string ConvertText(std::string text);
-//	void DisplayDir(void);
+	std::string ConvertMzText(std::string text);
+	//	void DisplayDir(void);
 private:
 	unsigned char diskType;
 	std::vector<unsigned char> bitmap;
@@ -106,6 +107,8 @@ private:
 	int fileType;
 	int clusterSize;
 	int dirSector;
+	static const char asciiCodeAnk[];
+	static const char asciiCodeSjis[];
 	Mz80SP6110Disk(Mz80SP6110Disk&);
 	Mz80SP6110Disk& operator = (Mz80SP6110Disk&);
 	void GetExtFilename(std::string path, std::string& extfilename);

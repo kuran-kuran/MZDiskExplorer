@@ -92,7 +92,8 @@ void cPutBoot::OnOK()
 		ZeroMemory( temp, sizeof( temp ) );
 		int size = m_BootName.GetLine( 0, temp, 10 );
 		temp[size] = '\0';
-		BootName = temp;
+		std::string mzFilename = MzDiskClass->ConvertMzText(temp);
+		BootName = &mzFilename[0];
 		Machine = m_Machine.GetCurSel();
 		m_RunAdr.SetSel( 0, -1, FALSE );
 		ZeroMemory( temp, sizeof( temp ) );

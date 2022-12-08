@@ -6,8 +6,43 @@
 #include "MzDisk.hpp"
 
 // Š¿š‚Ì1ƒoƒCƒg–Ú‚©
-#define IsKanji(c) ((((0x81 <= c) && (c <= 0x9F)) || ((0xE0 <= c) && (c <= 0xFC))))
-#define IsKanji2(c) ((((0x40 <= c) && (c <= 0x7E) || ((0x80 <= c) && (c <= 0xFC))))
+#define IsKanji(c) ( (unsigned char)((int)((unsigned char)(c) ^ 0x20) - 0x0A1) < 0x3C )
+
+/* MZ-80B,2000,2200 */
+const char MzDisk::asciiCodeAnk[] =
+{
+	" !\x22#$%&\x27()*+,-./"	/* 20 */
+	"0123456789:;<=>?"		/* 30 */
+	"@ABCDEFGHIJKLMNO"		/* 40 */
+	"PQRSTUVWXYZ[\\]^*"		/* 50 */
+	"*abcdefghijklmno"		/* 60 */
+	"pqrstuvwxyz{|}~."		/* 70 */
+	"................"		/* 80 */
+	".\\.............."		/* 90 */
+	".¡¢£WX¦§¨©ª«ÔÕÖ¯"		/* A0 */
+	"*±²³´µ¶·¸¹º»¼½¾¿"		/* B0 */
+	"ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏ"		/* C0 */
+	"ĞÑÒÓÔÕÖ×ØÙÚÛÜİŞß"		/* D0 */
+	"ZABCDEFGHIJKLMNO"		/* E0 */
+	"0123456789PQRST."		/* F0 */
+};
+const char MzDisk::asciiCodeSjis[] =
+{
+	"@Ih”“•fij–{C|D^"	/* 20 */
+	"‚O‚P‚Q‚R‚S‚T‚U‚V‚W‚XFGƒ„H"	/* 30 */
+	"—‚`‚a‚b‚c‚d‚e‚f‚g‚h‚i‚j‚k‚l‚m‚n"	/* 40 */
+	"‚o‚p‚q‚r‚s‚t‚u‚v‚w‚x‚ym_nOP"	/* 50 */
+	"L‚‚‚‚ƒ‚„‚…‚†‚‡‚ˆ‚‰‚Š‚‹‚Œ‚‚‚"	/* 60 */
+	"‚‚‘‚’‚“‚”‚•‚–‚—‚˜‚™‚šobp`¦"	/* 70 */
+	"¦«ª¨©¦¦¦¦¦¦¦¦¦¦¦"	/* 80 */
+	"¦¦œ›¦¦¦¦¦¦¦¦¦¦¦"	/* 90 */
+	"¦Buv‚v‚wƒ’ƒ@ƒBƒDƒFƒHƒƒƒ…ƒ‡ƒb"	/* A0 */
+	"¦ƒAƒCƒEƒGƒIƒJƒLƒNƒPƒRƒTƒVƒXƒZƒ\"	/* B0 */
+	"ƒ^ƒ`ƒcƒeƒgƒiƒjƒkƒlƒmƒnƒqƒtƒwƒzƒ}"	/* C0 */
+	"ƒ~ƒ€ƒƒ‚ƒ„ƒ†ƒˆƒ‰ƒŠƒ‹ƒŒƒƒƒ“JK"	/* D0 */
+	"‚y‚`‚a‚b‚c‚d‚e‚f‚g‚h‚i‚j‚k‚l‚m‚n"	/* E0 */
+	"‚O‚P‚Q‚R‚S‚T‚U‚V‚W‚X‚o‚p‚q‚r‚sƒÎ"	/* F0 */
+};
 
 //============================================================================
 // ƒRƒ“ƒXƒgƒ‰ƒNƒ^
@@ -1121,41 +1156,6 @@ void MzDisk::DelBitmap(int start, int length)
 // MZ-2500‚ÌƒfƒBƒXƒN‚Ì‚ÉŒë•ÏŠ·‚µ‚Ä‚µ‚Ü‚¤‚Ì‚Åˆê’Ug‚í‚È‚¢‚æ‚¤‚É‚µ‚½
 std::string MzDisk::ConvertText(std::string text)
 {
-	/* MZ-80B,2000,2200 */
-	static const char asciiCodeAnk[] =
-	{
-		" !\x22#$%&\x27()*+,-./"	/* 20 */
-		"0123456789:;<=>?"		/* 30 */
-		"@ABCDEFGHIJKLMNO"		/* 40 */
-		"PQRSTUVWXYZ[\\]^*"		/* 50 */
-		"*abcdefghijklmno"		/* 60 */
-		"pqrstuvwxyz{|}~."		/* 70 */
-		"................"		/* 80 */
-		".\\.............."		/* 90 */
-		".¡¢£WX¦§¨©ª«ÔÕÖ¯"		/* A0 */
-		"*±²³´µ¶·¸¹º»¼½¾¿"		/* B0 */
-		"ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏ"		/* C0 */
-		"ĞÑÒÓÔÕÖ×ØÙÚÛÜİŞß"		/* D0 */
-		"ZABCDEFGHIJKLMNO"		/* E0 */
-		"0123456789PQRST."		/* F0 */
-	};
-	static const char asciiCodeSjis[] =
-	{
-		"@Ih”“•fij–{C|D^"	/* 20 */
-		"‚O‚P‚Q‚R‚S‚T‚U‚V‚W‚XFGƒ„H"	/* 30 */
-		"—‚`‚a‚b‚c‚d‚e‚f‚g‚h‚i‚j‚k‚l‚m‚n"	/* 40 */
-		"‚o‚p‚q‚r‚s‚t‚u‚v‚w‚x‚ym_nOP"	/* 50 */
-		"L‚‚‚‚ƒ‚„‚…‚†‚‡‚ˆ‚‰‚Š‚‹‚Œ‚‚‚"	/* 60 */
-		"‚‚‘‚’‚“‚”‚•‚–‚—‚˜‚™‚šobp`¦"	/* 70 */
-		"¦«ª¨©¦¦¦¦¦¦¦¦¦¦¦"	/* 80 */
-		"¦¦œ›¦¦¦¦¦¦¦¦¦¦¦"	/* 90 */
-		"¦Buv‚v‚wƒ’ƒ@ƒBƒDƒFƒHƒƒƒ…ƒ‡ƒb"	/* A0 */
-		"¦ƒAƒCƒEƒGƒIƒJƒLƒNƒPƒRƒTƒVƒXƒZƒ\"	/* B0 */
-		"ƒ^ƒ`ƒcƒeƒgƒiƒjƒkƒlƒmƒnƒqƒtƒwƒzƒ}"	/* C0 */
-		"ƒ~ƒ€ƒƒ‚ƒ„ƒ†ƒˆƒ‰ƒŠƒ‹ƒŒƒƒƒ“JK"	/* D0 */
-		"‚y‚`‚a‚b‚c‚d‚e‚f‚g‚h‚i‚j‚k‚l‚m‚n"	/* E0 */
-		"‚O‚P‚Q‚R‚S‚T‚U‚V‚W‚X‚o‚p‚q‚r‚sƒÎ"	/* F0 */
-	};
 	std::string result;
 	bool kanji = false;
 	for(size_t i = 0; i < text.size(); ++ i)
@@ -1199,6 +1199,63 @@ std::string MzDisk::ConvertText(std::string text)
 				result += ascii;
 			}
 		}
+	}
+	return result;
+}
+
+// Windows‚Ì•¶š‚ğ‚Åg‚¦‚é•¶š‚É•ÏŠ·‚·‚é
+std::string MzDisk::ConvertMzText(std::string text)
+{
+	std::string result = "";
+	bool kanji = false;
+	std::string word = "";
+	for(size_t i = 0; i < text.size(); ++ i)
+	{
+		if(IsKanji(text[i]))
+		{
+			word.push_back(text[i]);
+			kanji = true;
+			continue;
+		}
+		else
+		{
+			word.push_back(text[i]);
+		}
+		if(kanji == true)
+		{
+			size_t findIndex = std::string(asciiCodeSjis).find(word);
+			std::string a;
+			size_t l = strlen(asciiCodeSjis);
+			a.push_back(asciiCodeSjis[findIndex]);
+			a.push_back(asciiCodeSjis[findIndex + 1]);
+			if(findIndex != std::string::npos)
+			{
+				// ‘SŠp•¶š‚ªŒ©‚Â‚©‚Á‚½
+				word = "";
+				word.push_back(static_cast<char>(findIndex / 2 + 0x20));
+			}
+			else
+			{
+				word = "";
+			}
+		}
+		else
+		{
+			size_t findIndex = std::string(asciiCodeAnk).find(word);
+			if(findIndex != std::string::npos)
+			{
+				// ”¼Šp•¶š‚ªŒ©‚Â‚©‚Á‚½
+				word = "";
+				word.push_back(static_cast<char>(findIndex + 0x20));
+			}
+			else
+			{
+				word = "";
+			}
+		}
+		result += word;
+		word = "";
+		kanji = false;
 	}
 	return result;
 }

@@ -72,6 +72,7 @@ public:
 	void SetBitmap(int start, int length);
 	void DelBitmap(int start, int length);
 	std::string ConvertText(std::string text);
+	std::string ConvertMzText(std::string text);
 	void SetDirSector(int sector);
 	int GetDirSector(void);
 	int GetDirCount(void);
@@ -87,6 +88,8 @@ private:
 	std::vector<DIRECTORY> directory;
 	int fileType;
 	int dirSector;
+	static const char asciiCodeAnk[];
+	static const char asciiCodeSjis[];
 	Mz80Disk(Mz80Disk&);
 	Mz80Disk& operator = (Mz80Disk&);
 	void GetExtFilename(std::string path, std::string& extfilename);

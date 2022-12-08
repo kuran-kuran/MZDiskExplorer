@@ -6,8 +6,43 @@
 #include "Mz80SP6110Disk.hpp"
 
 // 漢字の1バイト目か
-#define IsKanji(c) ((((0x81 <= c) && (c <= 0x9F)) || ((0xE0 <= c) && (c <= 0xFC))))
-#define IsKanji2(c) ((((0x40 <= c) && (c <= 0x7E) || ((0x80 <= c) && (c <= 0xFC))))
+#define IsKanji(c) ( (unsigned char)((int)((unsigned char)(c) ^ 0x20) - 0x0A1) < 0x3C )
+
+/* MZ-80K/C,1200,700 */
+const char Mz80SP6110Disk::asciiCodeAnk[] =
+{
+	" !\x22#$%&\x27()*+,-./"	/* 20 */
+	"0123456789:;<=>?"		/* 30 */
+	"@ABCDEFGHIJKLMNO"		/* 40 */
+	"PQRSTUVWXYZ[.].."		/* 50 */
+	"................"		/* 60 */
+	".............\\.."		/* 70 */
+	".｡｢｣､.ｦｧｨｩｪｫｬｭｮｯ"		/* 80 */
+	"ｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿ"		/* 90 */
+	"ﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏ"		/* A0 */
+	"ﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝﾞﾟ"		/* B0 */
+	"................"		/* C0 */
+	"................"		/* D0 */
+	"................"		/* E0 */
+	"................"		/* F0 */
+};
+const char Mz80SP6110Disk::asciiCodeSjis[] =
+{
+	"　！”＃＄％＆’（）＊＋，－．／"	/* 20 */
+	"０１２３４５６７８９：；＜＝＞？"	/* 30 */
+	"＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯ"	/* 40 */
+	"ＰＱＲＳＴＵＶＷＸＹＺ［＼］↑←"	/* 50 */
+	"※※※※※※※※※※※※※※※※"	/* 60 */
+	"日月火水木金土生年時分秒円￥￡▼"	/* 70 */
+	"↓。「」、．ヲァィゥェォャュョッ"	/* 80 */
+	"ーアイウエオカキクケコサシスセソ"	/* 90 */
+	"タチツテトナニヌネノハヒフヘホマ"	/* A0 */
+	"ミムメモヤユヨラリルレロワン゛゜"	/* B0 */
+	"→※※※※※※※※※※※※※※※"	/* C0 */
+	"※※※※※※※※※※※※※※※※"	/* D0 */
+	"※※※※※※※※※※※※※※※※"	/* E0 */
+	"※※※※※※※※※※※※※※※π"	/* F0 */
+};
 
 //============================================================================
 // コンストラクタ
@@ -608,7 +643,7 @@ int Mz80SP6110Disk::GetBoot(std::string path, unsigned int mode)
 		MZTHEAD mzthead;
 		memset(&mzthead, 0, sizeof(MZTHEAD));
 		mzthead.mode = 1;
-		memcpy(mzthead.filename, "BOOT", 7);
+		memcpy(mzthead.filename, "BOOT", 5);
 		for(int i = 0; i < 17; ++ i)
 		{
 			if(mzthead.filename[i] == 0)
@@ -928,41 +963,6 @@ void Mz80SP6110Disk::DelBitmap(int start, int length)
 // MZ-80Kの文字をWindowsで使える文字に変換する
 std::string Mz80SP6110Disk::ConvertText(std::string text)
 {
-	/* MZ-80K/C,1200,700 */
-	static const char asciiCodeAnk[] =
-	{
-		" !\x22#$%&\x27()*+,-./"	/* 20 */
-		"0123456789:;<=>?"		/* 30 */
-		"@ABCDEFGHIJKLMNO"		/* 40 */
-		"PQRSTUVWXYZ[.].."		/* 50 */
-		"................"		/* 60 */
-		".............\\.."		/* 70 */
-		".｡｢｣､.ｦｧｨｩｪｫｬｭｮｯ"		/* 80 */
-		"ｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿ"		/* 90 */
-		"ﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏ"		/* A0 */
-		"ﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝﾞﾟ"		/* B0 */
-		"................"		/* C0 */
-		"................"		/* D0 */
-		"................"		/* E0 */
-		"................"		/* F0 */
-	};
-	static const char asciiCodeSjis[] =
-	{
-		"　！”＃＄％＆’（）＊＋，－．／"	/* 20 */
-		"０１２３４５６７８９：；＜＝＞？"	/* 30 */
-		"＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯ"	/* 40 */
-		"ＰＱＲＳＴＵＶＷＸＹＺ［＼］↑←"	/* 50 */
-		"※※※※※※※※※※※※※※※※"	/* 60 */
-		"日月火水木金土生年時分秒円￥￡▼"	/* 70 */
-		"↓。「」、．ヲァィゥェォャュョッ"	/* 80 */
-		"ーアイウエオカキクケコサシスセソ"	/* 90 */
-		"タチツテトナニヌネノハヒフヘホマ"	/* A0 */
-		"ミムメモヤユヨラリルレロワン゛゜"	/* B0 */
-		"→※※※※※※※※※※※※※※※"	/* C0 */
-		"※※※※※※※※※※※※※※※※"	/* D0 */
-		"※※※※※※※※※※※※※※※※"	/* E0 */
-		"※※※※※※※※※※※※※※※π"	/* F0 */
-	};
 	std::string result;
 	for(size_t i = 0; i < text.size(); ++ i)
 	{
@@ -995,6 +995,64 @@ std::string Mz80SP6110Disk::ConvertText(std::string text)
 	}
 	return result;
 }
+
+// Windowsの文字をで使える文字に変換する
+std::string Mz80SP6110Disk::ConvertMzText(std::string text)
+{
+	std::string result = "";
+	bool kanji = false;
+	std::string word = "";
+	for(size_t i = 0; i < text.size(); ++ i)
+	{
+		if(IsKanji(text[i]))
+		{
+			word.push_back(text[i]);
+			kanji = true;
+			continue;
+		}
+		else
+		{
+			word.push_back(text[i]);
+		}
+		if(kanji == true)
+		{
+			size_t findIndex = std::string(asciiCodeSjis).find(word);
+			std::string a;
+			size_t l = strlen(asciiCodeSjis);
+			a.push_back(asciiCodeSjis[findIndex]);
+			a.push_back(asciiCodeSjis[findIndex + 1]);
+			if(findIndex != std::string::npos)
+			{
+				// 全角文字が見つかった
+				word = "";
+				word.push_back(static_cast<char>(findIndex / 2 + 0x20));
+			}
+			else
+			{
+				word = "";
+			}
+		}
+		else
+		{
+			size_t findIndex = std::string(asciiCodeAnk).find(word);
+			if(findIndex != std::string::npos)
+			{
+				// 半角文字が見つかった
+				word = "";
+				word.push_back(static_cast<char>(findIndex + 0x20));
+			}
+			else
+			{
+				word = "";
+			}
+		}
+		result += word;
+		word = "";
+		kanji = false;
+	}
+	return result;
+}
+
 
 //============================================================================
 //  ディレクトリ位置を設定する
