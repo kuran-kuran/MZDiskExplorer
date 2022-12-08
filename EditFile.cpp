@@ -261,6 +261,7 @@ void EditFile::OnOK()
 		temp[size] = '\0';
 		ZeroMemory( temp, sizeof( temp ) );
 		size = m_LoadAdr.GetLine( 0, temp, 260 );
+		temp[size] = '\0';
 		LoadAdr = (unsigned short)strtol( temp, &temp2, 16 );
 		m_RunAdr.SetSel( 0, -1, FALSE );
 		ZeroMemory( temp, sizeof( temp ) );
@@ -358,6 +359,7 @@ void EditFile::OnOK()
 		temp[size] = '\0';
 		ZeroMemory( temp, sizeof( temp ) );
 		size = m_LoadAdr.GetLine( 0, temp, 260 );
+		temp[size] = '\0';
 		LoadAdr = (unsigned short)strtol( temp, &temp2, 16 );
 		m_RunAdr.SetSel( 0, -1, FALSE );
 		ZeroMemory( temp, sizeof( temp ) );
@@ -420,6 +422,7 @@ void EditFile::OnOK()
 		temp[size] = '\0';
 		ZeroMemory( temp, sizeof( temp ) );
 		size = m_LoadAdr.GetLine( 0, temp, 260 );
+		temp[size] = '\0';
 		LoadAdr = (unsigned short)strtol( temp, &temp2, 16 );
 		m_RunAdr.SetSel( 0, -1, FALSE );
 		ZeroMemory( temp, sizeof( temp ) );

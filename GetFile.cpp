@@ -48,6 +48,7 @@ BEGIN_MESSAGE_MAP(cGetFile, CDialog)
 	ON_CBN_SELCHANGE(IDC_FILETYPE, OnSelchangeFiletype)
 	ON_BN_CLICKED(IDALLOK, OnAllok)
 	//}}AFX_MSG_MAP
+	ON_EN_CHANGE(IDC_PATH, &cGetFile::OnChangePath)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -127,6 +128,7 @@ void cGetFile::OnRef()
 	m_Path.ReplaceSel( datapath, FALSE );
 	ZeroMemory(FileName, sizeof(FileName));
 	size = m_Path.GetLine( 0, FileName, 260 );
+	FileName[size] = '\0';
 }
 
 void cGetFile::SetFile(char *filename)
@@ -142,6 +144,7 @@ void cGetFile::OnSelchangeFiletype()
 	int select;
 	ZeroMemory( temp, sizeof( temp ) );
 	int size = m_Path.GetLine( 0, temp, 260 );
+	temp[size] = '\0';
 	path.SetPath( temp );
 	select = m_FileType.GetCurSel();
 	if ( 0 == select )
@@ -157,6 +160,7 @@ void cGetFile::OnSelchangeFiletype()
 	m_Path.ReplaceSel( path.GetPath(), FALSE );
 	ZeroMemory( FileName, sizeof( FileName ) );
 	size = m_Path.GetLine( 0, FileName, 260 );
+	FileName[size] = '\0';
 	SaveType = select;
 }
 
@@ -166,6 +170,7 @@ void cGetFile::OnOK()
 	m_Path.SetSel( 0, -1, FALSE );
 	ZeroMemory( FileName, sizeof( FileName ) );
 	int size = m_Path.GetLine( 0, FileName, 260 );
+	FileName[size] = '\0';
 	int select;
 	select = m_FileType.GetCurSel();
 	if ( 0 == select )
@@ -185,4 +190,21 @@ void cGetFile::OnAllok()
 	AllOk = 1;
 	OnOK();
 	CDialog::OnOK();
+}
+
+
+void cGetFile::OnChangePath()
+{
+	cPath path;
+	char temp[ 261 ];
+	ZeroMemory( temp, sizeof( temp ) );
+	int size = m_Path.GetLine( 0, temp, 260 );
+	temp[size] = '\0';
+	path.SetPath( temp );
+	m_Path.SetSel( 0, -1, FALSE );
+	m_Path.Clear();
+	m_Path.ReplaceSel( path.GetPath(), FALSE );
+	ZeroMemory( FileName, sizeof( FileName ) );
+	size = m_Path.GetLine( 0, FileName, 260 );
+	FileName[size] = '\0';
 }

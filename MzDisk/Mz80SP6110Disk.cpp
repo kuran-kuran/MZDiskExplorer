@@ -705,6 +705,11 @@ int Mz80SP6110Disk::GetSystem(std::string path, unsigned int mode)
 		// 起動ディスクではありません
 		return 1;
 	}
+	if(this->directory[0].mode != 0x80)
+	{
+		// SP-6110ディスクではありません
+		return 1;
+	}
 	FILE *fp;
 	if(fopen_s(&fp, path.c_str(), "wb") != 0)
 	{
@@ -714,7 +719,9 @@ int Mz80SP6110Disk::GetSystem(std::string path, unsigned int mode)
 	{
 		return 1;
 	}
-	int writesize = this->sectorSize * 184;
+	int offset = static_cast<int>(this->bitmap[1]) * 2;
+	int writeSectorSize = offset - 64;
+	int writesize = this->sectorSize * writeSectorSize;
 	if((mode & FILEMODE_MASK) == FILEMODE_MZT)
 	{
 		// ヘッダ情報作成

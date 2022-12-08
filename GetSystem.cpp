@@ -84,18 +84,6 @@ void GetSystem::OnOK()
 	CDialog::OnOK();
 }
 
-
-void GetSystem::OnEnChangePath()
-{
-	// TODO: これが RICHEDIT コントロールの場合、このコントロールが
-	// この通知を送信するには、CDialog::OnInitDialog() 関数をオーバーライドし、
-	// CRichEditCtrl().SetEventMask() を関数し呼び出します。
-	// OR 状態の ENM_CHANGE フラグをマスクに入れて呼び出す必要があります。
-
-	// TODO: ここにコントロール通知ハンドラー コードを追加してください。
-}
-
-
 void GetSystem::OnRef()
 {
 	// TODO: ここにコントロール通知ハンドラー コードを追加します。
@@ -105,6 +93,7 @@ void GetSystem::OnRef()
 	char temp[ 261 ];
 	ZeroMemory( temp, sizeof( temp ) );
 	int size = m_Path.GetLine( 0, temp, 260 );
+	temp[size] = '\0';
 	select = m_FileType.GetCurSel();
 	if ( 0 == select )
 	{
@@ -162,5 +151,22 @@ void GetSystem::OnCbnSelchangeFiletype()
 	m_Path.ReplaceSel( path.GetPath(), FALSE );
 	ZeroMemory( FileName, sizeof( FileName ) );
 	size = m_Path.GetLine( 0, FileName, 260 );
+	FileName[size] = '\0';
 	SaveType = select;
+}
+
+void GetSystem::OnEnChangePath()
+{
+	cPath path;
+	char temp[ 261 ];
+	ZeroMemory( temp, sizeof( temp ) );
+	int size = m_Path.GetLine( 0, temp, 260 );
+	temp[size] = '\0';
+	path.SetPath( temp );
+	m_Path.SetSel( 0, -1, FALSE );
+	m_Path.Clear();
+	m_Path.ReplaceSel( path.GetPath(), FALSE );
+	ZeroMemory( FileName, sizeof( FileName ) );
+	size = m_Path.GetLine( 0, FileName, 260 );
+	FileName[size] = '\0';
 }
