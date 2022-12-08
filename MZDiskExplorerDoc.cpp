@@ -910,7 +910,7 @@ void CMZDiskExplorerDoc::OnEditGetboot()
 	cPath path;
 	std::string name = bootname;
 	int total = MzDiskClass->GetAllBlockSize() * MzDiskClass->GetClusterSize();
-	if(total < 655360)
+	if((MzDiskClass->DiskType() == Disk::MZ2000) && (total < 655360))
 	{
 		name = MzDiskClass->ConvertText(bootname);
 	}
@@ -1392,7 +1392,7 @@ void CMZDiskExplorerDoc::OnEditGetsystem()
 	{
 		return;
 	}
-	if (MzDiskClass->DiskType() != Disk::MZ80K_SP6010)
+	if ((MzDiskClass->DiskType() != Disk::MZ80K_SP6010) && (MzDiskClass->DiskType() != Disk::MZ80K_SP6110))
 	{
 		return;
 	}
@@ -1419,7 +1419,7 @@ void CMZDiskExplorerDoc::OnEditGetsystem()
 void CMZDiskExplorerDoc::OnUpdateEditGetsystem(CCmdUI* pCmdUI)
 {
 	// TODO:ここにコマンド更新 UI ハンドラー コードを追加します。
-	if (( 1 == ImageInit ) && (MzDiskClass != NULL)  && (MzDiskClass->DiskType() == Disk::MZ80K_SP6010))
+	if (( 1 == ImageInit ) && (MzDiskClass != NULL)  && ((MzDiskClass->DiskType() == Disk::MZ80K_SP6010) || (MzDiskClass->DiskType() == Disk::MZ80K_SP6110)))
 	{
 		pCmdUI->Enable( TRUE );
 	}
@@ -1440,7 +1440,7 @@ void CMZDiskExplorerDoc::OnEditPutsystem()
 	{
 		return;
 	}
-	if (MzDiskClass->DiskType() != Disk::MZ80K_SP6010)
+	if ((MzDiskClass->DiskType() != Disk::MZ80K_SP6010) && (MzDiskClass->DiskType() != Disk::MZ80K_SP6110))
 	{
 		return;
 	}
@@ -1513,7 +1513,7 @@ void CMZDiskExplorerDoc::OnEditPutsystem()
 void CMZDiskExplorerDoc::OnUpdateEditPutsystem(CCmdUI* pCmdUI)
 {
 	// TODO:ここにコマンド更新 UI ハンドラー コードを追加します。
-	if (( 1 == ImageInit ) && (MzDiskClass != NULL) && (MzDiskClass->DiskType() == Disk::MZ80K_SP6010))
+	if (( 1 == ImageInit ) && (MzDiskClass != NULL)  && ((MzDiskClass->DiskType() == Disk::MZ80K_SP6010) || (MzDiskClass->DiskType() == Disk::MZ80K_SP6110)))
 	{
 		pCmdUI->Enable( TRUE );
 	}

@@ -64,7 +64,7 @@ BOOL cPutBoot::OnInitDialog()
 	m_RunAdr.Clear();
 	sprintf_s( temp, sizeof(temp), "%04X", RunAdr );
 	m_RunAdr.ReplaceSel( temp );
-	if(MzDiskClass->DiskType() == Disk::MZ80K_SP6010)
+	if((MzDiskClass->DiskType() == Disk::MZ80K_SP6010) || (MzDiskClass->DiskType() == Disk::MZ80K_SP6110))
 	{
 		m_Machine.EnableWindow(FALSE);
 		m_RunAdr.EnableWindow(FALSE);

@@ -135,7 +135,8 @@ BOOL EditFile::OnInitDialog()
 				work[j] = '\0';
 			}
 		}
-		FileName = work;
+		std::string filename = MzDiskClass->ConvertText(work);
+		FileName = &filename[0];
 		Mode = dir.mode;
 		Attr = dir.attr;
 		FileSize = dir.size;
@@ -157,7 +158,8 @@ BOOL EditFile::OnInitDialog()
 				work[j] = '\0';
 			}
 		}
-		FileName = work;
+		std::string filename = MzDiskClass->ConvertText(work);
+		FileName = &filename[0];
 		Mode = dir.mode;
 		if(Mode == 7)
 		{
@@ -175,11 +177,6 @@ BOOL EditFile::OnInitDialog()
 		FileSize = dir.size;
 		LoadAdr = dir.loadAdr;
 		RunAdr = dir.runAdr;
-		Year = ( dir.date & 0xF ) + ( ( dir.date >> 4 ) & 0xF ) * 10;
-		Month = ( ( dir.date >> 11 ) & 0xF ) + ( ( dir.date >> 15 ) & 0x1 ) * 10;
-		Day = ( ( dir.date >> 5 ) & 0x8 ) + ( ( dir.date >> 21 ) & 0x7 ) + ( ( dir.date >> 9 ) & 0x3 ) * 10;
-		Hour = ( ( dir.date >> 31 ) & 0x1 ) + ( ( dir.date >> 15 ) & 0xE ) + ( ( dir.date >> 19 ) & 0x3 ) * 10;
-		Minute = ( ( dir.date >> 24 ) & 0xF ) + ( ( dir.date >> 28 ) & 7 ) * 10;
 	}
 	char temp[ 20 ];
 	m_FileName.SetSel( 0, -1, FALSE );

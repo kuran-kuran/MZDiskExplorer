@@ -115,7 +115,7 @@ BOOL cPutFile::OnInitDialog()
 	m_Minute.Clear();
 	sprintf_s( temp, sizeof(temp), "%02d", Minute );
 	m_Minute.ReplaceSel( temp );
-	if(MzDiskClass->DiskType() == Disk::MZ80K_SP6010)
+	if((MzDiskClass->DiskType() == Disk::MZ80K_SP6010) || (MzDiskClass->DiskType() == Disk::MZ80K_SP6110))
 	{
 		m_Year.EnableWindow(FALSE);
 		m_Month.EnableWindow(FALSE);
