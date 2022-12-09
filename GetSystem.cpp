@@ -33,7 +33,6 @@ void GetSystem::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(GetSystem, CDialog)
-	ON_EN_CHANGE(IDC_PATH, &GetSystem::OnEnChangePath)
 	ON_BN_CLICKED(IDC_REF, &GetSystem::OnRef)
 	ON_CBN_SELCHANGE(IDC_FILETYPE, &GetSystem::OnCbnSelchangeFiletype)
 END_MESSAGE_MAP()
@@ -66,6 +65,18 @@ BOOL GetSystem::OnInitDialog()
 void GetSystem::OnOK()
 {
 	// TODO: ここに特定なコードを追加するか、もしくは基底クラスを呼び出してください。
+	cPath path;
+	char temp[ 261 ];
+	ZeroMemory( temp, sizeof( temp ) );
+	int size = m_Path.GetLine( 0, temp, 260 );
+	temp[size] = '\0';
+	path.SetPath( temp );
+	m_Path.SetSel( 0, -1, FALSE );
+	m_Path.Clear();
+	m_Path.ReplaceSel( path.GetPath(), FALSE );
+	ZeroMemory( FileName, sizeof( FileName ) );
+	size = m_Path.GetLine( 0, FileName, 260 );
+	FileName[size] = '\0';
 	int select;
 	int result;
 	select = m_FileType.GetCurSel();
@@ -153,20 +164,4 @@ void GetSystem::OnCbnSelchangeFiletype()
 	size = m_Path.GetLine( 0, FileName, 260 );
 	FileName[size] = '\0';
 	SaveType = select;
-}
-
-void GetSystem::OnEnChangePath()
-{
-	cPath path;
-	char temp[ 261 ];
-	ZeroMemory( temp, sizeof( temp ) );
-	int size = m_Path.GetLine( 0, temp, 260 );
-	temp[size] = '\0';
-	path.SetPath( temp );
-	m_Path.SetSel( 0, -1, FALSE );
-	m_Path.Clear();
-	m_Path.ReplaceSel( path.GetPath(), FALSE );
-	ZeroMemory( FileName, sizeof( FileName ) );
-	size = m_Path.GetLine( 0, FileName, 260 );
-	FileName[size] = '\0';
 }

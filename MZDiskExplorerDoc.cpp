@@ -1016,7 +1016,11 @@ void CMZDiskExplorerDoc::OnEditPutfile(CString datapath)
 				filename[ i ] = '\0';
 			}
 		}
-		putfiledialog.FileName = filename;
+		std::string filenameText = MzDiskClass->ConvertText(filename);
+		putfiledialog.FileName = &filenameText[0];
+		putfiledialog.mztFilename.clear();
+		putfiledialog.mztFilename.resize(17);
+		memcpy_s( &putfiledialog.mztFilename[0], sizeof(filename), mzthead.filename, 17 );
 		putfiledialog.Mode = mzthead.mode;
 		putfiledialog.Attr = 0;
 		putfiledialog.FileSize = mzthead.size;
@@ -1043,6 +1047,7 @@ void CMZDiskExplorerDoc::OnEditPutfile(CString datapath)
 	else
 	{
 		putfiledialog.FileName = path.GetPath( PATH_MODE_NAME | PATH_MODE_EXTNAME );
+		putfiledialog.mztFilename.clear();
 		if ( putfiledialog.FileSize > 65535 )
 		{
 			putfiledialog.Mode = 4;

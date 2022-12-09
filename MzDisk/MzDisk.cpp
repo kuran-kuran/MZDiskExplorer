@@ -420,7 +420,6 @@ int MzDisk::PutFile(std::string path, void* dirInfo, unsigned int mode, unsigned
 		int select = -1;
 		for(int i = 0; i < 64; ++ i)
 		{
-			// ファイルネーム
 			if(this->directory[i].mode == 0)
 			{
 				select = i;
@@ -1258,6 +1257,29 @@ std::string MzDisk::ConvertMzText(std::string text)
 		kanji = false;
 	}
 	return result;
+}
+
+//============================================================================
+//  ファイルを検索する
+//----------------------------------------------------------------------------
+// In  : path: ファイル名
+// Out : -1: なし, 0～: ファイルがあるディレクトリのインデックス
+//============================================================================
+int MzDisk::FindFile(std::string filename, int ignoreIndex)
+{
+	for(int i = 0; i < 64; ++ i)
+	{
+		if(this->directory[i].mode != 0)
+		{
+			// ファイルネーム
+			if((strncmp(this->directory[i].filename, &filename[0], filename.size()) == 0) && (i != ignoreIndex))
+			{
+				// 同じファイル名が存在する
+				return i;
+			}
+		}
+	}
+	return -1;
 }
 
 //============================================================================

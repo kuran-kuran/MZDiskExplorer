@@ -57,6 +57,7 @@ public:
 	virtual void DelBitmap(int start, int length) = 0;
 	virtual std::string ConvertText(std::string text) = 0;
 	virtual std::string ConvertMzText(std::string text) = 0;
+	virtual int FindFile(std::string filename, int ignoreIndex) = 0;
 protected:
 	void ReverseBuffer(std::vector<unsigned char>& buffer);
 	bool IsNotAvailableFileCharacter(char character);

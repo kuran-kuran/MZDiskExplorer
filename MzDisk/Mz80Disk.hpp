@@ -73,6 +73,7 @@ public:
 	void DelBitmap(int start, int length);
 	std::string ConvertText(std::string text);
 	std::string ConvertMzText(std::string text);
+	int FindFile(std::string filename, int ignoreIndex);
 	void SetDirSector(int sector);
 	int GetDirSector(void);
 	int GetDirCount(void);

@@ -301,6 +301,14 @@ void EditFile::OnOK()
 			dir.mode = 0xB;
 		}
 		strncpy_s( dir.filename, sizeof(dir.filename), FileName.GetBuffer( 16 ), 16 );
+		if(MzDiskClass->FindFile(dir.filename, dirIndex) != -1)
+		{
+			int result = MessageBox("同じ名前のファイルが存在しますが実行しますか?", "警告", MB_ICONWARNING | MB_OKCANCEL);
+			if(result == IDCANCEL)
+			{
+				return;
+			}
+		}
 		for ( i = 0; i < 17; i ++ )
 		{
 			if ( '\0' == dir.filename[ i ] )
@@ -376,6 +384,14 @@ void EditFile::OnOK()
 			dir.mode = 0;
 		}
 		strncpy_s( dir.filename, sizeof(dir.filename), FileName.GetBuffer( 16 ), 16 );
+		if(MzDiskClass->FindFile(dir.filename, dirIndex) != -1)
+		{
+			int result = MessageBox("同じ名前のファイルが存在しますが実行しますか?", "警告", MB_ICONWARNING | MB_OKCANCEL);
+			if(result == IDCANCEL)
+			{
+				return;
+			}
+		}
 		for ( i = 0; i < 17; i ++ )
 		{
 			if ( '\0' == dir.filename[ i ] )
@@ -448,7 +464,6 @@ void EditFile::OnOK()
 		size = m_Minute.GetLine(0, temp, 260);
 		temp[size] = '\0';
 		Minute = (int)strtol(temp, &temp2, 10);
-
 		ZeroMemory( &dir, sizeof( dir ) );
 		dir.mode = Mode;
 		if( 6 == dir.mode )
@@ -464,6 +479,14 @@ void EditFile::OnOK()
 			dir.mode = 0xB;
 		}
 		strncpy_s( dir.filename, sizeof(dir.filename), FileName.GetBuffer( 16 ), 16 );
+		if(MzDiskClass->FindFile(dir.filename, dirIndex) != -1)
+		{
+			int result = MessageBox("同じ名前のファイルが存在しますが実行しますか?", "警告", MB_ICONWARNING | MB_OKCANCEL);
+			if(result == IDCANCEL)
+			{
+				return;
+			}
+		}
 		for ( i = 0; i < 17; i ++ )
 		{
 			if ( '\0' == dir.filename[ i ] )

@@ -51,7 +51,6 @@ cPutFile::cPutFile(CWnd* pParent /*=NULL*/)
 	//}}AFX_DATA_INIT
 }
 
-
 void cPutFile::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
@@ -68,13 +67,14 @@ void cPutFile::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_FILENAME, m_FileName);
 	DDX_Control(pDX, IDC_ATTR, m_Attr);
 	//}}AFX_DATA_MAP
+	DDX_Control(pDX, IDC_MZT_FILENAME, m_IsMztFilename);
 }
-
 
 BEGIN_MESSAGE_MAP(cPutFile, CDialog)
 	//{{AFX_MSG_MAP(cPutFile)
 	ON_WM_CREATE()
 	//}}AFX_MSG_MAP
+	ON_BN_CLICKED(IDC_MZT_FILENAME, &cPutFile::OnClickedMztFilename)
 END_MESSAGE_MAP()
 
 BOOL cPutFile::OnInitDialog() 
@@ -86,6 +86,19 @@ BOOL cPutFile::OnInitDialog()
 	m_FileName.SetSel( 0, -1, FALSE );
 	m_FileName.Clear();
 	m_FileName.ReplaceSel( FileName.GetBuffer( 260 ) );
+	if ( FileType != 0 )
+	{
+		// MZT
+		m_IsMztFilename.SetCheck(BST_CHECKED);
+		m_IsMztFilename.EnableWindow(TRUE);
+		m_FileName.EnableWindow(FALSE);
+	}
+	else
+	{
+		m_IsMztFilename.SetCheck(BST_UNCHECKED);
+		m_IsMztFilename.EnableWindow(FALSE);
+		m_FileName.EnableWindow(TRUE);
+	}
 	m_Mode.SetCurSel( Mode - 1 );
 	m_Attr.SetCurSel( Attr & 1 );
 	m_FileSize.SetSel( 0, -1, FALSE );
@@ -194,10 +207,20 @@ void cPutFile::OnOK()
 		{
 			dir.mode = 3;
 		}
-		std::string filename = FileName.GetBuffer( 16 );
-		std::string mzFilename = MzDiskClass->ConvertMzText(filename);
-		mzFilename.resize(17);
-		strncpy_s( dir.filename, sizeof(dir.filename), &mzFilename[0], 16 );
+		if ((FileType != 0) && (m_IsMztFilename.GetCheck() == BST_CHECKED))
+		{
+			// MZTのファイル名を使用する
+			ZeroMemory(dir.filename, sizeof(dir.filename));
+			memcpy_s(dir.filename, sizeof(dir.filename), &mztFilename[0], 16);
+		}
+		else
+		{
+			// 入力されたファイル名を使用する
+			std::string filename = FileName.GetBuffer( 16 );
+			std::string mzFilename = MzDiskClass->ConvertMzText(filename);
+			mzFilename.resize(17);
+			strncpy_s( dir.filename, sizeof(dir.filename), &mzFilename[0], 16 );
+		}
 		for ( i = 0; i < 17; i ++ )
 		{
 			if ( '\0' == dir.filename[ i ] )
@@ -298,10 +321,20 @@ void cPutFile::OnOK()
 		{
 			dir.mode = 0;
 		}
-		std::string filename = FileName.GetBuffer( 16 );
-		std::string mzFilename = MzDiskClass->ConvertMzText(filename);
-		mzFilename.resize(17);
-		strncpy_s( dir.filename, sizeof(dir.filename), &mzFilename[0], 16 );
+		if ((FileType != 0) && (m_IsMztFilename.GetCheck() == BST_CHECKED))
+		{
+			// MZTのファイル名を使用する
+			ZeroMemory(dir.filename, sizeof(dir.filename));
+			memcpy_s(dir.filename, sizeof(dir.filename), &mztFilename[0], 16);
+		}
+		else
+		{
+			// 入力されたファイル名を使用する
+			std::string filename = FileName.GetBuffer( 16 );
+			std::string mzFilename = MzDiskClass->ConvertMzText(filename);
+			mzFilename.resize(17);
+			strncpy_s( dir.filename, sizeof(dir.filename), &mzFilename[0], 16 );
+		}
 		for ( i = 0; i < 17; i ++ )
 		{
 			if ( '\0' == dir.filename[ i ] )
@@ -407,10 +440,20 @@ void cPutFile::OnOK()
 		{
 			dir.mode = 3;
 		}
-		std::string filename = FileName.GetBuffer( 16 );
-		std::string mzFilename = MzDiskClass->ConvertMzText(filename);
-		mzFilename.resize(17);
-		strncpy_s( dir.filename, sizeof(dir.filename), &mzFilename[0], 16 );
+		if ((FileType != 0) && (m_IsMztFilename.GetCheck() == BST_CHECKED))
+		{
+			// MZTのファイル名を使用する
+			ZeroMemory(dir.filename, sizeof(dir.filename));
+			memcpy_s(dir.filename, sizeof(dir.filename), &mztFilename[0], 16);
+		}
+		else
+		{
+			// 入力されたファイル名を使用する
+			std::string filename = FileName.GetBuffer( 16 );
+			std::string mzFilename = MzDiskClass->ConvertMzText(filename);
+			mzFilename.resize(17);
+			strncpy_s( dir.filename, sizeof(dir.filename), &mzFilename[0], 16 );
+		}
 		for ( i = 0; i < 17; i ++ )
 		{
 			if ( '\0' == dir.filename[ i ] )
@@ -462,4 +505,17 @@ void cPutFile::OnOK()
 		}
 	}
 	CDialog::OnOK();
+}
+
+void cPutFile::OnClickedMztFilename()
+{
+	// TODO: ここにコントロール通知ハンドラー コードを追加します。
+	if (m_IsMztFilename.GetCheck() == BST_CHECKED)
+	{
+		m_FileName.EnableWindow(FALSE);
+	}
+	else
+	{
+		m_FileName.EnableWindow(TRUE);
+	}
 }

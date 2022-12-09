@@ -27,7 +27,6 @@ protected:
 public:
 	virtual BOOL OnInitDialog();
 	virtual void OnOK();
-	afx_msg void OnEnChangePath();
 	afx_msg void OnRef();
 private:
 	CEdit m_Path;

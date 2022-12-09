@@ -95,6 +95,7 @@ void Mz80SP6110Disk::Format(int type, int volumeNumber)
 	// ディレクトリ
 	std::vector<unsigned char> buffer;
 	buffer.resize(static_cast<size_t>(this->sectorSize) * 48, 0);
+	buffer[0] = 0x80; // SP-6110のシグネチャ
 	WriteSector(buffer, 16, 48);
 	// ビットマップ
 	this->bitmap.clear();
@@ -301,7 +302,6 @@ int Mz80SP6110Disk::PutFile(std::string path, void* dirInfo, unsigned int mode, 
 		int select = -1;
 		for(int i = 0; i < 64; ++ i)
 		{
-			// ファイルネーム
 			if(this->directory[i].mode == 0)
 			{
 				select = i;
@@ -774,7 +774,7 @@ int Mz80SP6110Disk::GetSystem(std::string path, unsigned int mode)
 		}
 		mzthead.size = writesize;
 		mzthead.loadAdr = 0x1200;
-		mzthead.runAdr = 0x21FA;
+		mzthead.runAdr = 0x1200;
 		// ヘッダ情報書き込み
 		fwrite(&mzthead, 1, 128, fp);
 	}
@@ -1053,6 +1053,28 @@ std::string Mz80SP6110Disk::ConvertMzText(std::string text)
 	return result;
 }
 
+//============================================================================
+//  ファイルを検索する
+//----------------------------------------------------------------------------
+// In  : path: ファイル名
+// Out : -1: なし, 0～: ファイルがあるディレクトリのインデックス
+//============================================================================
+int Mz80SP6110Disk::FindFile(std::string filename, int ignoreIndex)
+{
+	for(int i = 0; i < 64; ++ i)
+	{
+		if(this->directory[i].mode != 0)
+		{
+			// ファイルネーム
+			if((strncmp(this->directory[i].filename, &filename[0], filename.size()) == 0) && (i != ignoreIndex))
+			{
+				// 同じファイル名が存在する
+				return i;
+			}
+		}
+	}
+	return -1;
+}
 
 //============================================================================
 //  ディレクトリ位置を設定する
