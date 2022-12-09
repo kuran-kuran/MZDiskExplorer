@@ -7,6 +7,7 @@
 #include "afxdialogex.h"
 #include "MzDisk/MzDisk.hpp"
 #include "MzDisk/Mz80Disk.hpp"
+#include "MzDisk/Mz80SP6110Disk.hpp"
 
 
 // EditFile ダイアログ
@@ -134,13 +135,49 @@ BOOL EditFile::OnInitDialog()
 				work[j] = '\0';
 			}
 		}
-		FileName = work;
+		std::string filename = MzDiskClass->ConvertText(work);
+		FileName = &filename[0];
 		Mode = dir.mode;
 		Attr = dir.attr;
 		FileSize = dir.size;
 		LoadAdr = dir.loadAdr;
 	}
-
+	else if(MzDiskClass->DiskType() == Disk::MZ80K_SP6110)
+	{
+		MzDisk::DIRECTORY dir;
+		MzDiskClass->GetDir(&dir, dirIndex);
+		if((0 == dir.mode) || (0x80 == dir.mode) || (0x82 == dir.mode) || (0xF == dir.mode))
+		{
+			return FALSE;
+		}
+		memcpy(work, dir.filename, 17);
+		for (int j = 0; j < 17; j ++)
+		{
+			if(0x0D == work[j])
+			{
+				work[j] = '\0';
+			}
+		}
+		std::string filename = MzDiskClass->ConvertText(work);
+		FileName = &filename[0];
+		Mode = dir.mode;
+		if(Mode == 7)
+		{
+			Mode = 6;
+		}
+		else if(Mode == 0xA)
+		{
+			Mode = 7;
+		}
+		else if(Mode == 0xB)
+		{
+			Mode = 8;
+		}
+		Attr = dir.attr;
+		FileSize = dir.size;
+		LoadAdr = dir.loadAdr;
+		RunAdr = dir.runAdr;
+	}
 	char temp[ 20 ];
 	m_FileName.SetSel( 0, -1, FALSE );
 	m_FileName.Clear();
@@ -174,7 +211,7 @@ BOOL EditFile::OnInitDialog()
 	m_Minute.Clear();
 	sprintf_s( temp, sizeof(temp), "%02d", Minute );
 	m_Minute.ReplaceSel( temp );
-	if(MzDiskClass->DiskType() == Disk::MZ80K_SP6010)
+	if(MzDiskClass->DiskType() == Disk::MZ80K_SP6010 || MzDiskClass->DiskType() == Disk::MZ80K_SP6110)
 	{
 		m_Year.EnableWindow(FALSE);
 		m_Month.EnableWindow(FALSE);
@@ -209,7 +246,8 @@ void EditFile::OnOK()
 		ZeroMemory( temp, sizeof( temp ) );
 		int size = m_FileName.GetLine( 0, temp, 16 );
 		temp[size] = '\0';
-		FileName = temp;
+		std::string mzFileName = MzDiskClass->ConvertMzText(temp);
+		FileName = &mzFileName[0];
 		Mode = m_Mode.GetCurSel() + 1;
 		if( 1 == m_Attr.GetCurSel() )
 		{
@@ -224,6 +262,7 @@ void EditFile::OnOK()
 		temp[size] = '\0';
 		ZeroMemory( temp, sizeof( temp ) );
 		size = m_LoadAdr.GetLine( 0, temp, 260 );
+		temp[size] = '\0';
 		LoadAdr = (unsigned short)strtol( temp, &temp2, 16 );
 		m_RunAdr.SetSel( 0, -1, FALSE );
 		ZeroMemory( temp, sizeof( temp ) );
@@ -262,6 +301,14 @@ void EditFile::OnOK()
 			dir.mode = 0xB;
 		}
 		strncpy_s( dir.filename, sizeof(dir.filename), FileName.GetBuffer( 16 ), 16 );
+		if(MzDiskClass->FindFile(dir.filename, dirIndex) != -1)
+		{
+			int result = MessageBox("同じ名前のファイルが存在しますが実行しますか?", "警告", MB_ICONWARNING | MB_OKCANCEL);
+			if(result == IDCANCEL)
+			{
+				return;
+			}
+		}
 		for ( i = 0; i < 17; i ++ )
 		{
 			if ( '\0' == dir.filename[ i ] )
@@ -306,7 +353,8 @@ void EditFile::OnOK()
 		ZeroMemory( temp, sizeof( temp ) );
 		int size = m_FileName.GetLine( 0, temp, 16 );
 		temp[size] = '\0';
-		FileName = temp;
+		std::string mzFileName = MzDiskClass->ConvertMzText(temp);
+		FileName = &mzFileName[0];
 		Mode = m_Mode.GetCurSel() + 1;
 		if( 1 == m_Attr.GetCurSel() )
 		{
@@ -321,6 +369,7 @@ void EditFile::OnOK()
 		temp[size] = '\0';
 		ZeroMemory( temp, sizeof( temp ) );
 		size = m_LoadAdr.GetLine( 0, temp, 260 );
+		temp[size] = '\0';
 		LoadAdr = (unsigned short)strtol( temp, &temp2, 16 );
 		m_RunAdr.SetSel( 0, -1, FALSE );
 		ZeroMemory( temp, sizeof( temp ) );
@@ -335,6 +384,14 @@ void EditFile::OnOK()
 			dir.mode = 0;
 		}
 		strncpy_s( dir.filename, sizeof(dir.filename), FileName.GetBuffer( 16 ), 16 );
+		if(MzDiskClass->FindFile(dir.filename, dirIndex) != -1)
+		{
+			int result = MessageBox("同じ名前のファイルが存在しますが実行しますか?", "警告", MB_ICONWARNING | MB_OKCANCEL);
+			if(result == IDCANCEL)
+			{
+				return;
+			}
+		}
 		for ( i = 0; i < 17; i ++ )
 		{
 			if ( '\0' == dir.filename[ i ] )
@@ -354,6 +411,102 @@ void EditFile::OnOK()
 		}
 		dir.loadAdr = LoadAdr;
 		dir.runAdr = RunAdr;
+		MzDiskClass->SetDir(&dir, dirIndex);
+	}
+	else if(MzDiskClass->DiskType() == Disk::MZ80K_SP6110)
+	{
+		Mz80SP6110Disk::DIRECTORY dir;
+		MzDiskClass->GetDir(&dir, dirIndex);
+		int i;
+		char temp[ 261 ];
+		char *temp2;
+		int mode = 0;
+		m_FileName.SetSel( 0, -1, FALSE );
+		ZeroMemory( temp, sizeof( temp ) );
+		int size = m_FileName.GetLine( 0, temp, 16 );
+		temp[size] = '\0';
+		std::string mzFileName = MzDiskClass->ConvertMzText(temp);
+		FileName = &mzFileName[0];
+		Mode = m_Mode.GetCurSel() + 1;
+		if( 1 == m_Attr.GetCurSel() )
+		{
+			Attr |= 0x1;
+		}
+		m_FileSize.SetSel( 0, -1, FALSE );
+		ZeroMemory( temp, sizeof( temp ) );
+		size = m_FileSize.GetLine( 0, temp, 260 );
+		temp[size] = '\0';
+		FileSize = atoi( temp );
+		m_LoadAdr.SetSel( 0, -1, FALSE );
+		temp[size] = '\0';
+		ZeroMemory( temp, sizeof( temp ) );
+		size = m_LoadAdr.GetLine( 0, temp, 260 );
+		temp[size] = '\0';
+		LoadAdr = (unsigned short)strtol( temp, &temp2, 16 );
+		m_RunAdr.SetSel( 0, -1, FALSE );
+		ZeroMemory( temp, sizeof( temp ) );
+		size = m_RunAdr.GetLine( 0, temp, 260 );
+		temp[size] = '\0';
+		RunAdr = (unsigned short)strtol( temp, &temp2, 16 );
+		// 日付
+		size = m_Year.GetLine(0, temp, 260);
+		temp[size] = '\0';
+		Year = (int)strtol(temp, &temp2, 10);
+		size = m_Month.GetLine(0, temp, 260);
+		temp[size] = '\0';
+		Month = (int)strtol(temp, &temp2, 10);
+		size = m_Day.GetLine(0, temp, 260);
+		temp[size] = '\0';
+		Day = (int)strtol(temp, &temp2, 10);
+		size = m_Hour.GetLine(0, temp, 260);
+		temp[size] = '\0';
+		Hour = (int)strtol(temp, &temp2, 10);
+		size = m_Minute.GetLine(0, temp, 260);
+		temp[size] = '\0';
+		Minute = (int)strtol(temp, &temp2, 10);
+		ZeroMemory( &dir, sizeof( dir ) );
+		dir.mode = Mode;
+		if( 6 == dir.mode )
+		{
+			dir.mode = 7;
+		}
+		else if( 7 == dir.mode )
+		{
+			dir.mode = 0xA;
+		}
+		else if( 8 == dir.mode )
+		{
+			dir.mode = 0xB;
+		}
+		strncpy_s( dir.filename, sizeof(dir.filename), FileName.GetBuffer( 16 ), 16 );
+		if(MzDiskClass->FindFile(dir.filename, dirIndex) != -1)
+		{
+			int result = MessageBox("同じ名前のファイルが存在しますが実行しますか?", "警告", MB_ICONWARNING | MB_OKCANCEL);
+			if(result == IDCANCEL)
+			{
+				return;
+			}
+		}
+		for ( i = 0; i < 17; i ++ )
+		{
+			if ( '\0' == dir.filename[ i ] )
+			{
+				dir.filename[ i ] = '\xD';
+				break;
+			}
+		}
+		dir.attr = Attr;
+		if(dir.mode == 4)
+		{
+			dir.size = FileSize / 32;
+		}
+		else
+		{
+			dir.size = FileSize;
+		}
+		dir.loadAdr = LoadAdr;
+		dir.runAdr = RunAdr;
+		dir.date = 0;
 		MzDiskClass->SetDir(&dir, dirIndex);
 	}
 	CDialog::OnOK();

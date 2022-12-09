@@ -17,6 +17,7 @@ class cPutFile : public CDialog
 public:
 	CString DataPath;
 	CString FileName;
+	std::vector<unsigned char> mztFilename;
 	unsigned char Mode;
 	unsigned char Attr;
 	int FileSize;
@@ -46,6 +47,7 @@ public:
 	CEdit	m_FileSize;
 	CEdit	m_FileName;
 	CComboBox	m_Attr;
+	CButton m_IsMztFilename;
 	//}}AFX_DATA
 
 
@@ -65,6 +67,8 @@ protected:
 	virtual void OnOK();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnClickedMztFilename();
 };
 
 //{{AFX_INSERT_LOCATION}}

@@ -11,6 +11,7 @@
 #include "MzDisk/Disk.hpp"
 #include "MzDisk/MzDisk.hpp"
 #include "MzDisk/Mz80Disk.hpp"
+#include "MzDisk/Mz80SP6110Disk.hpp"
 #include "path.h"
 
 #ifdef _DEBUG
@@ -296,6 +297,76 @@ void CMZDiskExplorerView::OnEditGetfile()
 			cGetFile getfiledialog;
 			cPath path;
 			std::string name = pDoc->MzDiskClass->ConvertText(filename);
+			path.SetPath( pathname );
+			path.SetName( name.c_str() );
+			path.SetExtName( extname );
+			strcpy_s( getfiledialog.FileName, sizeof(getfiledialog.FileName), path.GetPath() );
+			getfiledialog.MzDiskClass = pDoc->MzDiskClass;
+			getfiledialog.DirIndex = pDoc->ItemToDirIndex[ select ];
+			getfiledialog.SaveType = pDoc->SaveType;
+			getfiledialog.AllOk = AllOk;
+			getfiledialog.DoModal();
+			pDoc->SaveType = getfiledialog.SaveType;
+			AllOk = getfiledialog.AllOk;
+			strcpy_s( pathname, sizeof(pathname), getfiledialog.FileName );
+		}
+	}
+	else if(pDoc->MzDiskClass->DiskType() == Disk::MZ80K_SP6110)
+	{
+		MzDisk::DIRECTORY dir;
+		char savepath[ MAX_PATH ];
+		char filename[ 18 ];
+		char extname[ 18 ];
+		CString DataPath;
+		int i;
+		ZeroMemory( savepath, MAX_PATH );
+		// ファイル取り出し
+		CListCtrl &list = GetListCtrl();
+		ASSERT_VALID(pDoc);
+		int select = -1;
+		int AllOk = 0;
+		char pathname[ 260 ];
+		CString cpathname;
+		cpathname = pDoc->GetPathName();
+		strcpy_s( pathname, sizeof(pathname), cpathname.GetBuffer( 260 ) );
+		while ( 1 )
+		{
+			select = list.GetNextItem( select, LVNI_ALL | LVNI_SELECTED );
+			if ( -1 == select )
+			{
+				break;
+			}
+			pDoc->MzDiskClass->GetDir( &dir, pDoc->ItemToDirIndex[ select ] );
+			ZeroMemory( filename, sizeof( filename ) );
+			ZeroMemory( extname, sizeof( extname ) );
+			strncpy_s( filename, sizeof(filename), dir.filename, 17 );
+			for ( i=0; i<17; i++ ) {
+				if ( 0x0D == filename[ i ] ) {
+					filename[ i ] = 0;
+				}
+				if ( '.' == filename[ i ] ) {
+					int j;
+					filename[ i ] = 0;
+					if ( i < 17 )
+					{
+						int k = 0;
+						for ( j = i + 1; j < 17; j ++ )
+						{
+							if ( 0x0D == filename[ j ] ) {
+								filename[ j ] = 0;
+							}
+							extname[ k ] = filename[ j ];
+							k ++;
+						}
+					}
+				}
+			}
+			// ダイアログ表示
+			cGetFile getfiledialog;
+			cPath path;
+			int total = pDoc->MzDiskClass->GetAllBlockSize() * pDoc->MzDiskClass->GetClusterSize();
+			std::string name = filename;
+			name = pDoc->MzDiskClass->ConvertText(filename);
 			path.SetPath( pathname );
 			path.SetName( name.c_str() );
 			path.SetExtName( extname );

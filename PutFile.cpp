@@ -6,6 +6,7 @@
 #include "PutFile.h"
 #include "MzDisk/MzDisk.hpp"
 #include "MzDisk/Mz80Disk.hpp"
+#include "MzDisk/Mz80SP6110Disk.hpp"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -50,7 +51,6 @@ cPutFile::cPutFile(CWnd* pParent /*=NULL*/)
 	//}}AFX_DATA_INIT
 }
 
-
 void cPutFile::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
@@ -67,13 +67,14 @@ void cPutFile::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_FILENAME, m_FileName);
 	DDX_Control(pDX, IDC_ATTR, m_Attr);
 	//}}AFX_DATA_MAP
+	DDX_Control(pDX, IDC_MZT_FILENAME, m_IsMztFilename);
 }
-
 
 BEGIN_MESSAGE_MAP(cPutFile, CDialog)
 	//{{AFX_MSG_MAP(cPutFile)
 	ON_WM_CREATE()
 	//}}AFX_MSG_MAP
+	ON_BN_CLICKED(IDC_MZT_FILENAME, &cPutFile::OnClickedMztFilename)
 END_MESSAGE_MAP()
 
 BOOL cPutFile::OnInitDialog() 
@@ -85,6 +86,19 @@ BOOL cPutFile::OnInitDialog()
 	m_FileName.SetSel( 0, -1, FALSE );
 	m_FileName.Clear();
 	m_FileName.ReplaceSel( FileName.GetBuffer( 260 ) );
+	if ( FileType != 0 )
+	{
+		// MZT
+		m_IsMztFilename.SetCheck(BST_CHECKED);
+		m_IsMztFilename.EnableWindow(TRUE);
+		m_FileName.EnableWindow(FALSE);
+	}
+	else
+	{
+		m_IsMztFilename.SetCheck(BST_UNCHECKED);
+		m_IsMztFilename.EnableWindow(FALSE);
+		m_FileName.EnableWindow(TRUE);
+	}
 	m_Mode.SetCurSel( Mode - 1 );
 	m_Attr.SetCurSel( Attr & 1 );
 	m_FileSize.SetSel( 0, -1, FALSE );
@@ -114,7 +128,7 @@ BOOL cPutFile::OnInitDialog()
 	m_Minute.Clear();
 	sprintf_s( temp, sizeof(temp), "%02d", Minute );
 	m_Minute.ReplaceSel( temp );
-	if(MzDiskClass->DiskType() == Disk::MZ80K_SP6010)
+	if((MzDiskClass->DiskType() == Disk::MZ80K_SP6010) || (MzDiskClass->DiskType() == Disk::MZ80K_SP6110))
 	{
 		m_Year.EnableWindow(FALSE);
 		m_Month.EnableWindow(FALSE);
@@ -163,6 +177,7 @@ void cPutFile::OnOK()
 		temp[size] = '\0';
 		ZeroMemory( temp, sizeof( temp ) );
 		size = m_LoadAdr.GetLine( 0, temp, 260 );
+		temp[size] = '\0';
 		LoadAdr = (unsigned short)strtol( temp, &temp2, 16 );
 		m_RunAdr.SetSel( 0, -1, FALSE );
 		ZeroMemory( temp, sizeof( temp ) );
@@ -192,7 +207,20 @@ void cPutFile::OnOK()
 		{
 			dir.mode = 3;
 		}
-		strncpy_s( dir.filename, sizeof(dir.filename), FileName.GetBuffer( 16 ), 16 );
+		if ((FileType != 0) && (m_IsMztFilename.GetCheck() == BST_CHECKED))
+		{
+			// MZTのファイル名を使用する
+			ZeroMemory(dir.filename, sizeof(dir.filename));
+			memcpy_s(dir.filename, sizeof(dir.filename), &mztFilename[0], 16);
+		}
+		else
+		{
+			// 入力されたファイル名を使用する
+			std::string filename = FileName.GetBuffer( 16 );
+			std::string mzFilename = MzDiskClass->ConvertMzText(filename);
+			mzFilename.resize(17);
+			strncpy_s( dir.filename, sizeof(dir.filename), &mzFilename[0], 16 );
+		}
 		for ( i = 0; i < 17; i ++ )
 		{
 			if ( '\0' == dir.filename[ i ] )
@@ -279,6 +307,7 @@ void cPutFile::OnOK()
 		temp[size] = '\0';
 		ZeroMemory( temp, sizeof( temp ) );
 		size = m_LoadAdr.GetLine( 0, temp, 260 );
+		temp[size] = '\0';
 		LoadAdr = (unsigned short)strtol( temp, &temp2, 16 );
 		m_RunAdr.SetSel( 0, -1, FALSE );
 		ZeroMemory( temp, sizeof( temp ) );
@@ -292,7 +321,20 @@ void cPutFile::OnOK()
 		{
 			dir.mode = 0;
 		}
-		strncpy_s( dir.filename, sizeof(dir.filename), FileName.GetBuffer( 16 ), 16 );
+		if ((FileType != 0) && (m_IsMztFilename.GetCheck() == BST_CHECKED))
+		{
+			// MZTのファイル名を使用する
+			ZeroMemory(dir.filename, sizeof(dir.filename));
+			memcpy_s(dir.filename, sizeof(dir.filename), &mztFilename[0], 16);
+		}
+		else
+		{
+			// 入力されたファイル名を使用する
+			std::string filename = FileName.GetBuffer( 16 );
+			std::string mzFilename = MzDiskClass->ConvertMzText(filename);
+			mzFilename.resize(17);
+			strncpy_s( dir.filename, sizeof(dir.filename), &mzFilename[0], 16 );
+		}
 		for ( i = 0; i < 17; i ++ )
 		{
 			if ( '\0' == dir.filename[ i ] )
@@ -342,5 +384,138 @@ void cPutFile::OnOK()
 			MessageBox( "ディスクイメージへのファイル書き込みに失敗しました. \n原因は不明です.", "エラー", MB_OK );
 		}
 	}
+	else if(MzDiskClass->DiskType() == Disk::MZ80K_SP6110)
+	{
+		MzDisk::DIRECTORY dir;
+		int i;
+		char temp[ 261 ];
+		char *temp2;
+		int mode = 0;
+		m_FileName.SetSel( 0, -1, FALSE );
+		ZeroMemory( temp, sizeof( temp ) );
+		int size = m_FileName.GetLine( 0, temp, 16 );
+		temp[size] = '\0';
+		FileName = temp;
+		Mode = m_Mode.GetCurSel() + 1;
+		if( 1 == m_Attr.GetCurSel() )
+		{
+			Attr |= 0x1;
+		}
+		m_FileSize.SetSel( 0, -1, FALSE );
+		ZeroMemory( temp, sizeof( temp ) );
+		size = m_FileSize.GetLine( 0, temp, 260 );
+		temp[size] = '\0';
+		FileSize = atoi( temp );
+		m_LoadAdr.SetSel( 0, -1, FALSE );
+		temp[size] = '\0';
+		ZeroMemory( temp, sizeof( temp ) );
+		size = m_LoadAdr.GetLine( 0, temp, 260 );
+		temp[size] = '\0';
+		LoadAdr = (unsigned short)strtol( temp, &temp2, 16 );
+		m_RunAdr.SetSel( 0, -1, FALSE );
+		ZeroMemory( temp, sizeof( temp ) );
+		size = m_RunAdr.GetLine( 0, temp, 260 );
+		temp[size] = '\0';
+		RunAdr = (unsigned short)strtol( temp, &temp2, 16 );
+		// 日付
+		size = m_Year.GetLine(0, temp, 260);
+		temp[size] = '\0';
+		Year = (int)strtol(temp, &temp2, 10);
+		size = m_Month.GetLine(0, temp, 260);
+		temp[size] = '\0';
+		Month = (int)strtol(temp, &temp2, 10);
+		size = m_Day.GetLine(0, temp, 260);
+		temp[size] = '\0';
+		Day = (int)strtol(temp, &temp2, 10);
+		size = m_Hour.GetLine(0, temp, 260);
+		temp[size] = '\0';
+		Hour = (int)strtol(temp, &temp2, 10);
+		size = m_Minute.GetLine(0, temp, 260);
+		temp[size] = '\0';
+		Minute = (int)strtol(temp, &temp2, 10);
+
+		ZeroMemory( &dir, sizeof( dir ) );
+		dir.mode = Mode;
+		if( 5 == dir.mode )
+		{
+			dir.mode = 3;
+		}
+		if ((FileType != 0) && (m_IsMztFilename.GetCheck() == BST_CHECKED))
+		{
+			// MZTのファイル名を使用する
+			ZeroMemory(dir.filename, sizeof(dir.filename));
+			memcpy_s(dir.filename, sizeof(dir.filename), &mztFilename[0], 16);
+		}
+		else
+		{
+			// 入力されたファイル名を使用する
+			std::string filename = FileName.GetBuffer( 16 );
+			std::string mzFilename = MzDiskClass->ConvertMzText(filename);
+			mzFilename.resize(17);
+			strncpy_s( dir.filename, sizeof(dir.filename), &mzFilename[0], 16 );
+		}
+		for ( i = 0; i < 17; i ++ )
+		{
+			if ( '\0' == dir.filename[ i ] )
+			{
+				dir.filename[ i ] = '\xD';
+				break;
+			}
+		}
+		dir.attr = Attr;
+		if(dir.mode == 4)
+		{
+			dir.size = FileSize / 32;
+		}
+		else
+		{
+			dir.size = FileSize;
+		}
+		dir.loadAdr = LoadAdr;
+		dir.runAdr = RunAdr;
+		dir.date = 0;
+		int result;
+		if ( 0 == FileType )
+		{
+			result = MzDiskClass->PutFile( DataPath.GetBuffer( 260 ), &dir, Disk::FILEMODE_BIN, Mode );
+		}
+		else
+		{
+			result = MzDiskClass->PutFile( DataPath.GetBuffer( 260 ), &dir, Disk::FILEMODE_MZT, Mode );
+		}
+		if( 1 == result )
+		{
+			MessageBox( "ディスクイメージへのファイル書き込みに失敗しました. \nディレクトリに空きがありません.", "エラー", MB_OK );
+		}
+		else if( ( 2 == result ) || ( 3 == result ) )
+		{
+			MessageBox( "ディスクイメージへのファイル書き込みに失敗しました. \nファイルを読み込むことができません.", "エラー", MB_OK );
+		}
+		else if( 4 == result )
+		{
+			MessageBox( "ディスクイメージへのファイル書き込みに失敗しました. \nビットマップの空きがありません.", "エラー", MB_OK );
+		}
+		else if( 5 == result )
+		{
+			MessageBox( "ディスクイメージへのファイル書き込みに失敗しました. \n同じファイル名がすでに存在します.", "エラー", MB_OK );
+		}
+		else if( 0 != result )
+		{
+			MessageBox( "ディスクイメージへのファイル書き込みに失敗しました. \n原因は不明です.", "エラー", MB_OK );
+		}
+	}
 	CDialog::OnOK();
+}
+
+void cPutFile::OnClickedMztFilename()
+{
+	// TODO: ここにコントロール通知ハンドラー コードを追加します。
+	if (m_IsMztFilename.GetCheck() == BST_CHECKED)
+	{
+		m_FileName.EnableWindow(FALSE);
+	}
+	else
+	{
+		m_FileName.EnableWindow(TRUE);
+	}
 }
