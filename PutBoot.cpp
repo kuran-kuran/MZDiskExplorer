@@ -5,6 +5,7 @@
 #include "MZDiskExplorer.h"
 #include "MzDisk/MzDisk.hpp"
 #include "MzDisk/Mz80Disk.hpp"
+#include "MzDisk/Mz80SP6110Disk.hpp"
 #include "PutBoot.h"
 
 #ifdef _DEBUG
@@ -63,7 +64,7 @@ BOOL cPutBoot::OnInitDialog()
 	m_RunAdr.Clear();
 	sprintf_s( temp, sizeof(temp), "%04X", RunAdr );
 	m_RunAdr.ReplaceSel( temp );
-	if(MzDiskClass->DiskType() == Disk::MZ80K_SP6010)
+	if((MzDiskClass->DiskType() == Disk::MZ80K_SP6010) || (MzDiskClass->DiskType() == Disk::MZ80K_SP6110))
 	{
 		m_Machine.EnableWindow(FALSE);
 		m_RunAdr.EnableWindow(FALSE);
@@ -91,7 +92,8 @@ void cPutBoot::OnOK()
 		ZeroMemory( temp, sizeof( temp ) );
 		int size = m_BootName.GetLine( 0, temp, 10 );
 		temp[size] = '\0';
-		BootName = temp;
+		std::string mzFilename = MzDiskClass->ConvertMzText(temp);
+		BootName = &mzFilename[0];
 		Machine = m_Machine.GetCurSel();
 		m_RunAdr.SetSel( 0, -1, FALSE );
 		ZeroMemory( temp, sizeof( temp ) );
@@ -121,6 +123,17 @@ void cPutBoot::OnOK()
 		}
 	}
 	else if(MzDiskClass->DiskType() == Disk::MZ80K_SP6010)
+	{
+		if ( 0 == FileType )
+		{
+			result = MzDiskClass->PutBoot( DataPath.GetBuffer( 260 ), NULL, Disk::FILEMODE_BIN );
+		}
+		else if ( 1 == FileType )
+		{
+			result = MzDiskClass->PutBoot( DataPath.GetBuffer( 260 ), NULL, Disk::FILEMODE_MZT );
+		}
+	}
+	else if(MzDiskClass->DiskType() == Disk::MZ80K_SP6110)
 	{
 		if ( 0 == FileType )
 		{

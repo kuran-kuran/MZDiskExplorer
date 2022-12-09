@@ -34,6 +34,9 @@
     </ClCompile>
     <ClCompile Include="GetSystem.cpp" />
     <ClCompile Include="EditFile.cpp" />
+    <ClCompile Include="MzDisk\Mz80SP6110Disk.cpp">
+      <Filter>MzDisk</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="debug.h" />
@@ -71,6 +74,9 @@
     </ClInclude>
     <ClInclude Include="GetSystem.h" />
     <ClInclude Include="EditFile.h" />
+    <ClInclude Include="MzDisk\Mz80SP6110Disk.hpp">
+      <Filter>MzDisk</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="MZDiskExplorer.reg" />

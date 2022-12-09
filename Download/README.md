@@ -1,6 +1,16 @@
 # MZDiskExplorer
 
 ## ダウンロード
+### 2022/12/09 Version 2.1.0
+
+- MZ-80K SP-6110形式のディスクに対応。
+- ファイル書き込み時にMZT内のファイル名をそのまま書き込むチェックボックスを追加した。
+- ファイル名が文字化けすることがあったのを修正。
+- ファイル編集時に他にファイル名が同じ物がある場合に警告を出すようにした。
+- その他細かいバグを修正。
+
+[MZDiskExplorer210.zip](https://github.com/kuran-kuran/MZDiskExplorer/raw/main/Download/MZDiskExplorer210.zip)
+
 ### 2022/11/25 Version 2.0.7
 
 - ファイル名が文字化けすることがあったのを修正。
@@ -13,9 +23,9 @@
 
 - ファイルダブルクリックでファイル情報を編集できるようにした。
 - 終了時に確認ダイアログを表示するようにした。
-- MZ-80ブートプログラム、システムプログラムのfilenameを大文字にした。
+- MZ-80Kブートプログラム、システムプログラムのfilenameを大文字にした。
 - ファイル書き込み時に日付の編集が無効になっていたのを修正した。
-- MZ-80システムプログラムのrunAdrを1200hから21FAhに変更した。
+- MZ-80K SP-6010タイプのシステムプログラムのrunAdrを1200hから21FAhに変更した。
 
 [MZDiskExplorer206.zip](https://github.com/kuran-kuran/MZDiskExplorer/raw/main/Download/MZDiskExplorer206.zip)
 

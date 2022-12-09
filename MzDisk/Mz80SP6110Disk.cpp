@@ -3,12 +3,13 @@
 #include <iterator>
 #include "Format.hpp"
 #include "FileData.hpp"
-#include "Mz80Disk.hpp"
+#include "Mz80SP6110Disk.hpp"
 
+// 漢字の1バイト目か
 #define IsKanji(c) ( (unsigned char)((int)((unsigned char)(c) ^ 0x20) - 0x0A1) < 0x3C )
 
 /* MZ-80K/C,1200,700 */
-const char Mz80Disk::asciiCodeAnk[] =
+const char Mz80SP6110Disk::asciiCodeAnk[] =
 {
 	" !\x22#$%&\x27()*+,-./"	/* 20 */
 	"0123456789:;<=>?"		/* 30 */
@@ -25,7 +26,7 @@ const char Mz80Disk::asciiCodeAnk[] =
 	"................"		/* E0 */
 	"................"		/* F0 */
 };
-const char Mz80Disk::asciiCodeSjis[] =
+const char Mz80SP6110Disk::asciiCodeSjis[] =
 {
 	"　！”＃＄％＆’（）＊＋，－．／"	/* 20 */
 	"０１２３４５６７８９：；＜＝＞？"	/* 30 */
@@ -46,10 +47,11 @@ const char Mz80Disk::asciiCodeSjis[] =
 //============================================================================
 // コンストラクタ
 //============================================================================
-Mz80Disk::Mz80Disk()
+Mz80SP6110Disk::Mz80SP6110Disk()
 :diskType(0)
 ,bitmap(NULL)
 ,fileType(0)
+,clusterSize(0)
 ,dirSector(16)
 {
 	this->sectorSize = 128;
@@ -58,18 +60,18 @@ Mz80Disk::Mz80Disk()
 //============================================================================
 // デストラクタ
 //============================================================================
-Mz80Disk::~Mz80Disk()
+Mz80SP6110Disk::~Mz80SP6110Disk()
 {
 }
 
-int Mz80Disk::DiskType(void)
+int Mz80SP6110Disk::DiskType(void)
 {
-	return Disk::MZ80K_SP6010;
+	return Disk::MZ80K_SP6110;
 }
 
-std::string Mz80Disk::DiskTypeText(void)
+std::string Mz80SP6110Disk::DiskTypeText(void)
 {
-	return "MZ-80K SP-6010タイプディスク";
+	return "MZ-80K SP-6110ディスク";
 }
 
 //============================================================================
@@ -77,34 +79,41 @@ std::string Mz80Disk::DiskTypeText(void)
 //----------------------------------------------------------------------------
 // In  : path = イメージファイル
 //     : type
-//     : DISKTYPE_MZ80_SP6010_2S   // MZ-80K SP-6010
-//     : DISKTYPE_MZ80_SP6110_2S   // MZ-80K SP-6110 非対応
+//     : DISKTYPE_MZ80_SP6110_2S   // MZ-80K SP-6110
 // Out : エラーコード ( 0 = 正常 )
 //============================================================================
-void Mz80Disk::Format(int type, int volumeNumber)
+void Mz80SP6110Disk::Format(int type, int volumeNumber)
 {
-	if(type != DISKTYPE_MZ80_SP6010_2S)
+	if(type != DISKTYPE_MZ80_SP6110_2S)
 	{
-		return;
+		this->diskType = TYPE_2S;
 	}
 	this->diskType = TYPE_2S;
 	// 物理フォーマット
-	this->image.Format(type, 0x00);
+	this->image.Format(type, 0);//0xBF ^ 0xFF);
 	// 論理フォーマット
 	// ディレクトリ
 	std::vector<unsigned char> buffer;
-	buffer.resize(static_cast<size_t>(this->sectorSize) * 14, 0);
-	WriteSector(buffer, 16, 14);
+	buffer.resize(static_cast<size_t>(this->sectorSize) * 48, 0);
+	buffer[0] = 0x80; // SP-6110のシグネチャ
+	WriteSector(buffer, 16, 48);
 	// ビットマップ
 	this->bitmap.clear();
 	this->bitmap.resize(static_cast<size_t>(this->sectorSize) * 2, 0);
-	this->bitmap[1] = static_cast<unsigned char>(volumeNumber);
+	this->bitmap[0] = static_cast<unsigned char>(volumeNumber);
+	this->bitmap[1] = 0x30;
+	this->bitmap[2] = 0x30;
+	this->bitmap[3] = 0x00;
+	this->bitmap[4] = 0x60;
+	this->bitmap[5] = 0x04;
+	this->bitmap[255] = 0x00;
 	WriteSector(this->bitmap, 14, 2);
 	// ディスク情報格納
+	this->clusterSize = this->sectorSize * 2;
 	ReadDirectory();
 }
 
-int Mz80Disk::Load(std::string path)
+int Mz80SP6110Disk::Load(std::string path)
 {
 	dms::FileData fileData;
 	fileData.Load(path.c_str());
@@ -119,15 +128,13 @@ int Mz80Disk::Load(std::string path)
 // In  : image = イメージファイルメモリイメージ
 // Out : エラーコード ( 0 = 正常 )
 //============================================================================
-int Mz80Disk::Load(const std::vector<unsigned char>& buffer)
+int Mz80SP6110Disk::Load(const std::vector<unsigned char>& buffer)
 {
 	try
 	{
 		const void* image = &buffer[0];
 		const D88Image::Header* header = reinterpret_cast<const D88Image::Header*>(image);
 		this->image.Load(image, header->diskSize);
-		std::vector<unsigned char> buffer;
-		ReadSector(this->bitmap, 14, 2);
 		Update();
 		return 0;
 	}
@@ -138,11 +145,14 @@ int Mz80Disk::Load(const std::vector<unsigned char>& buffer)
 	}
 }
 
-void Mz80Disk::Update(void)
+void Mz80SP6110Disk::Update(void)
 {
-	// ディスク情報格納
 	D88Image::Header header;
 	this->image.GetHeader(header);
+	std::vector<unsigned char> buffer;
+	this->bitmap.clear();
+	ReadSector(this->bitmap, 14, 2);
+	// ディスク情報格納
 	int trackMax = 0;
 	for(int i = 0; i < D88Image::TRACK_MAX; ++ i)
 	{
@@ -151,10 +161,11 @@ void Mz80Disk::Update(void)
 			++ trackMax;
 		}
 	}
+	this->clusterSize = this->sectorSize * 2;
 	ReadDirectory();
-
 }
-int Mz80Disk::Save(std::string path)
+
+int Mz80SP6110Disk::Save(std::string path)
 {
 	std::vector<unsigned char> buffer;
 	int result = Save(buffer);
@@ -174,7 +185,7 @@ int Mz80Disk::Save(std::string path)
 // In  : buffer = イメージファイルを格納するバッファ
 // Out : エラーコード ( 0 = 正常 )
 //============================================================================
-int Mz80Disk::Save(std::vector<unsigned char>& buffer)
+int Mz80SP6110Disk::Save(std::vector<unsigned char>& buffer)
 {
 	try
 	{
@@ -197,7 +208,7 @@ int Mz80Disk::Save(std::vector<unsigned char>& buffer)
 //     : mode = ファイルモード
 // Out : 0 = 成功
 //============================================================================
-int Mz80Disk::GetFile(int dirindex, std::string path, unsigned int mode)
+int Mz80SP6110Disk::GetFile(int dirindex, std::string path, unsigned int mode)
 {
 	try
 	{
@@ -216,7 +227,7 @@ int Mz80Disk::GetFile(int dirindex, std::string path, unsigned int mode)
 			// ヘッダ情報作成
 			memset(&mzthead, 0, sizeof(MZTHEAD));
 			mzthead.mode = this->directory[dirindex].mode;
-			memcpy(mzthead.filename, this->directory[dirindex].filename, 16);
+			memcpy(mzthead.filename, this->directory[dirindex].filename, 17 );
 			mzthead.size = this->directory[dirindex].size;
 			mzthead.loadAdr = this->directory[dirindex].loadAdr;
 			mzthead.runAdr = this->directory[dirindex].runAdr;
@@ -224,32 +235,35 @@ int Mz80Disk::GetFile(int dirindex, std::string path, unsigned int mode)
 			fwrite(&mzthead, 1, 128, fp);
 		}
 		// データ書き込み
-		int sector = this->directory[dirindex].startTrack * 16 + this->directory[dirindex].startSector - 1;
-		int rest = this->directory[dirindex].size;
-		while(sector != 0)
+		if(this->directory[dirindex].mode == FILETYPE_BSD)
+		{
+			int sector;
+			int rest;
+			sector = this->directory[dirindex].startSector * 2;
+			rest = this->directory[dirindex].size;
+			while(sector != 0)
+			{
+				std::vector<unsigned char> buffer;
+				ReadSector(buffer, sector, 1);
+				if(rest > 254)
+				{
+					fwrite(&buffer[0], 1, 254, fp);
+				}
+				else
+				{
+					fwrite(&buffer[0], 1, rest, fp);
+					break;
+				}
+				sector = static_cast<int>(buffer[254]) + static_cast<int>(buffer[255]) * 256;
+				rest -= 254;
+			}
+		}
+		else
 		{
 			std::vector<unsigned char> buffer;
-			ReadSector(buffer, sector, 1);
-			if(rest > 126)
-			{
-				fwrite(&buffer[0], 1, 126, fp);
-			}
-			else
-			{
-				fwrite(&buffer[0], 1, rest, fp);
-				break;
-			}
-			if((buffer[126] == 0) && (buffer[127] == 0))
-			{
-				// ファイル読み込み終了
-				sector = 0;
-			}
-			else
-			{
-				// 次のセクタ
-				sector = static_cast<int>(buffer[126]) * 16 + static_cast<int>(buffer[127]) - 1;
-			}
-			rest -= 126;
+			int sectorCount = (this->directory[dirindex].size + this->sectorSize - 1) / this->sectorSize;
+			ReadSector(buffer, this->directory[dirindex].startSector * 2, sectorCount);
+			fwrite(&buffer[0], 1, this->directory[dirindex].size, fp);
 		}
 		// 書き込み終了
 		fclose(fp);
@@ -279,14 +293,14 @@ int Mz80Disk::GetFile(int dirindex, std::string path, unsigned int mode)
 //     :   FILETYPE_BSD_CONV = 5
 // Out : 0 = 正常終了
 //============================================================================
-int Mz80Disk::PutFile(std::string path, void* dirInfo, unsigned int mode, unsigned int type)
+int Mz80SP6110Disk::PutFile(std::string path, void* dirInfo, unsigned int mode, unsigned int type)
 {
 	try
 	{
 		DIRECTORY* dirinfo = reinterpret_cast<DIRECTORY*>(dirInfo);
 		// ディレクトリ検索
 		int select = -1;
-		for(int i = 0; i < 28; ++ i)
+		for(int i = 0; i < 64; ++ i)
 		{
 			if(this->directory[i].mode == 0)
 			{
@@ -337,7 +351,7 @@ int Mz80Disk::PutFile(std::string path, void* dirInfo, unsigned int mode, unsign
 		}
 		else
 		{
-			memcpy(filename, dirinfo->filename, 16);
+			memcpy(filename, dirinfo->filename, 17);
 		}
 		for(int i = 0; i < 17; ++ i)
 		{
@@ -346,7 +360,7 @@ int Mz80Disk::PutFile(std::string path, void* dirInfo, unsigned int mode, unsign
 				filename[i] = '\0';
 			}
 		}
-		for(int i = 0; i < 28; ++ i)
+		for(int i = 0; i < 64; ++ i)
 		{
 			if(this->directory[i].mode != 0)
 			{
@@ -364,10 +378,25 @@ int Mz80Disk::PutFile(std::string path, void* dirInfo, unsigned int mode, unsign
 		bufferTemp.resize(readSize, 0);
 		fread(&bufferTemp[0], 1, dataSize, fp);
 		fclose(fp);
-		if(PutFileData(dirinfo, mode, mzthead, select, dataSize, bufferTemp) == false)
+		if(type == FILETYPE_BSD_CONV)
 		{
-			// ビットマップの空き容量が無い
-			return 4;
+			ConvertBsdFile(dirinfo, mode, type, readSize, dataSize, bufferTemp);
+		}
+		if(type == FILETYPE_BSD)
+		{
+			if(PutBsdFile(dirinfo, mode, mzthead, select, dataSize, bufferTemp) == false)
+			{
+				// ビットマップの空き容量が無い
+				return 4;
+			}
+		}
+		else
+		{
+			if(PutObjFile(dirinfo, mode, mzthead, select, dataSize, bufferTemp, type) == false)
+			{
+				// ビットマップの空き容量が無い
+				return 4;
+			}
 		}
 		// 管理情報をD88イメージに書き込み
 		FlushWrite();
@@ -380,7 +409,44 @@ int Mz80Disk::PutFile(std::string path, void* dirInfo, unsigned int mode, unsign
 	}
 }
 
-bool Mz80Disk::PutFileData(DIRECTORY *dirinfo, unsigned int mode, MZTHEAD& mzthead, int select, size_t dataSize, std::vector<unsigned char>& bufferTemp)
+void Mz80SP6110Disk::ConvertBsdFile(DIRECTORY *dirinfo, unsigned int mode, unsigned int& type, size_t readSize, size_t dataSize, std::vector<unsigned char>& bufferTemp)
+{
+	if(mode != FILEMODE_MZT)
+	{
+		int back = -1;
+		std::vector<unsigned char> convTemp;
+		convTemp.resize(dataSize, 0);
+		int j = 0;
+		for(int i = 0; i < dataSize; ++ i)
+		{
+			// CRLFの場合はLFを消す
+			if((bufferTemp[i] == 0x0A) && (back == 0x0D))
+			{
+				back = bufferTemp[i];
+				continue;
+			}
+			unsigned char data = bufferTemp[i];
+			// LFの場合はCRにする
+			if((bufferTemp[i] == 0x0A) && (back != 0x0D))
+			{
+				data = 0x0D;
+			}
+			convTemp[j] = data;
+			++ j;
+			back = bufferTemp[i];
+		}
+		dataSize = j;
+		bufferTemp.clear();
+		std::copy(convTemp.begin(), convTemp.end(), std::back_inserter(bufferTemp));
+		if(dirinfo != 0)
+		{
+			dirinfo->size = static_cast<unsigned short>(dataSize);
+		}
+	}
+	type = FILETYPE_BSD;
+}
+
+bool Mz80SP6110Disk::PutBsdFile(DIRECTORY *dirinfo, unsigned int mode, MZTHEAD& mzthead, int select, size_t dataSize, std::vector<unsigned char>& bufferTemp)
 {
 	if(GetBitmapSize() < dataSize)
 	{
@@ -390,63 +456,111 @@ bool Mz80Disk::PutFileData(DIRECTORY *dirinfo, unsigned int mode, MZTHEAD& mzthe
 	int rest;
 	if((FILEMODE_MZT == mode) && (dirinfo == NULL))
 	{
-		memset(&this->directory[select], 0, sizeof(DIRECTORY));
+		memset(&this->directory[select], 0, 32);
 		this->directory[select].mode = mzthead.mode;
-		memcpy(this->directory[select].filename, mzthead.filename, 16);
-		this->directory[select].filename[15] = '\0';
+		memcpy(this->directory[select].filename, mzthead.filename, 17);
 		this->directory[select].attr = 0;
 		this->directory[select].size = mzthead.size;
 		this->directory[select].loadAdr = mzthead.loadAdr;
 		this->directory[select].runAdr = mzthead.runAdr;
+		this->directory[select].date = 0;
 		rest = mzthead.size;
 	}
 	else
 	{
-		memcpy(&this->directory[select], dirinfo, sizeof(DIRECTORY));
+		memcpy(&this->directory[select], dirinfo, 32);
 		rest = dirinfo->size;
 	}
 	int temp = this->bitmap[2] + this->bitmap[3] * 256;
-	int dataSectorSize = ((static_cast<int>(dataSize) + this->sectorSize - 1) / this->sectorSize);
-	this->bitmap[2] = (temp + dataSectorSize) & 255;
-	this->bitmap[3] = ((temp + dataSectorSize) / 256) & 255;
+	int datacluster = ((static_cast<int>(dataSize) + this->clusterSize - 1) / this->clusterSize);
+	this->bitmap[2] = (temp + datacluster) & 255;
+	this->bitmap[3] = ((temp + datacluster) / 256) & 255;
 	// ファイルをディスクイメージに転送
 	int before = -1;
-	int freeSector = 64 + GetBitmap();
-	this->directory[select].startTrack = freeSector / 16;
-	this->directory[select].startSector = freeSector % 16 + 1;
+	int cluster = GetBitmap();
+	this->directory[select].startSector = (this->bitmap[1] + cluster) * this->clusterSize / this->sectorSize;
 	unsigned char* source = &bufferTemp[0];
 	std::vector<unsigned char> writeBuffer;
 	writeBuffer.resize(this->sectorSize, 0);
 	while(rest > 0)
 	{
-		freeSector = GetBitmap();
-		SetBitmap(freeSector, 1);
-		int sector = 64 + freeSector;
-		int write_size;
-		write_size = rest;
-		if(rest > this->sectorSize - 2)
+		cluster = GetBitmap();
+		SetBitmap(cluster, 1);
+		int sector = ((this->bitmap[1] + cluster) * this->clusterSize) / this->sectorSize;
+		for(int i = 0; i < ( this->clusterSize / this->sectorSize ); ++ i)
 		{
-			write_size = this->sectorSize - 2;
+			int write_size;
+			write_size = rest;
+			if(rest > this->sectorSize - 2)
+			{
+				write_size = this->sectorSize - 2;
+			}
+			memset(&writeBuffer[0], 0, this->sectorSize);
+			memcpy(&writeBuffer[0], source, write_size);
+			WriteSector(writeBuffer, sector, 1);
+			if(before != -1)
+			{
+				std::vector<unsigned char> beforeBuffer;
+				ReadSector(beforeBuffer, before, 1);
+				beforeBuffer[static_cast<size_t>(this->sectorSize) - 2] = sector % 256;
+				beforeBuffer[static_cast<size_t>(this->sectorSize) - 1] = sector / 256;
+				WriteSector(beforeBuffer, before, 1);
+			}
+			rest -= write_size;
+			if( rest <= 0 )
+			{
+				break;
+			}
+			source += (static_cast<size_t>(this->sectorSize) - 2);
+			before = sector;
+			++ sector;
 		}
-		memset(&writeBuffer[0], 0, this->sectorSize);
-		memcpy(&writeBuffer[0], source, write_size);
-		WriteSector(writeBuffer, sector, 1);
-		if(before != -1)
-		{
-			std::vector<unsigned char> beforeBuffer;
-			ReadSector(beforeBuffer, before, 1);
-			beforeBuffer[static_cast<size_t>(this->sectorSize) - 2] = sector / 16;		// 次のトラック
-			beforeBuffer[static_cast<size_t>(this->sectorSize) - 1] = sector % 16 + 1;	// 次のセクタ
-			WriteSector(beforeBuffer, before, 1);
-		}
-		rest -= write_size;
-		if( rest <= 0 )
-		{
-			break;
-		}
-		source += (static_cast<size_t>(this->sectorSize) - 2);
-		before = sector;
 	}
+	return true;
+}
+
+bool Mz80SP6110Disk::PutObjFile(DIRECTORY *dirinfo, unsigned int mode, MZTHEAD& mzthead, int select, size_t dataSize, std::vector<unsigned char>& bufferTemp, unsigned int type)
+{
+	// ビットマップ検索
+	int freespace = GetBitmapSerial(static_cast<int>(dataSize));
+	if(freespace == -1)
+	{
+		// ビットマップの空き容量が無い
+		return false;
+	}
+	int size = 0;
+	// ファイル情報をディレクトリに登録
+	if((mode == FILEMODE_MZT) && (dirinfo == NULL))
+	{
+		memset(&this->directory[select], 0, 32);
+		this->directory[select].mode = mzthead.mode;
+		memcpy(this->directory[select].filename, mzthead.filename, 17);
+		this->directory[select].attr = 0;
+		this->directory[select].size = mzthead.size;
+		this->directory[select].loadAdr = mzthead.loadAdr;
+		this->directory[select].runAdr = mzthead.runAdr;
+		this->directory[select].date = 0;
+		size = mzthead.size;
+	}
+	else
+	{
+		memcpy(&this->directory[select], dirinfo, 32);
+		size = dirinfo->size;
+	}
+	int temp = this->bitmap[2] + this->bitmap[3] * 256;
+	int datacluster = ((static_cast<int>(dataSize) + this->clusterSize - 1) / this->clusterSize);
+	this->bitmap[2] = (temp + datacluster) & 255;
+	this->bitmap[3] = ((temp + datacluster) / 256) & 255;
+	this->directory[select].startSector = (this->bitmap[1] + freespace) * (this->bitmap[255] + 1);
+	// ビットマップ更新
+	SetBitmap(freespace, datacluster);
+	// ファイルをディスクイメージに転送
+	std::vector<unsigned char> writeBuffer;
+	int writeSector = (this->bitmap[1] + freespace) * this->clusterSize / this->sectorSize;
+	int writeSectorCount = (size + this->sectorSize - 1) / this->sectorSize;
+	writeBuffer.resize(static_cast<size_t>(writeSectorCount) * this->sectorSize, 0);
+	std::copy(bufferTemp.begin(), bufferTemp.end(), writeBuffer.begin());
+	WriteSector(writeBuffer, writeSector, writeSectorCount);
 	return true;
 }
 
@@ -456,25 +570,46 @@ bool Mz80Disk::PutFileData(DIRECTORY *dirinfo, unsigned int mode, MZTHEAD& mzthe
 // In  : dirindex = ディレクトリ番号
 // Out : 0 = 正常終了
 //============================================================================
-int Mz80Disk::DelFile(int dirindex)
+int Mz80SP6110Disk::DelFile(int dirindex)
 {
 	if(this->directory[dirindex].mode == 0)
 	{
 		return 1;
 	}
-	int sector = this->directory[dirindex].startTrack * 16 + this->directory[dirindex].startSector - 1;
-	while(sector > 0)
+	if(this->directory[dirindex].mode == FILETYPE_BSD)
 	{
-		int start = sector - 64;
-		DelBitmap(start, 1);
-		std::vector<unsigned char> buffer;
-		ReadSector(buffer, sector, 1);
-		sector = static_cast<int>(buffer[static_cast<size_t>(this->sectorSize) - 2]) * 16 + static_cast<int>(buffer[static_cast<size_t>(this->sectorSize) - 1]) - 1;
+		DelBsdFile(dirindex);
+	}
+	else
+	{
+		DelObjFile(dirindex);
 	}
 	this->directory[dirindex].mode = 0;
 	// 管理情報をD88イメージに書き込み
 	FlushWrite();
 	return 0;
+}
+
+// BSDファイル削除
+void Mz80SP6110Disk::DelBsdFile(int dirindex)
+{
+	int sector = this->directory[dirindex].startSector;
+	while(sector > 0)
+	{
+		int start = sector / (this->bitmap[255] + 1) - this->bitmap[1];
+		DelBitmap(start, 1);
+		std::vector<unsigned char> buffer;
+		ReadSector(buffer, sector, 1);
+		sector = static_cast<int>(buffer[254]) + static_cast<int>(buffer[255]) * 256;
+	}
+}
+
+// BTX or OBJファイル削除
+void Mz80SP6110Disk::DelObjFile(int dirindex)
+{
+	int start = this->directory[dirindex].startSector / (this->bitmap[255] + 1) - this->bitmap[1];
+	int size = (this->directory[dirindex].size + this->clusterSize - 1) / this->clusterSize;
+	DelBitmap(start, size);
 }
 
 //============================================================================
@@ -484,7 +619,7 @@ int Mz80Disk::DelFile(int dirindex)
 //     : mode = ファイルモード
 // Out : 0 = 正常終了
 //============================================================================
-int Mz80Disk::GetBoot(std::string path, unsigned int mode)
+int Mz80SP6110Disk::GetBoot(std::string path, unsigned int mode)
 {
 	std::vector<unsigned char> iplBuffer;
 	ReadSector(iplBuffer, 0, 1);
@@ -547,7 +682,7 @@ int Mz80Disk::GetBoot(std::string path, unsigned int mode)
 //     :   03h MZ-700/1500
 // Out : 0 = 正常終了
 //============================================================================
-int Mz80Disk::PutBoot(std::string path, void* iplInfo, unsigned int mode, unsigned char machine)
+int Mz80SP6110Disk::PutBoot(std::string path, void* iplInfo, unsigned int mode, unsigned char machine)
 {
 	// ファイルを読み込む
 	FILE *fp;
@@ -573,7 +708,7 @@ int Mz80Disk::PutBoot(std::string path, void* iplInfo, unsigned int mode, unsign
 			return 2;
 		}
 		datasize -= 128;	// ヘッダを除いたデータサイズ
-		// ヘッダ情報作成
+							// ヘッダ情報作成
 		memset(&mzthead, 0, sizeof(MZTHEAD));
 		fread(&mzthead, 128, 1, fp);
 	}
@@ -596,13 +731,18 @@ int Mz80Disk::PutBoot(std::string path, void* iplInfo, unsigned int mode, unsign
 //     : mode = ファイルモード
 // Out : 0 = 正常終了
 //============================================================================
-int Mz80Disk::GetSystem(std::string path, unsigned int mode)
+int Mz80SP6110Disk::GetSystem(std::string path, unsigned int mode)
 {
 	std::vector<unsigned char> iplBuffer;
 	ReadSector(iplBuffer, 0, 1);
 	if(iplBuffer[0] != 0xC3)
 	{
 		// 起動ディスクではありません
+		return 1;
+	}
+	if(this->directory[0].mode != 0x80)
+	{
+		// SP-6110ディスクではありません
 		return 1;
 	}
 	FILE *fp;
@@ -614,7 +754,9 @@ int Mz80Disk::GetSystem(std::string path, unsigned int mode)
 	{
 		return 1;
 	}
-	int writesize = this->sectorSize * 184;
+	int offset = static_cast<int>(this->bitmap[1]) * 2;
+	int writeSectorSize = offset - 64;
+	int writesize = this->sectorSize * writeSectorSize;
 	if((mode & FILEMODE_MASK) == FILEMODE_MZT)
 	{
 		// ヘッダ情報作成
@@ -632,7 +774,7 @@ int Mz80Disk::GetSystem(std::string path, unsigned int mode)
 		}
 		mzthead.size = writesize;
 		mzthead.loadAdr = 0x1200;
-		mzthead.runAdr = 0x21FA;
+		mzthead.runAdr = 0x1200;
 		// ヘッダ情報書き込み
 		fwrite(&mzthead, 1, 128, fp);
 	}
@@ -655,7 +797,7 @@ int Mz80Disk::GetSystem(std::string path, unsigned int mode)
 //     :   FILEMODE_BIN
 // Out : 0 = 正常終了
 //============================================================================
-int Mz80Disk::PutSystem(std::string path, void* iplInfo, unsigned int mode)
+int Mz80SP6110Disk::PutSystem(std::string path, void* iplInfo, unsigned int mode)
 {
 	// ファイルを読み込む
 	FILE *fp;
@@ -702,11 +844,12 @@ int Mz80Disk::PutSystem(std::string path, void* iplInfo, unsigned int mode)
 //----------------------------------------------------------------------------
 // Out : 空きサイズ
 //============================================================================
-int Mz80Disk::GetBitmapSize(void)
+int Mz80SP6110Disk::GetBitmapSize(void)
 {
 	int freesize = 0;
 	unsigned char bit;
-	int end = 35 * 2 * 16 - 64; // 35シリンダ2ヘッド16セクタ(1120) - データ開始セクタ(64) = 1056
+	int end;
+	end = this->bitmap[4] + this->bitmap[5] * 256;
 	for(int i = 48; i < end; ++ i)
 	{
 		bit = (this->bitmap[i / 8] >> (i % 8)) & 1;
@@ -715,7 +858,7 @@ int Mz80Disk::GetBitmapSize(void)
 			freesize ++;
 		}
 	}
-	return freesize * this->sectorSize;
+	return freesize * this->clusterSize;
 }
 
 //============================================================================
@@ -723,16 +866,17 @@ int Mz80Disk::GetBitmapSize(void)
 //----------------------------------------------------------------------------
 // Out : 空きサイズ
 //============================================================================
-int Mz80Disk::GetBitmap(void)
+int Mz80SP6110Disk::GetBitmap(void)
 {
 	unsigned char bit;
-	int end = 35 * 2 * 16 - 64; // 35シリンダ2ヘッド16セクタ(1120) - データ開始セクタ(64) = 1056
-	for(int i = 32; i < end; ++ i)
+	int end;
+	end = this->bitmap[4] + this->bitmap[5] * 256;
+	for(int i = 48; i < end; ++ i)
 	{
 		bit = (this->bitmap[i / 8] >> (i % 8)) & 1;
 		if(bit == 0)
 		{
-			return i - 32;
+			return i - 48;
 		}
 	}
 	return -1;
@@ -744,14 +888,16 @@ int Mz80Disk::GetBitmap(void)
 // In  : length = 書き込み長 (Byte)
 // Out : 空き位置格納領域
 //============================================================================
-int Mz80Disk::GetBitmapSerial(int length)
+int Mz80SP6110Disk::GetBitmapSerial(int length)
 {
 	int lengthtemp = 0;
 	unsigned char bit;
 	int index = -1;
-	int lengthSector = (length + this->sectorSize - 1) / this->sectorSize;
-	int end = 35 * 2 * 16 - 64; // 35シリンダ2ヘッド16セクタ(1120) - データ開始セクタ(64) = 1056
-	for(int i = 32; i < end; ++ i)
+	int end;
+	int length_cluster;
+	length_cluster = (length + this->clusterSize - 1) / this->clusterSize;
+	end = this->bitmap[4] + this->bitmap[5] * 256;
+	for(int i = 48; i < end; ++ i)
 	{
 		bit = (this->bitmap[i / 8] >> (i % 8)) & 1;
 		if(bit == 0)
@@ -761,9 +907,9 @@ int Mz80Disk::GetBitmapSerial(int length)
 				index = i;
 			}
 			lengthtemp ++;
-			if(lengthtemp >= lengthSector)
+			if(lengthtemp >= length_cluster)
 			{
-				index -= 32;
+				index -= 48;
 				break;
 			}
 		}
@@ -783,10 +929,10 @@ int Mz80Disk::GetBitmapSerial(int length)
 //     : length = 長さ (length ビット)
 // Out : なし
 //============================================================================
-void Mz80Disk::SetBitmap(int start, int length)
+void Mz80SP6110Disk::SetBitmap(int start, int length)
 {
 	unsigned char* data;
-	start += 32;
+	start += 48;
 	for(int i = start; i < (start + length); ++ i)
 	{
 		data = &this->bitmap[i / 8];
@@ -802,20 +948,20 @@ void Mz80Disk::SetBitmap(int start, int length)
 //     : length = 長さ (length ビット)
 // Out : なし
 //============================================================================
-void Mz80Disk::DelBitmap(int start, int length)
+void Mz80SP6110Disk::DelBitmap(int start, int length)
 {
-	start += 32;
+	unsigned char* data;
+	start += 48;
 	for(int i = start; i < (start + length); ++ i)
 	{
-		unsigned char* data = &this->bitmap[i / 8];
-		unsigned char tmp = (~(1 << (i % 8)));
+		data = &this->bitmap[i / 8];
 		*data &= (~(1 << (i % 8)));
 	}
 	WriteUseSize();
 }
 
 // MZ-80Kの文字をWindowsで使える文字に変換する
-std::string Mz80Disk::ConvertText(std::string text)
+std::string Mz80SP6110Disk::ConvertText(std::string text)
 {
 	std::string result;
 	for(size_t i = 0; i < text.size(); ++ i)
@@ -851,7 +997,7 @@ std::string Mz80Disk::ConvertText(std::string text)
 }
 
 // Windowsの文字をで使える文字に変換する
-std::string Mz80Disk::ConvertMzText(std::string text)
+std::string Mz80SP6110Disk::ConvertMzText(std::string text)
 {
 	std::string result = "";
 	bool kanji = false;
@@ -913,7 +1059,7 @@ std::string Mz80Disk::ConvertMzText(std::string text)
 // In  : path: ファイル名
 // Out : -1: なし, 0～: ファイルがあるディレクトリのインデックス
 //============================================================================
-int Mz80Disk::FindFile(std::string filename, int ignoreIndex)
+int Mz80SP6110Disk::FindFile(std::string filename, int ignoreIndex)
 {
 	for(int i = 0; i < 64; ++ i)
 	{
@@ -936,7 +1082,7 @@ int Mz80Disk::FindFile(std::string filename, int ignoreIndex)
 // In  : ディレクトリのあるセクタ番号 (-1=ルートディレクトリ)
 // Out : なし
 //============================================================================
-void Mz80Disk::SetDirSector( int sector )
+void Mz80SP6110Disk::SetDirSector( int sector )
 {
 	if( -1 == sector )
 	{
@@ -946,6 +1092,7 @@ void Mz80Disk::SetDirSector( int sector )
 	{
 		this->dirSector = sector;
 	}
+	ReadDirectory();
 }
 
 //============================================================================
@@ -954,12 +1101,12 @@ void Mz80Disk::SetDirSector( int sector )
 // In  : なし
 // Out : ディレクトリのあるセクタ番号
 //============================================================================
-int Mz80Disk::GetDirSector( void )
+int Mz80SP6110Disk::GetDirSector( void )
 {
 	return this->dirSector;
 }
 
-int Mz80Disk::GetDirCount(void)
+int Mz80SP6110Disk::GetDirCount(void)
 {
 	return static_cast<int>(this->directory.size());
 }
@@ -970,18 +1117,18 @@ int Mz80Disk::GetDirCount(void)
 // In  : ディレクトリ番号 (0～63);
 // Out : なし
 //============================================================================
-void Mz80Disk::GetDir(void* dirData, int dirindex)
+void Mz80SP6110Disk::GetDir(void* dirData, int dirindex)
 {
 	memcpy(dirData, &this->directory[dirindex], sizeof(DIRECTORY));
 }
 
 //============================================================================
-//  ディレクトリ情報を取得する
+//  ディレクトリ情報を書き込む
 //----------------------------------------------------------------------------
 // In  : ディレクトリ番号 (0～63);
 // Out : なし
 //============================================================================
-void Mz80Disk::SetDir(void* dirData, int dirindex)
+void Mz80SP6110Disk::SetDir(void* dirData, int dirindex)
 {
 	memcpy(&this->directory[dirindex], dirData, sizeof(DIRECTORY));
 	// 管理情報をD88イメージに書き込み
@@ -994,8 +1141,8 @@ void Mz80Disk::SetDir(void* dirData, int dirindex)
 // In  : なし
 // Out : なし
 //============================================================================
-#if true
-void Mz80Disk::DisplayDir(void)
+#if false
+void Mz80SP6110Disk::DisplayDir(void)
 {
 	char fileName[ 18 ];
 	int mode;
@@ -1019,7 +1166,7 @@ void Mz80Disk::DisplayDir(void)
 	printf("Mode  Filename             Size Load  Run  Sec\n");
 	printf("+---+ +-----------------+ +---+ +--+ +--+ +--+\n");
 	// ファイル情報表示
-	for(int i = 0; i < 28; ++ i)
+	for(int i = 0; i < 64; ++ i)
 	{
 		if(this->directory[i].mode != 0)
 		{
@@ -1038,8 +1185,8 @@ void Mz80Disk::DisplayDir(void)
 				printf("%02d %5s ", i, ModeTbl[mode].modeStr);
 				// ファイルネーム
 				memset(&fileName, 0, 18);
-				memcpy(&fileName, this->directory[i].filename, 16);
-				for(int j = 0; j < 16; ++ j)
+				memcpy(&fileName, this->directory[i].filename, 17);
+				for(int j = 0; j < 17; ++ j)
 				{
 					if(fileName[j] == 0x0D)
 					{
@@ -1057,10 +1204,8 @@ void Mz80Disk::DisplayDir(void)
 				printf("%04X ", this->directory[i].loadAdr);
 				// 実行アドレス
 				printf("%04X ", this->directory[i].runAdr);
-				// 格納トラック
-				printf("%02X\n", this->directory[i].startTrack);
 				// 格納セクタ
-				printf("%02X\n", this->directory[i].startSector);
+				printf("%04X\n", this->directory[i].startSector);
 			}
 		}
 	}
@@ -1074,7 +1219,7 @@ void Mz80Disk::DisplayDir(void)
 //     : extfilename = 拡張子格納領域
 // Out : なし
 //============================================================================
-void Mz80Disk::GetExtFilename(std::string path, std::string& extfilename)
+void Mz80SP6110Disk::GetExtFilename(std::string path, std::string& extfilename)
 {
 	size_t loop = 4;
 	size_t extpos;
@@ -1116,7 +1261,7 @@ void Mz80Disk::GetExtFilename(std::string path, std::string& extfilename)
 // In  : path = パス名
 // Out : なし
 //============================================================================
-void Mz80Disk::DeleteFileExtname(std::string path)
+void Mz80SP6110Disk::DeleteFileExtname(std::string path)
 {
 	size_t loop = 4;
 	size_t length = path.size();
@@ -1137,11 +1282,11 @@ void Mz80Disk::DeleteFileExtname(std::string path)
 	}
 }
 
-void Mz80Disk::WriteUseSize(void)
+void Mz80SP6110Disk::WriteUseSize(void)
 {
 	int size = 0;
-	int end = 35 * 2 * 16 - 64; // 35シリンダ2ヘッド16セクタ(1120) - データ開始セクタ(64) = 1056
-	for(int i = 32; i < end; ++ i)
+	int end = this->bitmap[4] + this->bitmap[5] * 256;
+	for(int i = 48; i < end; ++ i)
 	{
 		unsigned char bit = (this->bitmap[i / 8] >> (i % 8)) & 1;
 		if(bit == 1)
@@ -1149,12 +1294,13 @@ void Mz80Disk::WriteUseSize(void)
 			++ size;
 		}
 	}
+	size += this->bitmap[1];
 	this->bitmap[2] = size % 256;
 	this->bitmap[3] = size / 256;
 }
 
 // ビットマップ、ディレクトリをD88に書き込む
-void Mz80Disk::FlushWrite(void)
+void Mz80SP6110Disk::FlushWrite(void)
 {
 	std::vector<unsigned char> writeBuffer;
 	// ビットマップ書き込み
@@ -1164,7 +1310,7 @@ void Mz80Disk::FlushWrite(void)
 	WriteDirectory();
 }
 
-int Mz80Disk::GetUseBlockSize(void)
+int Mz80SP6110Disk::GetUseBlockSize(void)
 {
 	if(this->image.IsValid() == false)
 	{
@@ -1173,26 +1319,26 @@ int Mz80Disk::GetUseBlockSize(void)
 	return this->bitmap[2] + this->bitmap[3] * 256;
 }
 
-int Mz80Disk::GetAllBlockSize(void)
+int Mz80SP6110Disk::GetAllBlockSize(void)
 {
 	if(this->image.IsValid() == false)
 	{
 		return 0;
 	}
-	return 35 * 2 * 16 - 64;
+	return this->bitmap[4] + this->bitmap[5] * 256;
 }
 
-int Mz80Disk::GetClusterSize(void)
+int Mz80SP6110Disk::GetClusterSize(void)
 {
 	if(this->image.IsValid() == false)
 	{
 		return 0;
 	}
-	return this->sectorSize;
+	return this->clusterSize;
 }
 
 // D88イメージからディレクトリデータをthis->directryに読み込む
-void Mz80Disk::ReadDirectory(void)
+void Mz80SP6110Disk::ReadDirectory(void)
 {
 	if(this->image.IsValid() == false)
 	{
@@ -1200,26 +1346,26 @@ void Mz80Disk::ReadDirectory(void)
 	}
 	this->directory.clear();
 	std::vector<unsigned char> buffer;
-	ReadSector(buffer, this->dirSector, 48);
-	size_t directoryCount = this->sectorSize * 48 / 64;
+	ReadSector(buffer, this->dirSector, 16);
+	size_t directoryCount = this->sectorSize * 16 / 32;
 	for(size_t i = 0; i < directoryCount; ++ i)
 	{
-		DIRECTORY* directory = reinterpret_cast<DIRECTORY*>(&buffer[i * 64]);
+		DIRECTORY* directory = reinterpret_cast<DIRECTORY*>(&buffer[i * 32]);
 		this->directory.push_back(*directory);
 	}
 }
 
 // ディレクトリデータをthis->directryからD88イメージに書き込む
-void Mz80Disk::WriteDirectory(void)
+void Mz80SP6110Disk::WriteDirectory(void)
 {
 	std::vector<unsigned char> writeBuffer;
 	writeBuffer.clear();
 	unsigned char* copyBuffer = reinterpret_cast<unsigned char*>(&this->directory[0]);
-	std::copy(copyBuffer, copyBuffer + static_cast<size_t>(this->sectorSize) * 14, std::back_inserter(writeBuffer));
-	WriteSector(writeBuffer, this->dirSector, 14);
+	std::copy(copyBuffer, copyBuffer + static_cast<size_t>(this->sectorSize) * 16, std::back_inserter(writeBuffer));
+	WriteSector(writeBuffer, this->dirSector, 16);
 }
 
-void Mz80Disk::ReadSector(std::vector<unsigned char>& buffer, int sector, int numOfSector)
+void Mz80SP6110Disk::ReadSector(std::vector<unsigned char>& buffer, int sector, int numOfSector)
 {
 	for(int i = 0; i < numOfSector; ++ i)
 	{
@@ -1235,7 +1381,7 @@ void Mz80Disk::ReadSector(std::vector<unsigned char>& buffer, int sector, int nu
 	}
 }
 
-void Mz80Disk::WriteSector(std::vector<unsigned char>& buffer, int sector, int numOfSector)
+void Mz80SP6110Disk::WriteSector(std::vector<unsigned char>& buffer, int sector, int numOfSector)
 {
 	for(int i = 0; i < numOfSector; ++ i)
 	{
