@@ -37,6 +37,7 @@
     <ClCompile Include="MzDisk\Mz80SP6110Disk.cpp">
       <Filter>MzDisk</Filter>
     </ClCompile>
+    <ClCompile Include="ChangeType.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="debug.h" />
@@ -77,6 +78,7 @@
     <ClInclude Include="MzDisk\Mz80SP6110Disk.hpp">
       <Filter>MzDisk</Filter>
     </ClInclude>
+    <ClInclude Include="ChangeType.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="MZDiskExplorer.reg" />

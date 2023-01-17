@@ -25,6 +25,7 @@ public:
 	static int DiskType(const std::vector<unsigned char>& buffer);
 	void ExportBeta(std::string path);
 	void ImportBeta(std::string path);
+	int GetTrackCount(void);
 	virtual int DiskType(void) = 0;
 	virtual std::string DiskTypeText(void) = 0;
 	virtual void Format(int type, int volumeNumber) = 0;
@@ -58,11 +59,15 @@ public:
 	virtual std::string ConvertText(std::string text) = 0;
 	virtual std::string ConvertMzText(std::string text) = 0;
 	virtual int FindFile(std::string filename, int ignoreIndex) = 0;
+	virtual int GetType(void) = 0;;
+	virtual void ChangeType(int type) = 0;
 protected:
 	void ReverseBuffer(std::vector<unsigned char>& buffer);
 	bool IsNotAvailableFileCharacter(char character);
 	D88Image image;
 	int sectorSize;
+	int cylinderCount;
+	int hedCount;
 private:
 	static int DiskType(D88Image& image);
 };

@@ -37,6 +37,7 @@ public:
 public:
 	void GetBootExec( void );
 	int ImageInit;
+	int enableChange;
 	int ItemToDirIndex[ 64 ];
 	HTREEITEM DirHandle[ DIRHANDLE_MAX ];
 	int DirSector[ DIRHANDLE_MAX ];
@@ -86,6 +87,8 @@ public:
 	afx_msg void OnEditPutsystem();
 	afx_msg void OnUpdateEditPutsystem(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateEditEdit(CCmdUI* pCmdUI);
+	afx_msg void OnChangeType();
+	afx_msg void OnUpdateChangeType(CCmdUI* pCmdUI);
 };
 
 /////////////////////////////////////////////////////////////////////////////

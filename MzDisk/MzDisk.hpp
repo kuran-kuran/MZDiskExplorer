@@ -110,6 +110,8 @@ public:
 	std::string ConvertMzText(std::string text);
 	int FindFile(std::string filename, int ignoreIndex);
 	//	void DisplayDir(void);
+	int GetType(void);
+	void ChangeType(int type);
 private:
 	unsigned char diskType;
 	std::vector<unsigned char> bitmap;

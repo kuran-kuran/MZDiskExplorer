@@ -252,6 +252,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ChangeType.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="debug.cpp" />
     <ClCompile Include="EditFile.cpp" />
     <ClCompile Include="GetBoot.cpp" />
@@ -323,6 +329,7 @@
     <ResourceCompile Include="MZDiskExplorer.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ChangeType.h" />
     <ClInclude Include="debug.h" />
     <ClInclude Include="EditFile.h" />
     <ClInclude Include="generic.h" />
