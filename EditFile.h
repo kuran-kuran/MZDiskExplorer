@@ -13,6 +13,7 @@ public:
 	CString FileName;
 	unsigned char Mode;
 	unsigned char Attr;
+	unsigned char Reserve;
 	int FileSize;
 	unsigned short LoadAdr;
 	unsigned short RunAdr;
@@ -41,6 +42,7 @@ public:
 	CEdit	m_FileSize;
 	CEdit	m_FileName;
 	CComboBox	m_Attr;
+	CEdit	m_Reserve;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV サポート

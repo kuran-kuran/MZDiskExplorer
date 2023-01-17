@@ -20,6 +20,7 @@ EditFile::EditFile(CWnd* pParent /*=nullptr*/)
 ,FileName()
 ,Mode(0)
 ,Attr(0)
+,Reserve(0)
 ,FileSize(0)
 ,LoadAdr(0)
 ,RunAdr(0)
@@ -63,6 +64,7 @@ void EditFile::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_FILESIZE, m_FileSize);
 	DDX_Control(pDX, IDC_FILENAME, m_FileName);
 	DDX_Control(pDX, IDC_ATTR, m_Attr);
+	DDX_Control(pDX, IDC_RESERVE, m_Reserve);
 }
 
 
@@ -110,6 +112,7 @@ BOOL EditFile::OnInitDialog()
 			Mode = 8;
 		}
 		Attr = dir.attr;
+		Reserve = dir.reserve;
 		FileSize = dir.size;
 		LoadAdr = dir.loadAdr;
 		RunAdr = dir.runAdr;
@@ -139,8 +142,10 @@ BOOL EditFile::OnInitDialog()
 		FileName = &filename[0];
 		Mode = dir.mode;
 		Attr = dir.attr;
+		Reserve = 0;
 		FileSize = dir.size;
 		LoadAdr = dir.loadAdr;
+		m_Reserve.EnableWindow(TRUE);
 	}
 	else if(MzDiskClass->DiskType() == Disk::MZ80K_SP6110)
 	{
@@ -174,6 +179,7 @@ BOOL EditFile::OnInitDialog()
 			Mode = 8;
 		}
 		Attr = dir.attr;
+		Reserve = 0;
 		FileSize = dir.size;
 		LoadAdr = dir.loadAdr;
 		RunAdr = dir.runAdr;
@@ -184,6 +190,10 @@ BOOL EditFile::OnInitDialog()
 	m_FileName.ReplaceSel( FileName.GetBuffer( 260 ) );
 	m_Mode.SetCurSel( Mode - 1 );
 	m_Attr.SetCurSel( Attr & 1 );
+	m_Reserve.SetSel( 0, -1, FALSE );
+	m_Reserve.Clear();
+	sprintf_s( temp, sizeof(temp), "%02X", Reserve );
+	m_Reserve.ReplaceSel( temp );
 	m_FileSize.SetSel( 0, -1, FALSE );
 	m_FileSize.Clear();
 	sprintf_s( temp, sizeof(temp), "%d", FileSize );
@@ -213,6 +223,7 @@ BOOL EditFile::OnInitDialog()
 	m_Minute.ReplaceSel( temp );
 	if(MzDiskClass->DiskType() == Disk::MZ80K_SP6010 || MzDiskClass->DiskType() == Disk::MZ80K_SP6110)
 	{
+		m_Reserve.EnableWindow(FALSE);
 		m_Year.EnableWindow(FALSE);
 		m_Month.EnableWindow(FALSE);
 		m_Day.EnableWindow(FALSE);
@@ -221,6 +232,7 @@ BOOL EditFile::OnInitDialog()
 	}
 	else
 	{
+		m_Reserve.EnableWindow(TRUE);
 		m_Year.EnableWindow(TRUE);
 		m_Month.EnableWindow(TRUE);
 		m_Day.EnableWindow(TRUE);
@@ -253,6 +265,10 @@ void EditFile::OnOK()
 		{
 			Attr |= 0x1;
 		}
+		ZeroMemory( temp, sizeof( temp ) );
+		size = m_Reserve.GetLine( 0, temp, 260 );
+		temp[size] = '\0';
+		Reserve = (unsigned char)strtol( temp, &temp2, 16 );
 		m_FileSize.SetSel( 0, -1, FALSE );
 		ZeroMemory( temp, sizeof( temp ) );
 		size = m_FileSize.GetLine( 0, temp, 260 );
@@ -318,6 +334,7 @@ void EditFile::OnOK()
 			}
 		}
 		dir.attr = Attr;
+		dir.reserve = Reserve;
 		if(dir.mode == 4)
 		{
 			dir.size = FileSize / 32;
