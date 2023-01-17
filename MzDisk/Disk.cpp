@@ -63,20 +63,20 @@ void Disk::ExportBeta(std::string path)
 	int diskType = DiskType();
 	D88Image::Header header;
 	this->image.GetHeader(header);
-	int trackMax = -1;
-	for(int i = 0; i < D88Image::TRACK_MAX; ++ i)
+	int trackCount = D88Image::TRACK_COUNT;
+	for(int i = 0; i < D88Image::TRACK_COUNT; ++ i)
 	{
 		if(header.trackTable[i] == 0)
 		{
-			trackMax = i;
+			trackCount = i;
 			break;
 		}
 	}
-	if(trackMax <= 0)
+	if(trackCount <= 0)
 	{
 		return;
 	}
-	int cylinderMax = trackMax / 2;
+	int cylinderMax = trackCount / 2;
 	D88Image::SectorInfo sectorInfo;
 	std::vector<unsigned char> sectorBuffer;
 	_unlink(path.c_str());
@@ -113,20 +113,20 @@ void Disk::ImportBeta(std::string path)
 	int diskType = DiskType();
 	D88Image::Header header;
 	this->image.GetHeader(header);
-	int trackMax = -1;
-	for(int i = 0; i < D88Image::TRACK_MAX; ++ i)
+	int trackCount = D88Image::TRACK_COUNT;
+	for(int i = 0; i < D88Image::TRACK_COUNT; ++ i)
 	{
 		if(header.trackTable[i] == 0)
 		{
-			trackMax = i;
+			trackCount = i;
 			break;
 		}
 	}
-	if(trackMax <= 0)
+	if(trackCount <= 0)
 	{
 		return;
 	}
-	int cylinderMax = trackMax / 2;
+	int cylinderMax = trackCount / 2;
 	D88Image::SectorInfo sectorInfo;
 	std::vector<unsigned char> sectorBuffer;
 	size_t betaIndex = 0;
@@ -167,6 +167,22 @@ void Disk::ImportBeta(std::string path)
 		}
 	}
 	Update();
+}
+
+int Disk::GetTrackCount(void)
+{
+	D88Image::Header header;
+	this->image.GetHeader(header);
+	int trackCount = D88Image::TRACK_COUNT;
+	for(int i = 0; i < D88Image::TRACK_COUNT; ++ i)
+	{
+		if(header.trackTable[i] == 0)
+		{
+			trackCount = i;
+			break;
+		}
+	}
+	return trackCount;
 }
 
 void Disk::ReverseBuffer(std::vector<unsigned char>& buffer)

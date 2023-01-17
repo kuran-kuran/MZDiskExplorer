@@ -12,7 +12,7 @@ public:
 	// ’è”’è‹`
 	static const unsigned int MODE_FILE   = 0;
 	static const unsigned int MODE_MEMORY = 1;
-	static const unsigned char TYPE_2S  = 0x00;
+	static const unsigned char TYPE_2S  = 0x50;
 	static const unsigned int FILETYPE_OBJ          = 0x00000001;
 	static const unsigned int FILETYPE_BTX          = 0x00000002;
 	static const unsigned int FILETYPE_BSD          = 0x00000003;
@@ -101,6 +101,8 @@ public:
 	std::string ConvertMzText(std::string text);
 	int FindFile(std::string filename, int ignoreIndex);
 	//	void DisplayDir(void);
+	int GetType(void);
+	void ChangeType(int type);
 private:
 	unsigned char diskType;
 	std::vector<unsigned char> bitmap;

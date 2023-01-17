@@ -11,7 +11,7 @@ public:
 	enum
 	{
 		// 定数
-		TRACK_MAX = 164,
+		TRACK_COUNT = 164,
 		// DiskType
 		DISK_2S = 0x0,
 		DISK_2D = 0x0,
@@ -43,7 +43,7 @@ public:
 		char writeProtect; // ライトプロテクト  0x00 なし, 0x10 あり
 		char diskType; // ディスクの種類 0x00 2D/2S, 0x10 2DD, 0x20 2HD, 0x30 1D, 0x40 1DD
 		int diskSize; // ディスクのサイズ
-		int trackTable[TRACK_MAX]; // トラック部のオフセットテーブル (0Track～163Track, 4*164 = 656(0x290))
+		int trackTable[TRACK_COUNT]; // トラック部のオフセットテーブル (0Track～163Track, 4*164 = 656(0x290))
 	};
 	// D88セクタ情報
 	struct SectorInfo
@@ -53,7 +53,7 @@ public:
 		char r; // セクタ番号 (1～セクタ数分)
 		char n; // セクタサイズ 0 128bytes, 1 256bytes, 2 512bytes, 3 1024bytes, (128 << N)
 		short numberOfSector; // 1トラックのセクタ数
-		char recordingDensity; // 記録密度 0x00 倍密度, 0x40 単密度
+		char recordingDensity; // 記録密度 0x00 倍密度, 0x40 単密度, 0x01=高密度
 		char deletedMark; // 削除フラグ 0x00 通常, 0x10 削除
 		char status; // ステータス 0x00 正常, 0x10 正常(DELETED DATA), 0xA0 ID CRC エラー, 0xB0 データ CRC エラー, 0xE0 アドレスマークなし, 0xF0 データマークなし
 		char reserve[5];
@@ -81,6 +81,11 @@ public:
 		Header header = {};
 		std::vector<TrackImage> trackData;
 	};
+	static const int D88Image::diskTypeTable[];
+	static const unsigned char D88Image::recordingDensityTable[];
+	static const int D88Image::trackTable[];
+	static const int D88Image::sectorCountTable[];
+	static const int D88Image::sectorSizeTable[];
 	D88Image(void);
 	~D88Image(void);
 	void Load(std::string path);
@@ -91,7 +96,9 @@ public:
 	void Format(int diskType, unsigned char recordingDensity, int track, int sectorCount, int sectorSize, unsigned char clearByte);
 	void GetHeader(Header& header) const;
 	int GetNumberOfSector(int track);
+	void SetDiskType(int type);
 	void GetSectorInfo(SectorInfo& sectorInfo, int c, int h, int r, int index = 0) const;
+	void SetSectorInfo(SectorInfo& sectorInfo, int c, int h, int r, int index = 0);
 	void ReadSector(SectorInfo& sectorInfo, std::vector<unsigned char>& buffer, int c, int h, int r, int index = 0) const;
 	void WriteSector(const SectorInfo& sectorInfo, const std::vector<unsigned char>& buffer, int c, int h, int r);
 	bool IsValid(void);

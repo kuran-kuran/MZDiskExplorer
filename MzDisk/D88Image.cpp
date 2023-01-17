@@ -3,6 +3,12 @@
 #include "Format.hpp"
 #include "D88Image.hpp"
 
+const int D88Image::diskTypeTable[] = {DISK_2DD, DISK_2DD, DISK_2DD, DISK_2D, DISK_2D, DISK_2S, DISK_2HD, DISK_2HD, DISK_2HD};
+const unsigned char D88Image::recordingDensityTable[] = {0x0, 0x0, 0x0, 0x40, 0x40, 0x40, 0x01, 0x01, 0x01};
+const int D88Image::trackTable[] = {160, 80, 70, 70, 80, 70, 154, 160, 160};
+const int D88Image::sectorCountTable[] = {16, 16, 16, 16, 16, 16, 8, 15, 18};
+const int D88Image::sectorSizeTable[] = {256, 256, 256, 256, 256, 128, 1024, 512, 512};
+
 D88Image::D88Image(void)
 :diskImage()
 {
@@ -24,8 +30,8 @@ void D88Image::Load(std::string path)
 void D88Image::Load(const void* buffer, size_t bufferSize)
 {
 	memcpy_s(&this->diskImage.header, sizeof(this->diskImage.header), buffer, sizeof(diskImage.header));
-	this->diskImage.trackData.resize(TRACK_MAX);
-	for(int track = 0; track < TRACK_MAX; ++ track)
+	this->diskImage.trackData.resize(TRACK_COUNT);
+	for(int track = 0; track < TRACK_COUNT; ++ track)
 	{
 		int numberOfSector = GetNumberOfSector(track, buffer);
 		if(numberOfSector == 0)
@@ -65,7 +71,7 @@ void D88Image::Save(std::vector<unsigned char>& buffer)
 	unsigned char* source = reinterpret_cast<unsigned char*>(&this->diskImage.header);
 	std::copy(source, source + sizeof(this->diskImage.header), std::back_inserter(buffer));
 	// トラック
-	for(int track = 0; track < TRACK_MAX; ++ track)
+	for(int track = 0; track < TRACK_COUNT; ++ track)
 	{
 		int numberOfSector = static_cast<int>(this->diskImage.trackData[track].sectorImage.size());
 		for(int sectorIndex = 0; sectorIndex < numberOfSector; ++ sectorIndex)
@@ -84,11 +90,6 @@ void D88Image::Save(std::vector<unsigned char>& buffer)
 //			  DISK_2D_40_256_16, DISK_2S_35_128_16, DISK_2HD_77_1024_8, DISK_2HD_80_512_15, DISK_2HD_80_512_18
 void D88Image::Format(int mediaType, unsigned char clearByte)
 {
-	static const int diskTypeTable[] = {DISK_2DD, DISK_2DD, DISK_2DD, DISK_2D, DISK_2D, DISK_2S, DISK_2HD, DISK_2HD, DISK_2HD};
-	static const unsigned char recordingDensityTable[] = {0x0, 0x0, 0x0, 0x40, 0x40, 0x40, 0x01, 0x01, 0x01};
-	static const int trackTable[] = {160, 80, 70, 70, 80, 70, 154, 160, 160};
-	static const int sectorCountTable[] = {16, 16, 16, 16, 16, 16, 8, 15, 18};
-	static const int sectorSizeTable[] = {256, 256, 256, 256, 256, 128, 1024, 512, 512};
 	std::vector<SectorInfo> sectorInfoList;
 	Format(diskTypeTable[mediaType], recordingDensityTable[mediaType], trackTable[mediaType], sectorCountTable[mediaType], sectorSizeTable[mediaType], clearByte);
 }
@@ -102,7 +103,7 @@ void D88Image::Format(int diskType, unsigned char recordingDensity, int track, i
 	this->diskImage.header.writeProtect = 0x00;
 	this->diskImage.header.diskType = diskType;
 	this->diskImage.header.diskSize = sizeof(diskImage.header) + (sectorSize + sizeof(SectorInfo))* sectorCount * track;
-	this->diskImage.trackData.resize(TRACK_MAX);
+	this->diskImage.trackData.resize(TRACK_COUNT);
 	int offset = sizeof(diskImage.header);
 	int sector = sectorSize;
 	int n = 0;
@@ -111,7 +112,7 @@ void D88Image::Format(int diskType, unsigned char recordingDensity, int track, i
 		sector >>= 1;
 		++ n;
 	}
-	for(int trackIndex = 0; trackIndex < TRACK_MAX; ++ trackIndex)
+	for(int trackIndex = 0; trackIndex < TRACK_COUNT; ++ trackIndex)
 	{
 		TrackImage trackImage;
 		this->diskImage.trackData[trackIndex].sectorImage.clear();
@@ -149,6 +150,35 @@ void D88Image::GetHeader(D88Image::Header& header) const
 	header = this->diskImage.header;
 }
 
+// type: DISK_2D, DISK_2DD
+void D88Image::SetDiskType(int type)
+{
+	this->diskImage.header.diskType = type;
+	int recordingDensity = 0x00; // 2D
+	if(type == DISK_2DD)
+	{
+		recordingDensity = 0x40; // 2DD
+	}
+	int cylinderMax = TRACK_COUNT / 2;
+	for(int c = 0; c < cylinderMax; ++ c)
+	{
+		for(int h = 0; h < 2; ++ h)
+		{
+			for(int r = 1; r <= 16; ++ r)
+			{
+				SectorInfo sectorInfo = {};
+				GetSectorInfo(sectorInfo, c, h, r);
+				if(sectorInfo.sizeOfData == 0)
+				{
+					continue;
+				}
+				sectorInfo.recordingDensity = recordingDensity;
+				SetSectorInfo(sectorInfo, c, h, r);
+			}
+		}
+	}
+}
+
 // r: セクタ番号(1～n) -1の場合はindex番のセクタ
 // index: セクタ位置(0～n) rが-1の時に有効
 void D88Image::GetSectorInfo(SectorInfo& sectorInfo, int c, int h, int r, int index) const
@@ -160,6 +190,23 @@ void D88Image::GetSectorInfo(SectorInfo& sectorInfo, int c, int h, int r, int in
 		if(((r == -1) && (findIndex == index)) || (sectorImage.sectorInfo.r == r))
 		{
 			sectorInfo = sectorImage.sectorInfo;
+			break;
+		}
+		++ findIndex;
+	}
+}
+
+// r: セクタ番号(1～n) -1の場合はindex番のセクタ
+// index: セクタ位置(0～n) rが-1の時に有効
+void D88Image::SetSectorInfo(SectorInfo& sectorInfo, int c, int h, int r, int index)
+{
+	int track = GetTrack(c, h);
+	int findIndex = 0;
+	for(SectorImage& sectorImage: this->diskImage.trackData[track].sectorImage)
+	{
+		if(((r == -1) && (findIndex == index)) || (sectorImage.sectorInfo.r == r))
+		{
+			sectorImage.sectorInfo = sectorInfo;
 			break;
 		}
 		++ findIndex;
@@ -280,7 +327,7 @@ bool D88Image::FindSectorData(SectorInfo& sectorInfo, size_t& sectorBufferOffset
 
 bool D88Image::IsValid(void)
 {
-	if(this->diskImage.trackData.size() == TRACK_MAX)
+	if(this->diskImage.trackData.size() == TRACK_COUNT)
 	{
 		return true;
 	}

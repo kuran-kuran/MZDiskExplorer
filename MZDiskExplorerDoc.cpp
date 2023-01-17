@@ -12,6 +12,7 @@
 #include "PutBoot.h"
 #include "GetSystem.h"
 #include "MakeNewDisk.h"
+#include "ChangeType.h"
 #include "MzDisk/Disk.hpp"
 #include "MzDisk/MzDisk.hpp"
 #include "MzDisk/Mz80Disk.hpp"
@@ -54,6 +55,8 @@ BEGIN_MESSAGE_MAP(CMZDiskExplorerDoc, CDocument)
 	ON_COMMAND(ID_EDIT_PUTSYSTEM, &CMZDiskExplorerDoc::OnEditPutsystem)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_PUTSYSTEM, &CMZDiskExplorerDoc::OnUpdateEditPutsystem)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_EDIT, &CMZDiskExplorerDoc::OnUpdateEditEdit)
+	ON_COMMAND(ID_CHANGE_TYPE, &CMZDiskExplorerDoc::OnChangeType)
+	ON_UPDATE_COMMAND_UI(ID_CHANGE_TYPE, &CMZDiskExplorerDoc::OnUpdateChangeType)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -61,6 +64,7 @@ END_MESSAGE_MAP()
 
 CMZDiskExplorerDoc::CMZDiskExplorerDoc()
 :ImageInit(0)
+,enableChange(0)
 ,ItemToDirIndex()
 ,DirHandle()
 ,DirSector()
@@ -105,6 +109,7 @@ BOOL CMZDiskExplorerDoc::OnNewDocument()
 	list->DeleteAllItems();
 
 	ImageInit = 0;
+	enableChange = 0;
 	if ( 0 == FirstInit )
 	{
 		cMakeNewDisk newdisk;
@@ -122,18 +127,22 @@ BOOL CMZDiskExplorerDoc::OnNewDocument()
 				case 1:
 					disktype = MzDisk::DISKTYPE_MZ2500_2DD40;
 					needClassType = Disk::MZ2000;
+					enableChange = 1;
 					break;
 				case 2:
 					disktype = MzDisk::DISKTYPE_MZ2500_2DD35;
 					needClassType = Disk::MZ2000;
+					enableChange = 1;
 					break;
 				case 3:
 					disktype = MzDisk::DISKTYPE_MZ80B_2D35;
 					needClassType = Disk::MZ2000;
+					enableChange = 1;
 					break;
 				case 4:
 					disktype = MzDisk::DISKTYPE_MZ2000_2D40;
 					needClassType = Disk::MZ2000;
+					enableChange = 1;
 					break;
 				case 5:
 					disktype = Mz80Disk::DISKTYPE_MZ80_SP6010_2S;
@@ -298,6 +307,15 @@ void CMZDiskExplorerDoc::Serialize(CArchive& ar)
 		sprintf_s( str, sizeof(str), "Type: %s    Size: %d/%d    Free: %d", MzDiskClass->DiskTypeText().c_str(), use, total, free );
 		pMainFrame = ( CMainFrame* )AfxGetMainWnd();
 		pMainFrame->PutStatusBarSize( str );
+		enableChange = 0;
+		if((MzDiskClass->GetType() == MzDisk::TYPE_2D) || (MzDiskClass->GetType() == MzDisk::TYPE_2DD))
+		{
+			int trackCount = MzDiskClass->GetTrackCount();
+			if((trackCount == 70) || (trackCount == 80))
+			{
+				enableChange = 1;
+			}
+		}
 	}
 }
 
@@ -319,6 +337,18 @@ void CMZDiskExplorerDoc::Update()
 	MakeFileList( 0x10 );
 	MzDiskClass->SetDirSector( -1 );
 	ImageInit = 1;
+	// ステータスバー描画
+	if(MzDiskClass != NULL)
+	{
+		CMainFrame *pMainFrame;
+		char str[ 200 ];
+		int use = MzDiskClass->GetUseBlockSize() * MzDiskClass->GetClusterSize();
+		int total = MzDiskClass->GetAllBlockSize() * MzDiskClass->GetClusterSize();
+		int free = total - use;
+		sprintf_s( str, sizeof(str), "Type: %s    Size: %d/%d    Free: %d", MzDiskClass->DiskTypeText().c_str(), use, total, free );
+		pMainFrame = ( CMainFrame* )AfxGetMainWnd();
+		pMainFrame->PutStatusBarSize( str );
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1532,6 +1562,43 @@ void CMZDiskExplorerDoc::OnUpdateEditEdit(CCmdUI* pCmdUI)
 {
 	// TODO:ここにコマンド更新 UI ハンドラー コードを追加します。
 	if ( 1 == ImageInit )
+	{
+		pCmdUI->Enable( TRUE );
+	}
+	else
+	{
+		pCmdUI->Enable( FALSE );
+	}
+}
+
+
+void CMZDiskExplorerDoc::OnChangeType()
+{
+	// TODO: ここにコマンド ハンドラー コードを追加します。
+	int type = 0;
+	int diskType = MzDiskClass->GetType();
+	switch(diskType)
+	{
+	case MzDisk::TYPE_2D:
+		type = 0;
+		break;
+	default:
+		type = 1;
+		break;
+	}
+	ChangeType changeType;
+	changeType.DiskType = 1 - type; // 0: 2D, 1: 2DD
+	changeType.MzDiskClass = MzDiskClass;
+	if(changeType.DoModal() == IDOK)
+	{
+		Update();
+	}
+}
+
+void CMZDiskExplorerDoc::OnUpdateChangeType(CCmdUI* pCmdUI)
+{
+	// TODO:ここにコマンド更新 UI ハンドラー コードを追加します。
+	if ( 1 == enableChange )
 	{
 		pCmdUI->Enable( TRUE );
 	}

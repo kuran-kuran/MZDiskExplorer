@@ -71,7 +71,11 @@ int MzDisk::DiskType(void)
 
 std::string MzDisk::DiskTypeText(void)
 {
-	return "MZ-80B/700/1500/2000/2200/2500ディスク";
+	if(this->diskType == TYPE_2DD)
+	{
+		return "2DD MZ-2500ディスク";
+	}
+	return "2D MZ-80B/700/1500/2000/2200ディスク";
 }
 
 //============================================================================
@@ -243,7 +247,7 @@ void MzDisk::Update(void)
 	ReadSector(this->bitmap, 15, 1);
 	// ディスク情報格納
 	int trackMax = 0;
-	for(int i = 0; i < D88Image::TRACK_MAX; ++ i)
+	for(int i = 0; i < D88Image::TRACK_COUNT; ++ i)
 	{
 		if(header.trackTable[i] != 0)
 		{
@@ -252,6 +256,7 @@ void MzDisk::Update(void)
 	}
 	this->clusterSize = this->sectorSize * (this->bitmap[255] + 1);
 	ReadDirectory();
+	this->diskType = header.diskType;
 }
 
 int MzDisk::Save(std::string path)
@@ -1280,6 +1285,44 @@ int MzDisk::FindFile(std::string filename, int ignoreIndex)
 		}
 	}
 	return -1;
+}
+
+//============================================================================
+//  ディスクのタイプを取得する
+//----------------------------------------------------------------------------
+// In  : なし
+// Out : TYPE_2D: 2Dに変更する, TYPE_2DD: 2DDに変更する
+//============================================================================
+int MzDisk::GetType(void)
+{
+	return this->diskType;
+}
+
+//============================================================================
+//  ディスクのタイプを変更する
+//----------------------------------------------------------------------------
+// In  : type: TYPE_2D: 2Dに変更する, TYPE_2DD: 2DDに変更する
+// Out : なし
+//============================================================================
+void MzDisk::ChangeType(int type)
+{
+	if(this->diskType == type)
+	{
+		return;
+	}
+	unsigned char diskType = (type == 0) ? TYPE_2D : TYPE_2DD;
+	D88Image::Header header;
+	this->image.GetHeader(header);
+	header.diskType = diskType;
+	int trackMax = 0;
+	for(int i = 0; i < D88Image::TRACK_COUNT; ++ i)
+	{
+		if(header.trackTable[i] != 0)
+		{
+			++ trackMax;
+		}
+	}
+	this->diskType = diskType;
 }
 
 //============================================================================

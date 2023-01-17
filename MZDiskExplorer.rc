@@ -141,6 +141,7 @@ BEGIN
         MENUITEM "Ãﬁ∞ƒÃﬂ€∏ﬁ◊—ìoò^",               ID_EDIT_PUTBOOT
         MENUITEM "ºΩ√—Ãﬂ€∏ﬁ◊—éÊÇËèoÇµ(MZ-80KÇÃÇ›)",   ID_EDIT_GETSYSTEM
         MENUITEM "ºΩ√—Ãﬂ€∏ﬁ◊—ìoò^(MZ-80KÇÃÇ›)",     ID_EDIT_PUTSYSTEM
+        MENUITEM "√ﬁ®Ω∏¿≤Ãﬂïœä∑",                 ID_CHANGE_TYPE
     END
     POPUP "ï\é¶(&V)"
     BEGIN
@@ -356,6 +357,16 @@ BEGIN
     LTEXT           "/",IDC_STATIC,118,115,8,8
 END
 
+IDD_CHANGETYPE DIALOGEX 0, 0, 191, 60
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "ÉfÉBÉXÉNÉ^ÉCÉvïœä∑"
+FONT 9, "ÇlÇr ÇoÉSÉVÉbÉN", 0, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,77,39,50,14
+    PUSHBUTTON      "∑¨›æŸ",IDCANCEL,134,39,50,14
+    COMBOBOX        IDC_DISKTYPE,7,18,177,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -474,6 +485,14 @@ BEGIN
         RIGHTMARGIN, 201
         TOPMARGIN, 7
         BOTTOMMARGIN, 146
+    END
+
+    IDD_CHANGETYPE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 184
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 53
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -604,6 +623,17 @@ BEGIN
     0
 END
 
+IDD_CHANGETYPE DLGINIT
+BEGIN
+    IDC_DISKTYPE, 0x403, 20, 0
+0x4432, 0x8244, 0x32f0, 0x8244, 0x95c9, 0x8dcf, 0x8258, 0x82b5, 0x82dc, 
+0x00b7, 
+    IDC_DISKTYPE, 0x403, 20, 0
+0x4432, 0xf082, 0x4432, 0x8244, 0x95c9, 0x8dcf, 0x8258, 0x82b5, 0x82dc, 
+0x00b7, 
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -641,6 +671,11 @@ BEGIN
 END
 
 IDD_EDITFILE AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_CHANGETYPE AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

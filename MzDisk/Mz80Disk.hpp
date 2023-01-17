@@ -12,7 +12,7 @@ public:
 	// íËêîíËã`
 	static const unsigned int MODE_FILE   = 0;
 	static const unsigned int MODE_MEMORY = 1;
-	static const unsigned char TYPE_2S  = 0x00;
+	static const unsigned char TYPE_2S  = 0x50;
 	static const unsigned int FILETYPE_OBJ          = 0x00000001;
 	static const unsigned int FILETYPE_BTX          = 0x00000002;
 	static const unsigned int DISKTYPE_MZ80_SP6010_2S = D88Image::DISK_2S_35_128_16;
@@ -73,6 +73,8 @@ public:
 	void DelBitmap(int start, int length);
 	std::string ConvertText(std::string text);
 	std::string ConvertMzText(std::string text);
+	int GetType(void);
+	void ChangeType(int type);
 	int FindFile(std::string filename, int ignoreIndex);
 	void SetDirSector(int sector);
 	int GetDirSector(void);

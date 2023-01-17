@@ -71,7 +71,7 @@ int Mz80SP6110Disk::DiskType(void)
 
 std::string Mz80SP6110Disk::DiskTypeText(void)
 {
-	return "MZ-80K SP-6110ディスク";
+	return "2S MZ-80K SP-6110ディスク";
 }
 
 //============================================================================
@@ -154,7 +154,7 @@ void Mz80SP6110Disk::Update(void)
 	ReadSector(this->bitmap, 14, 2);
 	// ディスク情報格納
 	int trackMax = 0;
-	for(int i = 0; i < D88Image::TRACK_MAX; ++ i)
+	for(int i = 0; i < D88Image::TRACK_COUNT; ++ i)
 	{
 		if(header.trackTable[i] != 0)
 		{
@@ -163,6 +163,7 @@ void Mz80SP6110Disk::Update(void)
 	}
 	this->clusterSize = this->sectorSize * 2;
 	ReadDirectory();
+	this->diskType = TYPE_2S;
 }
 
 int Mz80SP6110Disk::Save(std::string path)
@@ -1074,6 +1075,26 @@ int Mz80SP6110Disk::FindFile(std::string filename, int ignoreIndex)
 		}
 	}
 	return -1;
+}
+
+//============================================================================
+//  ディスクのタイプを取得する
+//----------------------------------------------------------------------------
+// In  : なし
+// Out : TYPE_2D: 2Dに変更する, TYPE_2DD: 2DDに変更する
+//============================================================================
+int Mz80SP6110Disk::GetType(void)
+{
+	return this->diskType;
+}
+
+//============================================================================
+//  ディスクのタイプを変更する
+//----------------------------------------------------------------------------
+// MZ-80Kでは未使用
+//============================================================================
+void Mz80SP6110Disk::ChangeType(int type)
+{
 }
 
 //============================================================================
