@@ -24,6 +24,7 @@ cPutFile::cPutFile(CWnd* pParent /*=NULL*/)
 ,FileName()
 ,Mode(0)
 ,Attr(0)
+,Reserve(0)
 ,FileSize(0)
 ,LoadAdr(0)
 ,RunAdr(0)
@@ -68,6 +69,7 @@ void cPutFile::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_ATTR, m_Attr);
 	//}}AFX_DATA_MAP
 	DDX_Control(pDX, IDC_MZT_FILENAME, m_IsMztFilename);
+	DDX_Control(pDX, IDC_RESERVE, m_Reserve);
 }
 
 BEGIN_MESSAGE_MAP(cPutFile, CDialog)
@@ -101,6 +103,10 @@ BOOL cPutFile::OnInitDialog()
 	}
 	m_Mode.SetCurSel( Mode - 1 );
 	m_Attr.SetCurSel( Attr & 1 );
+	m_Reserve.SetSel( 0, -1, FALSE );
+	m_Reserve.Clear();
+	sprintf_s( temp, sizeof(temp), "%02X", Reserve );
+	m_Reserve.ReplaceSel( temp );
 	m_FileSize.SetSel( 0, -1, FALSE );
 	m_FileSize.Clear();
 	sprintf_s( temp, sizeof(temp), "%d", FileSize );
@@ -130,6 +136,7 @@ BOOL cPutFile::OnInitDialog()
 	m_Minute.ReplaceSel( temp );
 	if((MzDiskClass->DiskType() == Disk::MZ80K_SP6010) || (MzDiskClass->DiskType() == Disk::MZ80K_SP6110))
 	{
+		m_Reserve.EnableWindow(FALSE);
 		m_Year.EnableWindow(FALSE);
 		m_Month.EnableWindow(FALSE);
 		m_Day.EnableWindow(FALSE);
@@ -138,6 +145,7 @@ BOOL cPutFile::OnInitDialog()
 	}
 	else
 	{
+		m_Reserve.EnableWindow(TRUE);
 		m_Year.EnableWindow(TRUE);
 		m_Month.EnableWindow(TRUE);
 		m_Day.EnableWindow(TRUE);
@@ -168,6 +176,10 @@ void cPutFile::OnOK()
 		{
 			Attr |= 0x1;
 		}
+		ZeroMemory( temp, sizeof( temp ) );
+		size = m_Reserve.GetLine( 0, temp, 260 );
+		temp[size] = '\0';
+		Reserve = (unsigned char)strtol( temp, &temp2, 16 );
 		m_FileSize.SetSel( 0, -1, FALSE );
 		ZeroMemory( temp, sizeof( temp ) );
 		size = m_FileSize.GetLine( 0, temp, 260 );
@@ -200,7 +212,6 @@ void cPutFile::OnOK()
 		size = m_Minute.GetLine(0, temp, 260);
 		temp[size] = '\0';
 		Minute = (int)strtol(temp, &temp2, 10);
-
 		ZeroMemory( &dir, sizeof( dir ) );
 		dir.mode = Mode;
 		if( 5 == dir.mode )
@@ -240,6 +251,7 @@ void cPutFile::OnOK()
 		}
 		dir.loadAdr = LoadAdr;
 		dir.runAdr = RunAdr;
+		dir.reserve = Reserve;
 		dir.date = ( ( ( Year % 100 ) / 10 ) << 28 ) +
 					( ( ( Year % 100 ) % 10 ) << 24 ) +
 					( ( Month / 10 ) << 23 ) +

@@ -12,7 +12,6 @@
 #define IDD_PUTFILE                     132
 #define IDD_PUTBOOT                     134
 #define IDD_NEWDISK                     136
-#define IDD_FILEINFO                    138
 #define IDD_GETSYSTEM                   139
 #define IDD_PUTBOOT2                    139
 #define IDD_PUTFILE2                    139
@@ -36,15 +35,12 @@
 #define IDC_EDIT1                       1015
 #define IDC_YEAR                        1015
 #define IDC_VOLUME_NUMBER               1015
-#define IDC_EDIT2                       1016
-#define IDC_EDIT3                       1017
-#define IDC_EDIT4                       1018
-#define IDC_EDIT5                       1019
 #define IDC_MONTH                       1020
 #define IDC_DAY                         1021
 #define IDC_HOUR                        1022
 #define IDC_MINUTE                      1023
 #define IDC_MZT_FILENAME                1024
+#define IDC_RESERVE                     1026
 #define ID_EDIT_GETFILE                 32771
 #define ID_EDIT_EXPORT                  32772
 #define ID_EDIT_IMPORT                  32773
@@ -73,7 +69,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        148
 #define _APS_NEXT_COMMAND_VALUE         32791
-#define _APS_NEXT_CONTROL_VALUE         1025
+#define _APS_NEXT_CONTROL_VALUE         1027
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

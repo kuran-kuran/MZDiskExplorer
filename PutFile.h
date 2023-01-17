@@ -20,6 +20,7 @@ public:
 	std::vector<unsigned char> mztFilename;
 	unsigned char Mode;
 	unsigned char Attr;
+	unsigned char Reserve;
 	int FileSize;
 	unsigned short LoadAdr;
 	unsigned short RunAdr;
@@ -47,6 +48,7 @@ public:
 	CEdit	m_FileSize;
 	CEdit	m_FileName;
 	CComboBox	m_Attr;
+	CEdit	m_Reserve;
 	CButton m_IsMztFilename;
 	//}}AFX_DATA
 
