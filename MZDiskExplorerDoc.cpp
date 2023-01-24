@@ -1053,6 +1053,7 @@ void CMZDiskExplorerDoc::OnEditPutfile(CString datapath)
 		memcpy_s( &putfiledialog.mztFilename[0], sizeof(filename), mzthead.filename, 17 );
 		putfiledialog.Mode = mzthead.mode;
 		putfiledialog.Attr = 0;
+		putfiledialog.Reserve = 0;
 		putfiledialog.FileSize = mzthead.size;
 		putfiledialog.LoadAdr = mzthead.loadAdr;
 		putfiledialog.RunAdr = mzthead.runAdr;
@@ -1078,13 +1079,27 @@ void CMZDiskExplorerDoc::OnEditPutfile(CString datapath)
 	{
 		putfiledialog.FileName = path.GetPath( PATH_MODE_NAME | PATH_MODE_EXTNAME );
 		putfiledialog.mztFilename.clear();
-		if ( putfiledialog.FileSize > 65535 )
+		if ( putfiledialog.FileSize > 65536 )
 		{
 			putfiledialog.Mode = 4;
+			putfiledialog.Reserve = 0;
+			putfiledialog.Size64KBObj = false;
+		}
+		else if ( putfiledialog.FileSize == 65536 )
+		{
+			std::vector<unsigned char> buffer;
+			buffer.resize(putfiledialog.FileSize);
+			file.Read(&buffer[0], putfiledialog.FileSize);
+			putfiledialog.FileSize -= 1;
+			putfiledialog.Mode = 1;
+			putfiledialog.Reserve = buffer[putfiledialog.FileSize];
+			putfiledialog.Size64KBObj = true;
 		}
 		else
 		{
 			putfiledialog.Mode = 1;
+			putfiledialog.Reserve = 0;
+			putfiledialog.Size64KBObj = false;
 		}
 		putfiledialog.Attr = 0;
 		putfiledialog.LoadAdr = 0;
