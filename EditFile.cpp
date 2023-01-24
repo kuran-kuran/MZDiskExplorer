@@ -301,6 +301,7 @@ void EditFile::OnOK()
 		size = m_Minute.GetLine(0, temp, 260);
 		temp[size] = '\0';
 		Minute = (int)strtol(temp, &temp2, 10);
+		unsigned short startSector = dir.startSector;
 
 		ZeroMemory( &dir, sizeof( dir ) );
 		dir.mode = Mode;
@@ -356,6 +357,7 @@ void EditFile::OnOK()
 			( ( Minute / 10 ) << 4 ) +
 			( ( Minute % 10 ) );
 		dir.date = ( dir.date >> 24 ) + ( ( dir.date >> 8 ) & 0xFF00 ) + ( ( dir.date << 8 ) & 0xFF0000 ) + ( ( dir.date << 24 ) & 0xFF000000 );
+		dir.startSector = startSector;
 		MzDiskClass->SetDir(&dir, dirIndex);
 	}
 	else if(MzDiskClass->DiskType() == Disk::MZ80K_SP6010)
@@ -393,6 +395,8 @@ void EditFile::OnOK()
 		size = m_RunAdr.GetLine( 0, temp, 260 );
 		temp[size] = '\0';
 		size = RunAdr = (unsigned short)strtol( temp, &temp2, 16 );
+		unsigned char startSector = dir.startSector;
+		unsigned char startTrack = dir.startTrack;
 
 		ZeroMemory( &dir, sizeof( dir ) );
 		dir.mode = Mode;
@@ -428,6 +432,9 @@ void EditFile::OnOK()
 		}
 		dir.loadAdr = LoadAdr;
 		dir.runAdr = RunAdr;
+		dir.startSector = startSector;
+		dir.startTrack = startTrack;
+
 		MzDiskClass->SetDir(&dir, dirIndex);
 	}
 	else if(MzDiskClass->DiskType() == Disk::MZ80K_SP6110)
@@ -481,6 +488,8 @@ void EditFile::OnOK()
 		size = m_Minute.GetLine(0, temp, 260);
 		temp[size] = '\0';
 		Minute = (int)strtol(temp, &temp2, 10);
+		unsigned short startSector = dir.startSector;
+
 		ZeroMemory( &dir, sizeof( dir ) );
 		dir.mode = Mode;
 		if( 6 == dir.mode )
@@ -524,6 +533,7 @@ void EditFile::OnOK()
 		dir.loadAdr = LoadAdr;
 		dir.runAdr = RunAdr;
 		dir.date = 0;
+		dir.startSector = startSector;
 		MzDiskClass->SetDir(&dir, dirIndex);
 	}
 	CDialog::OnOK();

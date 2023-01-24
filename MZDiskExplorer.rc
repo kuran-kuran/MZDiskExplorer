@@ -190,7 +190,7 @@ CAPTION "MZDiskExplorerÇÃ ﬁ∞ºﬁÆ›èÓïÒ"
 FONT 9, "ÇlÇr ÇoÉSÉVÉbÉN", 0, 0, 0x0
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
-    LTEXT           "MZDiskExplorer Version 2.1.0",IDC_STATIC,40,10,117,8,SS_NOPREFIX
+    LTEXT           "MZDiskExplorer Version 2.1.1",IDC_STATIC,40,10,117,8,SS_NOPREFIX
     LTEXT           "Copyright (C) 2003-2022 by kuran_kuran",IDC_STATIC,40,25,149,8
     DEFPUSHBUTTON   "OK",IDOK,160,39,50,14,WS_GROUP
 END
@@ -348,8 +348,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,1,0,0
- PRODUCTVERSION 2,1,0,0
+ FILEVERSION 2,1,1,0
+ PRODUCTVERSION 2,1,1,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x29L
@@ -366,12 +366,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "DaimonSoftware"
             VALUE "FileDescription", "MZDiskExplorer"
-            VALUE "FileVersion", "2.1.0.0"
+            VALUE "FileVersion", "2.1.1.0"
             VALUE "InternalName", "MZDiskExplorer"
             VALUE "LegalCopyright", "Copyright (C) 2003-2022 by kuran_kuran"
             VALUE "OriginalFilename", "MZDiskExplorer.exe"
             VALUE "ProductName", "MZDiskExplorer"
-            VALUE "ProductVersion", "2.1.0.0"
+            VALUE "ProductVersion", "2.1.1.0"
         END
     END
     BLOCK "VarFileInfo"
