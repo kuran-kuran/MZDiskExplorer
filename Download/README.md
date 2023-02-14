@@ -5,6 +5,8 @@
 
 - IPLS09bKaiのために65536バイトのファイルの書き込みに対応。
 
+[MZDiskExplorer211.zip](https://github.com/kuran-kuran/MZDiskExplorer/raw/main/Download/MZDiskExplorer211.zip)
+
 ### 2022/12/09 Version 2.1.0
 
 - MZ-80K SP-6110形式のディスクに対応。
