@@ -1066,11 +1066,25 @@ int Mz80SP6110Disk::FindFile(std::string filename, int ignoreIndex)
 	{
 		if(this->directory[i].mode != 0)
 		{
-			// ファイルネーム
-			if((strncmp(this->directory[i].filename, &filename[0], filename.size()) == 0) && (i != ignoreIndex))
+			size_t directryFileLength = 0;
+			for(size_t j = 0; j < 17; ++ j)
 			{
-				// 同じファイル名が存在する
-				return i;
+				if(this->directory[i].filename[j] == 0x0D)
+				{
+					break;
+				}
+				++ directryFileLength;
+			}
+			size_t fileLength = filename.size();
+			// ファイル名の長さが同じ
+			if(directryFileLength == fileLength)
+			{
+				// ファイルネーム
+				if((strncmp(this->directory[i].filename, &filename[0], filename.size()) == 0) && (i != ignoreIndex))
+				{
+					// 同じファイル名が存在する
+					return i;
+				}
 			}
 		}
 	}

@@ -34,6 +34,7 @@ cPutFile::cPutFile(CWnd* pParent /*=NULL*/)
 ,Hour(0)
 ,Minute(0)
 ,FileType(0)
+,Size64KBObj(false)
 ,MzDiskClass(NULL)
 ,m_Hour()
 ,m_Month()
@@ -77,6 +78,7 @@ BEGIN_MESSAGE_MAP(cPutFile, CDialog)
 	ON_WM_CREATE()
 	//}}AFX_MSG_MAP
 	ON_BN_CLICKED(IDC_MZT_FILENAME, &cPutFile::OnClickedMztFilename)
+	ON_CBN_SELCHANGE(IDC_MODE, &cPutFile::OnSelchangeMode)
 END_MESSAGE_MAP()
 
 BOOL cPutFile::OnInitDialog() 
@@ -530,4 +532,30 @@ void cPutFile::OnClickedMztFilename()
 	{
 		m_FileName.EnableWindow(TRUE);
 	}
+}
+
+
+void cPutFile::OnSelchangeMode()
+{
+	// TODO: ここにコントロール通知ハンドラー コードを追加します。
+	Mode = m_Mode.GetCurSel() + 1;
+	if(Mode == 4)
+	{
+		if(Size64KBObj == true)
+		{
+			FileSize = 65536;
+		}
+	}
+	else
+	{
+		if(Size64KBObj == true)
+		{
+			FileSize = 65535;
+		}
+	}
+	char temp[ 20 ];
+	m_FileSize.SetSel( 0, -1, FALSE );
+	m_FileSize.Clear();
+	sprintf_s( temp, sizeof(temp), "%d", FileSize );
+	m_FileSize.ReplaceSel( temp );
 }

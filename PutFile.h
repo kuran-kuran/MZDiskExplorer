@@ -31,6 +31,7 @@ public:
 	int Hour;
 	int Minute;
 	int FileType;
+	bool Size64KBObj;
 	Disk *MzDiskClass;
 	cPutFile(CWnd* pParent = NULL);   // 標準のコンストラクタ
 
@@ -71,6 +72,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnClickedMztFilename();
+	afx_msg void OnSelchangeMode();
 };
 
 //{{AFX_INSERT_LOCATION}}
