@@ -22,11 +22,12 @@ public:
 	static const unsigned int FILETYPE_BSD          = 0x00000003;
 	static const unsigned int FILETYPE_BRD          = 0x00000004;
 	static const unsigned int FILETYPE_BSD_CONV     = 0x00000005;
-	static const unsigned int DISKTYPE_MZ2500_2DD   = D88Image::DISK_2DD_80_256_16;
-	static const unsigned int DISKTYPE_MZ2500_2DD40 = D88Image::DISK_2DD_40_256_16;
-	static const unsigned int DISKTYPE_MZ2500_2DD35 = D88Image::DISK_2DD_35_256_16;
-	static const unsigned int DISKTYPE_MZ80B_2D35   = D88Image::DISK_2D_35_256_16;
-	static const unsigned int DISKTYPE_MZ2000_2D40  = D88Image::DISK_2D_40_256_16;
+	static const unsigned int DISKTYPE_MZ2500_2DD   = 1;
+	static const unsigned int DISKTYPE_MZ2500_2DD40 = 2;
+	static const unsigned int DISKTYPE_MZ2500_2DD35 = 3;
+	static const unsigned int DISKTYPE_MZ80B_2D35   = 4;
+	static const unsigned int DISKTYPE_MZ2000_2D40  = 5;
+	static const unsigned int DISKTYPE_MZ80A_2D35   = 6;
 #ifdef _MSC_VER
 #pragma pack(push, 1)
 #else
@@ -113,7 +114,8 @@ public:
 	int GetType(void);
 	void ChangeType(int type);
 private:
-	unsigned char diskType;
+	unsigned char mediaType;
+	int diskType;
 	std::vector<unsigned char> bitmap;
 	std::vector<DIRECTORY> directory;
 	int fileType;
@@ -121,6 +123,8 @@ private:
 	int dirSector;
 	static const char asciiCodeAnk[];
 	static const char asciiCodeSjis[];
+	static const char asciiCodeAnk80A[];
+	static const char asciiCodeSjis80A[];
 	MzDisk(MzDisk&);
 	MzDisk& operator = (MzDisk&);
 	void GetExtFilename(std::string path, std::string& extfilename);

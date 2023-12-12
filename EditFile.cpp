@@ -97,7 +97,15 @@ BOOL EditFile::OnInitDialog()
 				work[j] = '\0';
 			}
 		}
-		FileName = work;
+		if(MzDiskClass->GetType() == MzDisk::DISKTYPE_MZ80A_2D35)
+		{
+			std::string filename = MzDiskClass->ConvertText(work);
+			FileName = &filename[0];
+		}
+		else
+		{
+			FileName = work;
+		}
 		Mode = dir.mode;
 		if(Mode == 7)
 		{

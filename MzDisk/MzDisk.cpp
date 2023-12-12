@@ -12,19 +12,19 @@
 const char MzDisk::asciiCodeAnk[] =
 {
 	" !\x22#$%&\x27()*+,-./"	/* 20 */
-	"0123456789:;<=>?"		/* 30 */
-	"@ABCDEFGHIJKLMNO"		/* 40 */
-	"PQRSTUVWXYZ[\\]^*"		/* 50 */
-	"*abcdefghijklmno"		/* 60 */
-	"pqrstuvwxyz{|}~."		/* 70 */
-	"................"		/* 80 */
-	".\\.............."		/* 90 */
-	".｡｢｣WXｦｧｨｩｪｫﾔﾕﾖｯ"		/* A0 */
-	"*ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿ"		/* B0 */
-	"ﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏ"		/* C0 */
-	"ﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝﾞﾟ"		/* D0 */
-	"ZABCDEFGHIJKLMNO"		/* E0 */
-	"0123456789PQRST."		/* F0 */
+	"0123456789:;<=>?"			/* 30 */
+	"@ABCDEFGHIJKLMNO"			/* 40 */
+	"PQRSTUVWXYZ[\\]^*"			/* 50 */
+	"*abcdefghijklmno"			/* 60 */
+	"pqrstuvwxyz{|}~."			/* 70 */
+	"................"			/* 80 */
+	".\\.............."			/* 90 */
+	".｡｢｣WXｦｧｨｩｪｫﾔﾕﾖｯ"			/* A0 */
+	"*ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿ"			/* B0 */
+	"ﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏ"			/* C0 */
+	"ﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝﾞﾟ"			/* D0 */
+	"ZABCDEFGHIJKLMNO"			/* E0 */
+	"0123456789PQRST."			/* F0 */
 };
 const char MzDisk::asciiCodeSjis[] =
 {
@@ -44,11 +44,48 @@ const char MzDisk::asciiCodeSjis[] =
 	"０１２３４５６７８９ＰＱＲＳＴπ"	/* F0 */
 };
 
+/* MZ-80A */
+const char MzDisk::asciiCodeAnk80A[] =
+{
+	" !\x22#$%&\x27()*+,-./"	/* 20 */
+	"0123456789:;<=>?"			/* 30 */
+	"@ABCDEFGHIJKLMNO"			/* 40 */
+	"PQRSTUVWXYZ[.].."			/* 50 */
+	"................"			/* 60 */
+	"................"			/* 70 */
+	"}..............."			/* 80 */
+	"_.e`~.tgh.bxdrpc"			/* 90 */
+	"qazwsui..kfv...j"			/* A0 */
+	"n..m...ol....y{."			/* B0 */
+	"................"			/* C0 */
+	"................"			/* D0 */
+	"................"			/* E0 */
+	"................"			/* F0 */
+};
+const char MzDisk::asciiCodeSjis80A[] =
+{
+	"　！”＃＄％＆’（）＊＋，－．／"	/* 20 */
+	"０１２３４５６７８９：；＜＝＞？"	/* 30 */
+	"＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯ"	/* 40 */
+	"ＰＱＲＳＴＵＶＷＸＹＺ［＼］↑←"	/* 50 */
+	"※※※※※※※※※※※※※※※※"	/* 60 */
+	"※※※※※※※※※※※※※※※※"	/* 70 */
+	"※┼※※※※※※※※※※※※※※"	/* 80 */
+	"※※※※※※※※※※※※※※β※"	/* 90 */
+	"※※※※※※※※※※※※※※｛※"	/* A0 */
+	"※※※※※※※※※※※※※※※※"	/* B0 */
+	"※※※※※※→※※※※├※└┐※"	/* C0 */
+	"┌┴┬┤※※※※※※※※※┘※※"	/* D0 */
+	"※※※※※※※※※※※※※＼／※"	/* E0 */
+	"※●※※※※×○※※◆￡↓│※π"	/* F0 */
+};
+
 //============================================================================
 // コンストラクタ
 //============================================================================
 MzDisk::MzDisk()
-:diskType(0)
+:mediaType(0)
+,diskType(0)
 ,bitmap(NULL)
 ,fileType(0)
 ,clusterSize(0)
@@ -71,11 +108,31 @@ int MzDisk::DiskType(void)
 
 std::string MzDisk::DiskTypeText(void)
 {
-	if(this->diskType == TYPE_2DD)
+	if(this->diskType == DISKTYPE_MZ2500_2DD)
 	{
-		return "2DD MZ-2500ディスク";
+		return "2D(80) MZ-2500ディスク";
 	}
-	return "2D MZ-80B/700/1500/2000/2200ディスク";
+	else if(this->diskType == DISKTYPE_MZ2500_2DD40)
+	{
+		return "2D(40) MZ-2500ディスク";
+	}
+	else if(this->diskType == DISKTYPE_MZ2500_2DD35)
+	{
+		return "2D(35) MZ-2500ディスク";
+	}
+	else if(this->diskType == DISKTYPE_MZ80B_2D35)
+	{
+		return "2D(35) MZ-80B/700/1500/2000/2200ディスク";
+	}
+	else if(this->diskType == DISKTYPE_MZ2000_2D40)
+	{
+		return "2D(40) MZ-2000/2200ディスク";
+	}
+	else if(this->diskType == DISKTYPE_MZ80A_2D35)
+	{
+		return "2D(35) MZ-80Aディスク";
+	}
+	return "ディスクタイプ不明";
 }
 
 //============================================================================
@@ -94,32 +151,37 @@ void MzDisk::Format(int type, int volumeNumber)
 {
 	if(type == DISKTYPE_MZ2500_2DD)
 	{
-		this->diskType = TYPE_2DD;
+		this->mediaType = TYPE_2DD;
 	}
 	else if(type == DISKTYPE_MZ2500_2DD40)
 	{
-		this->diskType = TYPE_2DD;
+		this->mediaType = TYPE_2DD;
 	}
 	else if(type == DISKTYPE_MZ2500_2DD35)
 	{
-		this->diskType = TYPE_2DD;
+		this->mediaType = TYPE_2DD;
 	}
 	else if(type == DISKTYPE_MZ80B_2D35)
 	{
-		this->diskType = TYPE_2D;
+		this->mediaType = TYPE_2D;
 	}
 	else if(type == DISKTYPE_MZ2000_2D40)
 	{
-		this->diskType = TYPE_2D;
+		this->mediaType = TYPE_2D;
+	}
+	else if(type == DISKTYPE_MZ80A_2D35)
+	{
+		this->mediaType = TYPE_2D;
 	}
 	else
 	{
 		return;
 	}
+	this->diskType = type;
 	// 物理フォーマット
-	this->image.Format(type, 0);//0xBF ^ 0xFF);
+	this->image.Format(this->mediaType, 0);//0xBF ^ 0xFF);
 	// 論理フォーマット
-	if(type == DISKTYPE_MZ80B_2D35 || type == DISKTYPE_MZ2000_2D40)
+	if(type == DISKTYPE_MZ80B_2D35 || type == DISKTYPE_MZ2000_2D40 || type == DISKTYPE_MZ80A_2D35)
 	{
 		// ディレクトリ
 		std::vector<unsigned char> buffer;
@@ -180,7 +242,7 @@ void MzDisk::Format(int type, int volumeNumber)
 		this->bitmap[5] = 0x04;
 		this->bitmap[255] = 0x00;
 	}
-	else if(type == DISKTYPE_MZ80B_2D35)
+	else if((type == DISKTYPE_MZ80B_2D35) || (type == DISKTYPE_MZ80A_2D35))
 	{
 		this->bitmap[0] = static_cast<unsigned char>(volumeNumber);
 		this->bitmap[1] = 0x30;
@@ -242,7 +304,6 @@ void MzDisk::Update(void)
 {
 	D88Image::Header header;
 	this->image.GetHeader(header);
-	std::vector<unsigned char> buffer;
 	this->bitmap.clear();
 	ReadSector(this->bitmap, 15, 1);
 	// ディスク情報格納
@@ -256,7 +317,47 @@ void MzDisk::Update(void)
 	}
 	this->clusterSize = this->sectorSize * (this->bitmap[255] + 1);
 	ReadDirectory();
-	this->diskType = header.diskType;
+	// タイプ判定
+	this->mediaType = header.diskType;
+	std::vector<unsigned char> buffer;
+	buffer.clear();
+	ReadSector(buffer, 0, 1);
+	IPL* ipl = reinterpret_cast<IPL*>(&buffer[0]);
+	if(this->mediaType == 0x00)
+	{
+		// 2D
+		if(trackMax == 70)
+		{
+			if(ipl->machine == 2)
+			{
+				this->diskType = DISKTYPE_MZ80A_2D35;
+			}
+			else
+			{
+				this->diskType = DISKTYPE_MZ80B_2D35;
+			}
+		}
+		else
+		{
+			this->diskType = DISKTYPE_MZ2000_2D40;
+		}
+	}
+	else
+	{
+		// 2DD
+		if(trackMax == 70)
+		{
+			this->diskType = DISKTYPE_MZ2500_2DD35;
+		}
+		else if(trackMax == 80)
+		{
+			this->diskType = DISKTYPE_MZ2500_2DD40;
+		}
+		else
+		{
+			this->diskType = DISKTYPE_MZ2500_2DD;
+		}
+	}
 }
 
 int MzDisk::Save(std::string path)
@@ -1170,7 +1271,7 @@ std::string MzDisk::ConvertText(std::string text)
 			result += text[i];
 			kanji = false;
 		}
-		else if(IsKanji(static_cast<unsigned char>(text[i])))
+		else if((this->diskType != DISKTYPE_MZ80A_2D35) && (IsKanji(static_cast<unsigned char>(text[i]))))
 		{
 			// 漢字の1バイト目
 			result += text[i];
@@ -1186,10 +1287,19 @@ std::string MzDisk::ConvertText(std::string text)
 			std::string ascii;
 			std::string sjis;
 			int asciiIndex = static_cast<unsigned char>(text[i]) - 0x20;
-			ascii.push_back(asciiCodeAnk[asciiIndex]);
 			int index = asciiIndex * 2;
-			sjis.push_back(asciiCodeSjis[index]);
-			sjis.push_back(asciiCodeSjis[index + 1]);
+			if(this->diskType == DISKTYPE_MZ80A_2D35)
+			{
+				ascii.push_back(asciiCodeAnk80A[asciiIndex]);
+				sjis.push_back(asciiCodeSjis80A[index]);
+				sjis.push_back(asciiCodeSjis80A[index + 1]);
+			}
+			else
+			{
+				ascii.push_back(asciiCodeAnk[asciiIndex]);
+				sjis.push_back(asciiCodeSjis[index]);
+				sjis.push_back(asciiCodeSjis[index + 1]);
+			}
 			if((ascii == ".") && (sjis == "※"))
 			{
 				result += "_";
@@ -1227,11 +1337,21 @@ std::string MzDisk::ConvertMzText(std::string text)
 		}
 		if(kanji == true)
 		{
-			size_t findIndex = std::string(asciiCodeSjis).find(word);
-			std::string a;
+//@@			std::string a;
 			size_t l = strlen(asciiCodeSjis);
-			a.push_back(asciiCodeSjis[findIndex]);
-			a.push_back(asciiCodeSjis[findIndex + 1]);
+			size_t findIndex;
+			if(this->diskType == DISKTYPE_MZ80A_2D35)
+			{
+				findIndex = std::string(asciiCodeSjis80A).find(word);
+				//a.push_back(asciiCodeSjis80A[findIndex]);
+				//a.push_back(asciiCodeSjis80A[findIndex + 1]);
+			}
+			else
+			{
+				findIndex = std::string(asciiCodeSjis).find(word);
+				//a.push_back(asciiCodeSjis[findIndex]);
+				//a.push_back(asciiCodeSjis[findIndex + 1]);
+			}
 			if(findIndex != std::string::npos)
 			{
 				// 全角文字が見つかった
@@ -1309,7 +1429,7 @@ int MzDisk::FindFile(std::string filename, int ignoreIndex)
 //============================================================================
 int MzDisk::GetType(void)
 {
-	return this->diskType;
+	return this->mediaType;
 }
 
 //============================================================================
@@ -1320,7 +1440,7 @@ int MzDisk::GetType(void)
 //============================================================================
 void MzDisk::ChangeType(int type)
 {
-	if(this->diskType == type)
+	if(this->mediaType == type)
 	{
 		return;
 	}
@@ -1336,7 +1456,7 @@ void MzDisk::ChangeType(int type)
 			++ trackMax;
 		}
 	}
-	this->diskType = diskType;
+	this->mediaType = diskType;
 }
 
 //============================================================================

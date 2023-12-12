@@ -22,7 +22,9 @@ IPLS09bKai対応のため65536バイトのファイル書き込みに対応し�
 また、65536バイト丁度のバイナリファイルをドロップする事でも未使用領域が設定されます。  
 
 ## ダウンロード
+https://github.com/kuran-kuran/MZDiskExplorer/releases
 
+### 古いバージョンはこちら
 https://github.com/kuran-kuran/MZDiskExplorer/tree/main/Download
 
 ## ファイル構成
