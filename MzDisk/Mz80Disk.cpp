@@ -87,7 +87,7 @@ void Mz80Disk::Format(int type, int volumeNumber)
 	{
 		return;
 	}
-	this->diskType = TYPE_2S;
+	this->diskType = D88Image::DISK_2S_35_128_16;
 	// 物理フォーマット
 	this->image.Format(type, 0x00);
 	// 論理フォーマット
@@ -351,11 +351,15 @@ int Mz80Disk::PutFile(std::string path, void* dirInfo, unsigned int mode, unsign
 		{
 			if(this->directory[i].mode != 0)
 			{
-				// ファイルネーム
-				if(strncmp(this->directory[i].filename, filename, strlen(filename)) == 0)
+				// ファイル名の長さが同じ?
+				if(strlen(this->directory[i].filename) == strlen(filename))
 				{
-					// 同じファイル名が存在する
-					return 5;
+					// ファイルネームが同じ?
+					if(strncmp(this->directory[i].filename, filename, strlen(filename)) == 0)
+					{
+						// 同じファイル名が存在する
+						return 5;
+					}
 				}
 			}
 		}

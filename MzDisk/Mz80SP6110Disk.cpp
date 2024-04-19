@@ -86,7 +86,7 @@ void Mz80SP6110Disk::Format(int type, int volumeNumber)
 {
 	if(type != DISKTYPE_MZ80_SP6110_2S)
 	{
-		this->diskType = TYPE_2S;
+		this->diskType = D88Image::DISK_2S_35_128_16;
 	}
 	this->diskType = TYPE_2S;
 	// 物理フォーマット
@@ -365,11 +365,15 @@ int Mz80SP6110Disk::PutFile(std::string path, void* dirInfo, unsigned int mode, 
 		{
 			if(this->directory[i].mode != 0)
 			{
-				// ファイルネーム
-				if(strncmp(this->directory[i].filename, filename, strlen(filename)) == 0)
+				// ファイル名の長さが同じ?
+				if(strlen(this->directory[i].filename) == strlen(filename))
 				{
-					// 同じファイル名が存在する
-					return 5;
+					// ファイルネームが同じ?
+					if(strncmp(this->directory[i].filename, filename, strlen(filename)) == 0)
+					{
+						// 同じファイル名が存在する
+						return 5;
+					}
 				}
 			}
 		}
