@@ -273,6 +273,10 @@ void EditFile::OnOK()
 		{
 			Attr |= 0x1;
 		}
+		else
+		{
+			Attr &= 0xFE;
+		}
 		ZeroMemory( temp, sizeof( temp ) );
 		size = m_Reserve.GetLine( 0, temp, 260 );
 		temp[size] = '\0';
@@ -342,7 +346,8 @@ void EditFile::OnOK()
 				break;
 			}
 		}
-		dir.attr = Attr;
+		dir.attr &= 0xFE;
+		dir.attr |= (Attr & 1);
 		dir.reserve = Reserve;
 		if(dir.mode == 4)
 		{
@@ -529,7 +534,8 @@ void EditFile::OnOK()
 				break;
 			}
 		}
-		dir.attr = Attr;
+		dir.attr &= 0xFE;
+		dir.attr |= (Attr & 1);
 		if(dir.mode == 4)
 		{
 			dir.size = FileSize / 32;

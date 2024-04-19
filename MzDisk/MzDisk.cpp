@@ -151,27 +151,27 @@ void MzDisk::Format(int type, int volumeNumber)
 {
 	if(type == DISKTYPE_MZ2500_2DD)
 	{
-		this->mediaType = TYPE_2DD;
+		this->mediaType = D88Image::DISK_2DD_80_256_16;
 	}
 	else if(type == DISKTYPE_MZ2500_2DD40)
 	{
-		this->mediaType = TYPE_2DD;
+		this->mediaType = D88Image::DISK_2DD_40_256_16;
 	}
 	else if(type == DISKTYPE_MZ2500_2DD35)
 	{
-		this->mediaType = TYPE_2DD;
+		this->mediaType = D88Image::DISK_2DD_35_256_16;
 	}
 	else if(type == DISKTYPE_MZ80B_2D35)
 	{
-		this->mediaType = TYPE_2D;
+		this->mediaType = D88Image::DISK_2D_35_256_16;
 	}
 	else if(type == DISKTYPE_MZ2000_2D40)
 	{
-		this->mediaType = TYPE_2D;
+		this->mediaType = D88Image::DISK_2D_40_256_16;
 	}
 	else if(type == DISKTYPE_MZ80A_2D35)
 	{
-		this->mediaType = TYPE_2D;
+		this->mediaType = D88Image::DISK_2D_35_256_16;
 	}
 	else
 	{
@@ -588,11 +588,15 @@ int MzDisk::PutFile(std::string path, void* dirInfo, unsigned int mode, unsigned
 		{
 			if(this->directory[i].mode != 0)
 			{
-				// ファイルネーム
-				if(strncmp(this->directory[i].filename, filename, strlen(filename)) == 0)
+				// ファイル名の長さが同じ?
+				if(strlen(this->directory[i].filename) == strlen(filename))
 				{
-					// 同じファイル名が存在する
-					return 5;
+					// ファイルネームが同じ?
+					if(strncmp(this->directory[i].filename, filename, strlen(filename)) == 0)
+					{
+						// 同じファイル名が存在する
+						return 5;
+					}
 				}
 			}
 		}
