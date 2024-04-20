@@ -4,7 +4,7 @@
 #include "D88Image.hpp"
 
 const int D88Image::diskTypeTable[] = {DISK_2DD, DISK_2DD, DISK_2DD, DISK_2D, DISK_2D, DISK_2S, DISK_2HD, DISK_2HD, DISK_2HD};
-const unsigned char D88Image::recordingDensityTable[] = {0x0, 0x0, 0x0, 0x40, 0x40, 0x40, 0x01, 0x01, 0x01};
+const unsigned char D88Image::recordingDensityTable[] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x40, 0x01, 0x01, 0x01};
 const int D88Image::trackTable[] = {160, 80, 70, 70, 80, 70, 154, 160, 160};
 const int D88Image::sectorCountTable[] = {16, 16, 16, 16, 16, 16, 8, 15, 18};
 const int D88Image::sectorSizeTable[] = {256, 256, 256, 256, 256, 128, 1024, 512, 512};
@@ -46,6 +46,14 @@ void D88Image::Load(const void* buffer, size_t bufferSize)
 			SectorImage sectorImage;
 			size_t sectorBufferOffset;
 			FindSectorData(sectorImage.sectorInfo, sectorBufferOffset, buffer, c, h, -1, sectorIndex);
+			if(this->diskImage.header.diskType == DISK_2D)
+			{
+				// 前バージョンで作った密度が不正な2Dディスクを修正する
+				if(sectorImage.sectorInfo.n == 1)
+				{
+					sectorImage.sectorInfo.recordingDensity = 0;
+				}
+			}
 			const unsigned char* imageBuffer = reinterpret_cast<const unsigned char*>(buffer);
 			std::copy(&imageBuffer[sectorBufferOffset], &imageBuffer[sectorBufferOffset] + sectorImage.sectorInfo.sizeOfData, std::back_inserter(sectorImage.sectorBuffer));
 			this->diskImage.trackData[track].sectorImage.push_back(sectorImage);
