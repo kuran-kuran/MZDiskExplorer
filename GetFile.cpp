@@ -63,6 +63,7 @@ BOOL cGetFile::OnInitDialog()
 	m_FileType.SetCurSel( SaveType );
 	cPath path;
 	path.SetPath( FileName );
+	path.AddExtName("");
 	ZeroMemory( ExtName, sizeof( ExtName ) );
 	if ( path.GetExtName() != 0 )
 	{
@@ -145,6 +146,11 @@ void cGetFile::OnSelchangeFiletype()
 	int size = m_Path.GetLine( 0, temp, 260 );
 	temp[size] = '\0';
 	path.SetPath( temp );
+	if ( 0 == SaveType )
+	{
+		// binÇÃèÍçáÇÕägí£éqÇÕMZë§ÇÃñºëOÇ»ÇÃÇ≈ñ≥ÇµÇ…Ç∑ÇÈ
+		path.AddExtName("");
+	}
 	select = m_FileType.GetCurSel();
 	if ( 0 == select )
 	{
