@@ -67,7 +67,8 @@ BOOL CMZDiskExplorerApp::InitInstance()
 	// 設定が保存される下のレジストリ キーを変更します。
 	// TODO: この文字列を、会社名または所属など適切なものに
 	// 変更してください。
-//	SetRegistryKey(_T("Local AppWizard-Generated Applications"));
+	SetRegistryKey(_T("MZDiskExplorer"));
+
 
 	LoadStdProfileSettings();  // 標準の INI ファイルのオプションをローﾄﾞします (MRU を含む)
 

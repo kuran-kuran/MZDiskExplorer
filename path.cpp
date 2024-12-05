@@ -91,6 +91,23 @@ void cPath::SetExtName( const char *extname )
 }
 
 //============================================================================
+//  拡張子追加
+//----------------------------------------------------------------------------
+// In  : extname = 拡張子
+// ex)
+// extname: bas
+// srcpath: name: test,     ext: bin
+// dstpath: name: test.bin, ext: bas
+//============================================================================
+void cPath::AddExtName( const char *extname )
+{
+	StrAdd( Name, sizeof(Name), "." );
+	StrAdd( Name, sizeof(Name), ExtName );
+	StrCopy( ExtName, strlen(ExtName), extname );
+	MakePath();
+}
+
+//============================================================================
 //  パス設定
 //----------------------------------------------------------------------------
 // In  : path = パス

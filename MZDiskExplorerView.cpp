@@ -204,6 +204,7 @@ void CMZDiskExplorerView::OnEditGetfile()
 				if ( 0x0D == filename[ i ] ) {
 					filename[ i ] = 0;
 				}
+/*
 				if ( '.' == filename[ i ] ) {
 					int j;
 					filename[ i ] = 0;
@@ -220,6 +221,7 @@ void CMZDiskExplorerView::OnEditGetfile()
 						}
 					}
 				}
+*/
 			}
 			// ダイアログ表示
 			cGetFile getfiledialog;
@@ -276,6 +278,7 @@ void CMZDiskExplorerView::OnEditGetfile()
 				if ( 0x0D == filename[ i ] ) {
 					filename[ i ] = 0;
 				}
+/*
 				if ( '.' == filename[ i ] ) {
 					int j;
 					filename[ i ] = 0;
@@ -292,6 +295,7 @@ void CMZDiskExplorerView::OnEditGetfile()
 						}
 					}
 				}
+*/
 			}
 			// ダイアログ表示
 			cGetFile getfiledialog;
@@ -344,6 +348,7 @@ void CMZDiskExplorerView::OnEditGetfile()
 				if ( 0x0D == filename[ i ] ) {
 					filename[ i ] = 0;
 				}
+/*
 				if ( '.' == filename[ i ] ) {
 					int j;
 					filename[ i ] = 0;
@@ -360,6 +365,7 @@ void CMZDiskExplorerView::OnEditGetfile()
 						}
 					}
 				}
+*/
 			}
 			// ダイアログ表示
 			cGetFile getfiledialog;

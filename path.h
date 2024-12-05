@@ -39,6 +39,7 @@ class cPath {
 		void SetDir( const char *dir );
 		void SetName( const char *name );
 		void SetExtName( const char *extname );
+		void AddExtName( const char *extname );
 		void SetPath( const char *path );
 		char* GetPath( unsigned int mode = PATH_MODE_ALL );
 		char* GetDrive( void );

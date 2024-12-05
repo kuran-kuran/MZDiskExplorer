@@ -28,6 +28,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	//}}AFX_MSG_MAP
 	ON_UPDATE_COMMAND_UI_RANGE(AFX_ID_VIEW_MINIMUM, AFX_ID_VIEW_MAXIMUM, OnUpdateViewStyles)
 	ON_COMMAND_RANGE(AFX_ID_VIEW_MINIMUM, AFX_ID_VIEW_MAXIMUM, OnViewStyle)
+	ON_WM_DESTROY()
 	ON_WM_CLOSE()
 END_MESSAGE_MAP()
 
@@ -109,9 +110,31 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
 	if( !CFrameWnd::PreCreateWindow(cs) )
 		return FALSE;
-	// TODO: この位置で CREATESTRUCT cs を修正して、Window クラスやスタイルを
-	//       修正してください。
 
+	// 前回のウィンドウサイズ取得
+	CWinApp* pApp = AfxGetApp();
+	int width = pApp->GetProfileInt(_T("Window"), _T("width"), 0);
+	int height = pApp->GetProfileInt(_T("Window"), _T("height"), 0);
+	// 前回のウィンドウサイズ取得が取れなかった場合はデフォルトサイズにする
+	if(width == 0)
+	{
+		width = GetSystemMetrics(SM_CXSCREEN) * 9 / 10;
+		if(width > 1450)
+		{
+			width = 1450;
+		}
+	}
+	if(height == 0)
+	{
+		height = GetSystemMetrics(SM_CYSCREEN) * 9 / 10;
+		if(height > 800)
+		{
+			height = 800;
+		}
+	}
+	// 起動時の表示サイズ調整
+	cs.cx = width;
+	cs.cy = height;
 	return TRUE;
 }
 
@@ -276,4 +299,18 @@ void CMainFrame::OnClose()
 	{
 		CFrameWnd::OnClose();
 	}
+}
+
+void CMainFrame::OnDestroy() 
+{
+	// ウインドウサイズ保存
+	WINDOWPLACEMENT wpl;
+	GetWindowPlacement(&wpl);
+	CWinApp* pApp = AfxGetApp();
+	int width = wpl.rcNormalPosition.right - wpl.rcNormalPosition.left;
+	int height = wpl.rcNormalPosition.bottom - wpl.rcNormalPosition.top;
+	pApp->WriteProfileInt(_T("Window"), _T("width"), width);
+	pApp->WriteProfileInt(_T("Window"), _T("height"), height);
+
+	CFrameWnd::OnDestroy();
 }
