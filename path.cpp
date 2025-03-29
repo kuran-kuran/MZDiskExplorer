@@ -101,9 +101,12 @@ void cPath::SetExtName( const char *extname )
 //============================================================================
 void cPath::AddExtName( const char *extname )
 {
-	StrAdd( Name, sizeof(Name), "." );
-	StrAdd( Name, sizeof(Name), ExtName );
-	StrCopy( ExtName, strlen(ExtName), extname );
+	if(strlen(ExtName) > 0)
+	{
+		StrAdd( Name, sizeof(Name), "." );
+		StrAdd( Name, sizeof(Name), ExtName );
+		StrCopy( ExtName, strlen(ExtName), extname );
+	}
 	MakePath();
 }
 
