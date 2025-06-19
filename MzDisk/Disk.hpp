@@ -25,7 +25,10 @@ public:
 	static int DiskType(const std::vector<unsigned char>& buffer);
 	void ExportBeta(std::string path);
 	void ImportBeta(std::string path);
+	void ImportBetaBuffer(std::vector<unsigned char>& betaBuffer);
+	void ExportBetaBuffer(std::vector<unsigned char>& betaBuffer);
 	int GetTrackCount(void);
+	bool IsRom(void);
 	virtual int DiskType(void) = 0;
 	virtual std::string DiskTypeText(void) = 0;
 	virtual void Format(int type, int volumeNumber) = 0;
@@ -66,8 +69,10 @@ protected:
 	bool IsNotAvailableFileCharacter(char character);
 	D88Image image;
 	int sectorSize;
+	size_t betaSize;
 	int cylinderCount;
 	int hedCount;
+	bool isRom;
 private:
 	static int DiskType(D88Image& image);
 };

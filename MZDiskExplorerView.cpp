@@ -228,7 +228,7 @@ void CMZDiskExplorerView::OnEditGetfile()
 			cPath path;
 			int total = pDoc->MzDiskClass->GetAllBlockSize() * pDoc->MzDiskClass->GetClusterSize();
 			std::string name = filename;
-			if(total < 655360)
+			if(total < 655360 || !pDoc->MzDiskClass->IsRom())
 			{
 				name = pDoc->MzDiskClass->ConvertText(filename);
 			}

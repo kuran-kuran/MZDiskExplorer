@@ -236,14 +236,33 @@ void CMZDiskExplorerDoc::Serialize(CArchive& ar)
 		if ( MzDiskClass == NULL ) {
 			return;
 		}
-		std::vector<unsigned char> writeBuffer;
-		MzDiskClass->Save( writeBuffer );
-		// イメージファイル書き込み
-		CFile *file;
-		file = ar.GetFile();
+		CFile *file = ar.GetFile();
 		ar.Flush();
-		ar.Write( &writeBuffer[0], static_cast<UINT>(writeBuffer.size()) );
-		isUpdated = false;
+		FilePath = file->GetFilePath();
+		cPath path;
+		path.SetPath( FilePath.GetBuffer( 260 ) );
+		if (0 == _stricmp( path.GetExtName(), "rom" ))
+		{
+			std::vector<unsigned char> writeBuffer;
+			MzDiskClass->ExportBetaBuffer(writeBuffer);
+			// イメージファイル書き込み
+			CFile *file;
+			file = ar.GetFile();
+			ar.Flush();
+			ar.Write( &writeBuffer[0], static_cast<UINT>(writeBuffer.size()) );
+			isUpdated = false;
+		}
+		else
+		{
+			std::vector<unsigned char> writeBuffer;
+			MzDiskClass->Save( writeBuffer );
+			// イメージファイル書き込み
+			CFile *file;
+			file = ar.GetFile();
+			ar.Flush();
+			ar.Write( &writeBuffer[0], static_cast<UINT>(writeBuffer.size()) );
+			isUpdated = false;
+		}
 	}
 	else
 	{
@@ -287,6 +306,22 @@ void CMZDiskExplorerDoc::Serialize(CArchive& ar)
 			}
 			MzDiskClass->Load( readBuffer );
 			Update();
+		} else if ( 0 == _stricmp( path.GetExtName(), "rom" ) ) {
+			//@@ sasi.rom
+			if(MzDiskClass != NULL)
+			{
+				delete MzDiskClass;
+				MzDiskClass = NULL;
+			}
+			MzDiskClass = new MzDisk;
+			MzDiskClass->Format( MzDisk::DISKTYPE_MZ2500_2DD, 1 );
+			UINT length = static_cast<UINT>(file->GetLength());
+			std::vector<unsigned char> readBuffer;
+			readBuffer.resize(length);
+			file->Read( &readBuffer[0], length );
+			MzDiskClass->ImportBetaBuffer(readBuffer);
+			Update();
+			isUpdated = true;
 		} else {
 			CTreeCtrl* tree;
 			tree = &LeftView->GetTreeCtrl();
@@ -575,7 +610,7 @@ int CMZDiskExplorerDoc::MakeFileList( int dirsector )
 			}
 			// ファイル名
 			std::string filename = work;
-			if(total < 655360)
+			if(total < 655360 || !MzDiskClass->IsRom())
 			{
 				filename = MzDiskClass->ConvertText(work);
 			}
