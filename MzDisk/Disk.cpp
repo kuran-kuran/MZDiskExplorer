@@ -8,6 +8,10 @@
 Disk::Disk()
 :image()
 ,sectorSize(0)
+,betaSize(0)
+,cylinderCount(0)
+,hedCount(0)
+,isRom(false)
 {
 }
 
@@ -110,6 +114,7 @@ void Disk::ImportBeta(std::string path)
 	size_t size = file.GetBufferSize();
 	std::vector<unsigned char> betaBuffer;
 	file.GetBuffer(betaBuffer);
+	this->betaSize = betaBuffer.size();
 	int diskType = DiskType();
 	D88Image::Header header;
 	this->image.GetHeader(header);
@@ -169,6 +174,73 @@ void Disk::ImportBeta(std::string path)
 	Update();
 }
 
+//@@
+void Disk::ImportBetaBuffer(std::vector<unsigned char>& betaBuffer)
+{
+	this->betaSize = betaBuffer.size();
+	this->isRom = true;
+	D88Image::Header header;
+	this->image.GetHeader(header);
+	int trackCount = static_cast<int>(this->betaSize / 4096);
+	int cylinderMax = trackCount / 2;
+	D88Image::SectorInfo sectorInfo;
+	std::vector<unsigned char> sectorBuffer;
+	size_t betaIndex = 0;
+	for(int c = 0; c < cylinderMax; ++ c)
+	{
+		for(int h = 0; h < 2; ++ h)
+		{
+			for(int r = 1; r <= 16; ++ r)
+			{
+				sectorBuffer.clear();
+				int rest = static_cast<int>(this->betaSize) - static_cast<int>(betaIndex);
+				if(rest > this->sectorSize)
+				{
+					rest = this->sectorSize;
+				}
+				if(betaBuffer.size() > betaIndex)
+				{
+					unsigned char* source = reinterpret_cast<unsigned char*>(&betaBuffer[betaIndex]);
+					std::copy(source, source + rest, std::back_inserter(sectorBuffer));
+					if(sectorBuffer.size() < this->sectorSize)
+					{
+						sectorBuffer.resize(this->sectorSize, 0);
+					}
+					this->image.GetSectorInfo(sectorInfo, c, 1 - h, r);
+					ReverseBuffer(sectorBuffer);
+					this->image.WriteSector(sectorInfo, sectorBuffer, c, 1 - h, r);
+				}
+				betaIndex += this->sectorSize;
+			}
+		}
+	}
+	Update();
+}
+
+void Disk::ExportBetaBuffer(std::vector<unsigned char>& betaBuffer)
+{
+	D88Image::Header header;
+	this->image.GetHeader(header);
+	int trackCount = static_cast<int>(this->betaSize / 4096);
+	int cylinderMax = trackCount / 2;
+	betaBuffer.clear();
+	for(int c = 0; c < cylinderMax; ++ c)
+	{
+		for(int h = 0; h < 2; ++ h)
+		{
+			for(int r = 1; r <= 16; ++ r)
+			{
+				D88Image::SectorInfo sectorInfo;
+				std::vector<unsigned char> sectorBuffer;
+				this->image.GetSectorInfo(sectorInfo, c, 1 - h, r);
+				this->image.ReadSector(sectorInfo, sectorBuffer, c, 1 - h, r);
+				ReverseBuffer(sectorBuffer);
+				betaBuffer.insert(betaBuffer.end(), sectorBuffer.begin(), sectorBuffer.end());
+			}
+		}
+	}
+}
+
 int Disk::GetTrackCount(void)
 {
 	D88Image::Header header;
@@ -183,6 +255,11 @@ int Disk::GetTrackCount(void)
 		}
 	}
 	return trackCount;
+}
+
+bool Disk::IsRom(void)
+{
+	return this->isRom;
 }
 
 void Disk::ReverseBuffer(std::vector<unsigned char>& buffer)

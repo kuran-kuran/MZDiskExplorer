@@ -1304,14 +1304,15 @@ std::string MzDisk::ConvertText(std::string text)
 				sjis.push_back(asciiCodeSjis[index]);
 				sjis.push_back(asciiCodeSjis[index + 1]);
 			}
-			if((ascii == ".") && (sjis == "※"))
+			if((text[i] == '_') || (ascii == ".") && (sjis == "※"))
 			{
 				result += "_";
 			}
-			else if((ascii == ".") && (sjis != "※"))
-			{
-				result += sjis;
-			}
+// ファイル取り出し時に拡張子があると例外エラーになるので廃止
+//			else if((ascii == ".") && (sjis != "※"))
+//			{
+//				result += sjis;
+//			}
 			else
 			{
 				result += ascii;
@@ -1321,7 +1322,7 @@ std::string MzDisk::ConvertText(std::string text)
 	return result;
 }
 
-// Windowsの文字をで使える文字に変換する
+// Windowsの文字をMZで使える文字に変換する
 std::string MzDisk::ConvertMzText(std::string text)
 {
 	std::string result = "";

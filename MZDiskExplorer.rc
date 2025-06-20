@@ -630,7 +630,7 @@ END
 
 STRINGTABLE
 BEGIN
-    IDR_MAINFRAME           "MZDiskExplorer\n\nMZDisk\nMZDisk Ì§²Ù (*.d88)\n.d88\nMZDiskExplorer.Document\nMZDisk Document"
+    IDR_MAINFRAME           "MZDiskExplorer\n\nMZDisk\nMZDisk Ì§²Ù (*.d88;*.rom)\n.d88;.rom\nMZDiskExplorer.Document\nMZDisk Document"
 END
 
 STRINGTABLE
