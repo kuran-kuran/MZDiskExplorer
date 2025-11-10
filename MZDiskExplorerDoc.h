@@ -89,6 +89,8 @@ public:
 	afx_msg void OnUpdateEditEdit(CCmdUI* pCmdUI);
 	afx_msg void OnChangeType();
 	afx_msg void OnUpdateChangeType(CCmdUI* pCmdUI);
+	afx_msg void OnEditIplselector();
+	afx_msg void OnUpdateEditIplselector(CCmdUI* pCmdUI);
 };
 
 /////////////////////////////////////////////////////////////////////////////

@@ -75,6 +75,7 @@ public:
 	std::string ConvertMzText(std::string text);
 	int GetType(void);
 	void ChangeType(int type);
+	void PutIplSelector(std::string path);
 	int FindFile(std::string filename, int ignoreIndex);
 	void SetDirSector(int sector);
 	int GetDirSector(void);

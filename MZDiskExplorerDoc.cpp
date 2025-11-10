@@ -57,6 +57,8 @@ BEGIN_MESSAGE_MAP(CMZDiskExplorerDoc, CDocument)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_EDIT, &CMZDiskExplorerDoc::OnUpdateEditEdit)
 	ON_COMMAND(ID_CHANGE_TYPE, &CMZDiskExplorerDoc::OnChangeType)
 	ON_UPDATE_COMMAND_UI(ID_CHANGE_TYPE, &CMZDiskExplorerDoc::OnUpdateChangeType)
+	ON_COMMAND(ID_EDIT_IPLSELECTOR, &CMZDiskExplorerDoc::OnEditIplselector)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_IPLSELECTOR, &CMZDiskExplorerDoc::OnUpdateEditIplselector)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1655,5 +1657,39 @@ void CMZDiskExplorerDoc::OnUpdateChangeType(CCmdUI* pCmdUI)
 	else
 	{
 		pCmdUI->Enable( FALSE );
+	}
+}
+
+
+void CMZDiskExplorerDoc::OnEditIplselector()
+{
+	// TODO: ここにコマンド ハンドラー コードを追加します。
+	char path[MAX_PATH];
+	GetModuleFileNameA(NULL, path, MAX_PATH);
+	std::string iplselPath(path);
+	size_t pos = iplselPath.find_last_of("\\/");
+	if (pos != std::string::npos)
+	{
+		iplselPath = iplselPath.substr(0, pos);
+	}
+	else
+	{
+		iplselPath = "";
+	}
+	iplselPath += "\\IPLSEL09.bin";
+	MzDiskClass->PutIplSelector(iplselPath);
+	MessageBox(NULL, "IPLセレクタを登録しました", "IPLセレクタ", MB_OK);
+}
+
+void CMZDiskExplorerDoc::OnUpdateEditIplselector(CCmdUI* pCmdUI)
+{
+	// TODO:ここにコマンド更新 UI ハンドラー コードを追加します。
+	if ((1 == ImageInit) && (MzDiskClass != NULL) && (MzDiskClass->DiskType() == Disk::MZ2000))
+	{
+		pCmdUI->Enable(TRUE);
+	}
+	else
+	{
+		pCmdUI->Enable(FALSE);
 	}
 }

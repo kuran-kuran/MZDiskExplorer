@@ -64,6 +64,7 @@ public:
 	virtual int FindFile(std::string filename, int ignoreIndex) = 0;
 	virtual int GetType(void) = 0;;
 	virtual void ChangeType(int type) = 0;
+	virtual void PutIplSelector(std::string path) = 0;
 protected:
 	void ReverseBuffer(std::vector<unsigned char>& buffer);
 	bool IsNotAvailableFileCharacter(char character);

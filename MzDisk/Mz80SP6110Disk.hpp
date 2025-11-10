@@ -103,6 +103,7 @@ public:
 	//	void DisplayDir(void);
 	int GetType(void);
 	void ChangeType(int type);
+	void PutIplSelector(std::string path);
 private:
 	unsigned char diskType;
 	std::vector<unsigned char> bitmap;
