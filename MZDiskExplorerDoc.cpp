@@ -1676,15 +1676,29 @@ void CMZDiskExplorerDoc::OnEditIplselector()
 	{
 		iplselPath = "";
 	}
-	iplselPath += "\\IPLSEL09.bin";
-	MzDiskClass->PutIplSelector(iplselPath);
-	MessageBox(NULL, "IPLセレクタを登録しました", "IPLセレクタ", MB_OK);
+	if ((1 == ImageInit) && (MzDiskClass != NULL))
+	{
+		if (MzDiskClass->DiskType() == Disk::MZ2000)
+		{
+			iplselPath += "\\IPLSEL09.bin";
+		}
+		else if (MzDiskClass->DiskType() == Disk::MZ80K_SP6010)
+		{
+			iplselPath += "\\IPLSKC.bin";
+		}
+		MzDiskClass->PutIplSelector(iplselPath);
+		MessageBox(NULL, "IPLセレクタを登録しました", "IPLセレクタ", MB_OK);
+	}
+	else
+	{
+		MessageBox(NULL, "IPLセレクタの登録に失敗しました", "IPLセレクタ", MB_OK);
+	}
 }
 
 void CMZDiskExplorerDoc::OnUpdateEditIplselector(CCmdUI* pCmdUI)
 {
 	// TODO:ここにコマンド更新 UI ハンドラー コードを追加します。
-	if ((1 == ImageInit) && (MzDiskClass != NULL) && (MzDiskClass->DiskType() == Disk::MZ2000))
+	if ((1 == ImageInit) && (MzDiskClass != NULL) && ((MzDiskClass->DiskType() == Disk::MZ80K_SP6010) || (MzDiskClass->DiskType() == Disk::MZ2000)))
 	{
 		pCmdUI->Enable(TRUE);
 	}
