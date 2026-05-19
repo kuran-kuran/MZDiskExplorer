@@ -31,7 +31,7 @@ const char MzDisk::asciiCodeSjis[] =
 	"@Ih”“•fij–{C|D^"	/* 20 */
 	"‚O‚P‚Q‚R‚S‚T‚U‚V‚W‚XFGƒ„H"	/* 30 */
 	"—‚`‚a‚b‚c‚d‚e‚f‚g‚h‚i‚j‚k‚l‚m‚n"	/* 40 */
-	"‚o‚p‚q‚r‚s‚t‚u‚v‚w‚x‚ym_nOP"	/* 50 */
+	"‚o‚p‚q‚r‚s‚t‚u‚v‚w‚x‚ymnOP"	/* 50 */
 	"L‚‚‚‚ƒ‚„‚…‚†‚‡‚ˆ‚‰‚Š‚‹‚Œ‚‚‚"	/* 60 */
 	"‚‚‘‚’‚“‚”‚•‚–‚—‚˜‚™‚šobp`¦"	/* 70 */
 	"¦«ª¨©¦¦¦¦¦¦¦¦¦¦¦"	/* 80 */
@@ -42,6 +42,42 @@ const char MzDisk::asciiCodeSjis[] =
 	"ƒ~ƒ€ƒƒ‚ƒ„ƒ†ƒˆƒ‰ƒŠƒ‹ƒŒƒƒƒ“JK"	/* D0 */
 	"‚y‚`‚a‚b‚c‚d‚e‚f‚g‚h‚i‚j‚k‚l‚m‚n"	/* E0 */
 	"‚O‚P‚Q‚R‚S‚T‚U‚V‚W‚X‚o‚p‚q‚r‚sƒÎ"	/* F0 */
+};
+
+/* MZ-2500 */
+const char MzDisk::asciiCodeAnk2500[] =
+{
+	" !\x22#$%&'()*+,-./"		/* 20 */
+	"0123456789:;<=>?"			/* 30 */
+	"@ABCDEFGHIJKLMNO"			/* 40 */
+	"PQRSTUVWXYZ[\\]^_"			/* 50 */
+	"`abcdefghijklmno"			/* 60 */
+	"pqrstuvwxyz{|}~."			/* 70 */
+	"................"			/* 80 */
+	"................"			/* 90 */
+	" ¡¢£¤¥¦§¨©ª«ÔÕÖ¯"			/* A0 */
+	"°±²³´µ¶·¸¹º»¼½¾¿"			/* B0 */
+	"ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏ"			/* C0 */
+	"ĞÑÒÓÔÕÖ×ØÙÚÛÜİŞß"			/* D0 */
+	"................"			/* E0 */
+	"................"			/* F0 */
+};
+const char MzDisk::asciiCodeSjis2500[] =
+{
+	"@Ih”“•fij–{C|D^"	/* 20 */
+	"‚O‚P‚Q‚R‚S‚T‚U‚V‚W‚XFGƒ„H"	/* 30 */
+	"—‚`‚a‚b‚c‚d‚e‚f‚g‚h‚i‚j‚k‚l‚m‚n"	/* 40 */
+	"‚o‚p‚q‚r‚s‚t‚u‚v‚w‚x‚ymnOQ"	/* 50 */
+	"M‚‚‚‚ƒ‚„‚…‚†‚‡‚ˆ‚‰‚Š‚‹‚Œ‚‚‚"	/* 60 */
+	"‚‚‘‚’‚“‚”‚•‚–‚—‚˜‚™‚šobp`¦"	/* 70 */
+	"¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦"	/* 80 */
+	"„¨„¦„§„¥¦„Ÿ„ ¦„¡„¢„¤„£¦¦¦¦"	/* 90 */
+	"@Buv‚v‚wƒ’ƒ@ƒBƒDƒFƒHƒƒƒ…ƒ‡ƒb"	/* A0 */
+	"[ƒAƒCƒEƒGƒIƒJƒLƒNƒPƒRƒTƒVƒXƒZƒ\"	/* B0 */
+	"ƒ^ƒ`ƒcƒeƒgƒiƒjƒkƒlƒmƒnƒqƒtƒwƒzƒ}"	/* C0 */
+	"ƒ~ƒ€ƒƒ‚ƒ„ƒ†ƒˆƒ‰ƒŠƒ‹ƒŒƒƒƒ“JK"	/* D0 */
+	"„ª„º„¹„¼¦¦¦¦¦¦¦¦œZ^_"	/* E0 */
+	"~‰~”NŒ“ú•ª•b§s‹æ’¬‘ºl¦¦"	/* F0 */
 };
 
 /* MZ-80A */
@@ -90,6 +126,7 @@ MzDisk::MzDisk()
 ,fileType(0)
 ,clusterSize(0)
 ,dirSector(16)
+,fontType(0)
 {
 	this->sectorSize = 256;
 }
@@ -1243,6 +1280,19 @@ void MzDisk::SetBitmap(int start, int length)
 }
 
 //============================================================================
+//  ƒrƒbƒgƒ}ƒbƒv‚Ìƒrƒbƒg‚ğæ“¾‚·‚é
+//----------------------------------------------------------------------------
+// In  : start = ˆÊ’u
+//     : length = ’·‚³ (length ƒrƒbƒg)
+// Out : ‚È‚µ
+//============================================================================
+int MzDisk::GetBitmapBit(int index)
+{
+	index += 48;
+	return (this->bitmap[index / 8] >> (index % 8)) & 1;
+}
+
+//============================================================================
 //  ƒrƒbƒgƒ}ƒbƒv‚ğŠJ•ú‚·‚é
 //----------------------------------------------------------------------------
 // In  : start = ˆÊ’u
@@ -1300,9 +1350,18 @@ std::string MzDisk::ConvertText(std::string text)
 			}
 			else
 			{
-				ascii.push_back(asciiCodeAnk[asciiIndex]);
-				sjis.push_back(asciiCodeSjis[index]);
-				sjis.push_back(asciiCodeSjis[index + 1]);
+				if (fontType == 0)
+				{
+					ascii.push_back(asciiCodeAnk[asciiIndex]);
+					sjis.push_back(asciiCodeSjis[index]);
+					sjis.push_back(asciiCodeSjis[index + 1]);
+				}
+				else
+				{
+					ascii.push_back(asciiCodeAnk2500[asciiIndex]);
+					sjis.push_back(asciiCodeSjis2500[index]);
+					sjis.push_back(asciiCodeSjis2500[index + 1]);
+				}
 			}
 			if((text[i] == '_') || (ascii == ".") && (sjis == "¦"))
 			{
@@ -2052,4 +2111,55 @@ void MzDisk::WriteSector(std::vector<unsigned char>& buffer, int sector, int num
 		ReverseBuffer(writeBuffer);
 		this->image.WriteSector(sectorInfo, writeBuffer, c, h, r);
 	}
+}
+
+//============================================================================
+//  ƒfƒBƒXƒNƒTƒCƒY‚ğk¬‚·‚é
+//----------------------------------------------------------------------------
+// 640KBƒfƒBƒXƒN‚ğ320KB‚Ék¬‚µ‚Ü‚·
+//============================================================================
+bool MzDisk::Shrink640to320(void)
+{
+	for (int i = 640; i < 1280; ++i)
+	{
+		int bit = GetBitmapBit(i);
+		if (bit == 1)
+		{
+			return false;
+		}
+	}
+	std::vector<unsigned char> bitmap(249 * 8, 0);
+	for (int i = 0; i < 640; ++i)
+	{
+		int bit = GetBitmapBit(i);
+		if (bit == 1)
+		{
+			bitmap[i] = 1;
+		}
+	}
+	std::vector<unsigned char> backup320kb;
+	ReadSector(backup320kb, 0, 1280);
+	Format(DISKTYPE_MZ2500_2DD40, 1);
+	WriteSector(backup320kb, 0, 1280);
+	ReadSector(backup320kb, 15, 1);
+	DelBitmap(0, 249 * 8);
+	for(int i = 0; i < 640; ++ i)
+	{
+		if(bitmap[i] == 1)
+		{
+			int newIndex = i * 2;
+			SetBitmap(newIndex, 2);
+		}
+	}
+	return true;
+}
+
+//============================================================================
+//  ƒtƒHƒ“ƒgƒ^ƒCƒvİ’è
+//----------------------------------------------------------------------------
+// MZ-80K‚Å‚Í–¢g—p
+//============================================================================
+void MzDisk::SetFontType(int type)
+{
+	fontType = type;
 }

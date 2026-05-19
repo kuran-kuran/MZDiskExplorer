@@ -47,6 +47,7 @@ public:
 	int Machine;
 	CString FilePath;
 	bool isUpdated;
+	int fontType; // 0:MZ-2000/80B 1:MZ-2500
 	virtual ~CMZDiskExplorerDoc();
 	int MakeFileList( int dirsector );
 	int MakeTree( int dirsector, HTREEITEM parenthandle );
@@ -91,6 +92,12 @@ public:
 	afx_msg void OnUpdateChangeType(CCmdUI* pCmdUI);
 	afx_msg void OnEditIplselector();
 	afx_msg void OnUpdateEditIplselector(CCmdUI* pCmdUI);
+	afx_msg void OnEditShrink640to320();
+	afx_msg void OnUpdateShrink640to320(CCmdUI* pCmdUI);
+	afx_msg void OnEditFontMz2000_80B();
+	afx_msg void OnUpdateFontMz2000_80B(CCmdUI* pCmdUI);
+	afx_msg void OnEditFontMz2500();
+	afx_msg void OnUpdateFontMz2500(CCmdUI* pCmdUI);
 };
 
 /////////////////////////////////////////////////////////////////////////////

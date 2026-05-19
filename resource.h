@@ -61,6 +61,12 @@
 #define ID_CHANGE_TYPE                  32790
 #define ID_32791                        32791
 #define ID_EDIT_IPLSELECTOR             32792
+#define ID_32793                        32793
+#define ID_SHRINK640TO320               32794
+#define ID_32795                        32795
+#define ID_32796                        32796
+#define ID_FONT_MZ2000_80B              32797
+#define ID_FONT_MZ2500                  32798
 #define ID_STATUSBAR                    57345
 #define ID_INDICATOR_SIZE               59143
 
@@ -70,7 +76,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        148
-#define _APS_NEXT_COMMAND_VALUE         32793
+#define _APS_NEXT_COMMAND_VALUE         32799
 #define _APS_NEXT_CONTROL_VALUE         1027
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

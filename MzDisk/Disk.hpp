@@ -65,6 +65,8 @@ public:
 	virtual int GetType(void) = 0;;
 	virtual void ChangeType(int type) = 0;
 	virtual void PutIplSelector(std::string path) = 0;
+	virtual bool Shrink640to320(void) = 0;
+	virtual void SetFontType(int fontType) = 0;
 protected:
 	void ReverseBuffer(std::vector<unsigned char>& buffer);
 	bool IsNotAvailableFileCharacter(char character);

@@ -104,6 +104,8 @@ public:
 	int GetType(void);
 	void ChangeType(int type);
 	void PutIplSelector(std::string path);
+	bool Shrink640to320(void);
+	void SetFontType(int type);
 private:
 	unsigned char diskType;
 	std::vector<unsigned char> bitmap;

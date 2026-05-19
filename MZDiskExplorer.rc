@@ -143,11 +143,14 @@ BEGIN
         MENUITEM "ºΩ√—Ãﬂ€∏ﬁ◊—ìoò^(MZ-80KÇÃÇ›)",     ID_EDIT_PUTSYSTEM
         MENUITEM "IPLæ⁄∏¿ìoò^",                   ID_EDIT_IPLSELECTOR
         MENUITEM "√ﬁ®Ω∏¿≤Ãﬂïœä∑",                 ID_CHANGE_TYPE
+        MENUITEM "√ﬁ®Ω∏ª≤Ωﬁèkè¨ 640KBÅ®320KB",     ID_SHRINK640TO320
     END
     POPUP "ï\é¶(&V)"
     BEGIN
         MENUITEM "¬∞Ÿ  ﬁ∞(&T)",                 ID_VIEW_TOOLBAR
         MENUITEM "Ω√∞¿Ω  ﬁ∞(&S)",               ID_VIEW_STATUS_BAR
+        MENUITEM "Ã´›ƒï\é¶ MZ-2000/80B",          ID_FONT_MZ2000_80B
+        MENUITEM "Ã´›ƒï\é¶ MZ-2500",              ID_FONT_MZ2500
     END
     POPUP "ÕŸÃﬂ(&H)"
     BEGIN

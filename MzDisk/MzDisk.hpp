@@ -106,6 +106,7 @@ public:
 	int GetBitmap(void);
 	int GetBitmapSerial(int length);
 	void SetBitmap(int start, int length);
+	int GetBitmapBit(int index);
 	void DelBitmap(int start, int length);
 	std::string ConvertText(std::string text);
 	std::string ConvertMzText(std::string text);
@@ -114,6 +115,8 @@ public:
 	int GetType(void);
 	void ChangeType(int type);
 	void PutIplSelector(std::string path);
+	bool Shrink640to320(void);
+	void SetFontType(int type);
 private:
 	unsigned char mediaType;
 	int diskType;
@@ -122,8 +125,11 @@ private:
 	int fileType;
 	int clusterSize;
 	int dirSector;
+	int fontType;
 	static const char asciiCodeAnk[];
 	static const char asciiCodeSjis[];
+	static const char asciiCodeAnk2500[];
+	static const char asciiCodeSjis2500[];
 	static const char asciiCodeAnk80A[];
 	static const char asciiCodeSjis80A[];
 	MzDisk(MzDisk&);

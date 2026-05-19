@@ -59,6 +59,12 @@ BEGIN_MESSAGE_MAP(CMZDiskExplorerDoc, CDocument)
 	ON_UPDATE_COMMAND_UI(ID_CHANGE_TYPE, &CMZDiskExplorerDoc::OnUpdateChangeType)
 	ON_COMMAND(ID_EDIT_IPLSELECTOR, &CMZDiskExplorerDoc::OnEditIplselector)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_IPLSELECTOR, &CMZDiskExplorerDoc::OnUpdateEditIplselector)
+	ON_COMMAND(ID_SHRINK640TO320, &CMZDiskExplorerDoc::OnEditShrink640to320)
+	ON_UPDATE_COMMAND_UI(ID_SHRINK640TO320, &CMZDiskExplorerDoc::OnUpdateShrink640to320)
+	ON_COMMAND(ID_FONT_MZ2000_80B, &CMZDiskExplorerDoc::OnEditFontMz2000_80B)
+	ON_UPDATE_COMMAND_UI(ID_FONT_MZ2000_80B, &CMZDiskExplorerDoc::OnUpdateFontMz2000_80B)
+	ON_COMMAND(ID_FONT_MZ2500, &CMZDiskExplorerDoc::OnEditFontMz2500)
+	ON_UPDATE_COMMAND_UI(ID_FONT_MZ2500, &CMZDiskExplorerDoc::OnUpdateFontMz2500)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -77,6 +83,7 @@ CMZDiskExplorerDoc::CMZDiskExplorerDoc()
 ,FilePath()
 ,FirstInit(1)
 ,isUpdated(false)
+,fontType(0)
 {
 	// TODO: この位置に１度だけ呼ばれる構築用のコードを追加してください。
 }
@@ -1698,7 +1705,86 @@ void CMZDiskExplorerDoc::OnEditIplselector()
 void CMZDiskExplorerDoc::OnUpdateEditIplselector(CCmdUI* pCmdUI)
 {
 	// TODO:ここにコマンド更新 UI ハンドラー コードを追加します。
-	if ((1 == ImageInit) && (MzDiskClass != NULL) && ((MzDiskClass->DiskType() == Disk::MZ80K_SP6010) || (MzDiskClass->DiskType() == Disk::MZ2000)))
+	if ((1 == ImageInit) && (MzDiskClass != NULL) && (MzDiskClass->DiskType() == Disk::MZ2000))
+	{
+		pCmdUI->Enable(TRUE);
+	}
+	else
+	{
+		pCmdUI->Enable(FALSE);
+	}
+}
+
+void CMZDiskExplorerDoc::OnEditShrink640to320()
+{
+	bool result = MzDiskClass->Shrink640to320();
+	if(result == true)
+	{
+		MessageBox(NULL, "ディスクの縮小が成功しました", "ディスクの縮小", MB_OK);
+	}
+	else
+	{
+		MessageBox(NULL, "ディスクの縮小が失敗しました", "ディスクの縮小", MB_OK);
+	}
+	Update();
+	isUpdated = true;
+}
+
+void CMZDiskExplorerDoc::OnUpdateShrink640to320(CCmdUI* pCmdUI)
+{
+	// TODO:ここにコマンド更新 UI ハンドラー コードを追加します。
+	int total = 0;
+	if ((1 == ImageInit) && (MzDiskClass != NULL)) {
+		total = MzDiskClass->GetAllBlockSize() * MzDiskClass->GetClusterSize();
+	}
+	if ((1 == ImageInit) && (MzDiskClass != NULL) && (MzDiskClass->DiskType() == Disk::MZ2000) && total == 655360)
+	{
+		pCmdUI->Enable(TRUE);
+	}
+	else
+	{
+		pCmdUI->Enable(FALSE);
+	}
+}
+
+void CMZDiskExplorerDoc::OnEditFontMz2000_80B()
+{
+	fontType = 0;
+	if ((1 == ImageInit) && (MzDiskClass != NULL) && (MzDiskClass->DiskType() == Disk::MZ2000))
+	{
+		MzDiskClass->SetFontType(fontType);
+	}
+	Update();
+	isUpdated = true;
+}
+
+void CMZDiskExplorerDoc::OnUpdateFontMz2000_80B(CCmdUI* pCmdUI)
+{
+	if ((1 == ImageInit) && (MzDiskClass != NULL) && (MzDiskClass->DiskType() == Disk::MZ2000) && (fontType == 1))
+	{
+		pCmdUI->Enable(TRUE);
+	}
+	else
+	{
+		pCmdUI->Enable(FALSE);
+	}
+}
+
+void CMZDiskExplorerDoc::OnEditFontMz2500()
+{
+	fontType = 1;
+	if ((1 == ImageInit) && (MzDiskClass != NULL) && (MzDiskClass->DiskType() == Disk::MZ2000))
+	{
+		MzDiskClass->SetFontType(fontType);
+	}
+	Update();
+	isUpdated = true;
+}
+
+void CMZDiskExplorerDoc::OnUpdateFontMz2500(CCmdUI* pCmdUI)
+{
+	// TODO:ここにコマンド更新 UI ハンドラー コードを追加します。
+	if ((1 == ImageInit) && (MzDiskClass != NULL) && (MzDiskClass->DiskType() == Disk::MZ2000) && (fontType == 0))
 	{
 		pCmdUI->Enable(TRUE);
 	}

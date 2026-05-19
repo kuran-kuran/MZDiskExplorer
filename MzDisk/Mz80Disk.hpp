@@ -76,6 +76,8 @@ public:
 	int GetType(void);
 	void ChangeType(int type);
 	void PutIplSelector(std::string path);
+	bool Shrink640to320(void);
+	void SetFontType(int type);
 	int FindFile(std::string filename, int ignoreIndex);
 	void SetDirSector(int sector);
 	int GetDirSector(void);
